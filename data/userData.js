@@ -1,0 +1,51 @@
+export const userInformation = [
+  {
+    id: 1,
+    name: "Julian O. Adam",
+    category: "user",
+    status: "Active",
+    enrolled: "May 12, 2024",
+  },
+  {
+    id: 2,
+    name: "Julian O. Adam",
+    category: "user",
+    status: "Active",
+    enrolled: "May 12, 2024",
+  },
+  {
+    id: 3,
+    name: "Julian O. Adam",
+    category: "Freelancer",
+    status: "Active",
+    enrolled: "May 12, 2024",
+  },
+  {
+    id: 4,
+    name: "Julian O. Adam",
+    category: "suspended",
+    status: "Active",
+    enrolled: "May 12, 2024",
+  },
+  {
+    id: 5,
+    name: "Julian O. Adam",
+    category: "user",
+    status: "Active",
+    enrolled: "May 12, 2024",
+  },
+  {
+    id: 6,
+    name: "Julian O. Adam",
+    category: "freelancer",
+    status: "Active",
+    enrolled: "May 12, 2024",
+  },
+  {
+    id: 7,
+    name: "Julian O. Adam",
+    category: "user",
+    status: "Active",
+    enrolled: "May 12, 2024",
+  },
+];
