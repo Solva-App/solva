@@ -4,14 +4,13 @@ import React, { useState } from "react";
 import SideNav from "@/components/sideNav";
 
 import { IoIosAddCircleOutline } from "react-icons/io";
-import { CiEdit } from "react-icons/ci";
 import { RiDeleteBin2Line } from "react-icons/ri";
 import { useRouter } from "next/navigation";
 
 const Projects = () => {
   const [openDeleteModal, setDeleteModal] = useState(false);
   const router = useRouter();
-  const deleteProject = () => {};
+  // const deleteProject = () => {};
   return (
     <div className="flex relative">
       <SideNav />

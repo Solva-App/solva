@@ -8,7 +8,7 @@ import { CiEdit } from "react-icons/ci";
 import { RiDeleteBin2Line } from "react-icons/ri";
 import { useRouter } from "next/navigation";
 
-const scholarships = () => {
+const Scholarships = () => {
   const [openDeleteModal, setDeleteModal] = useState(false);
   const router = useRouter();
   const editScholarshipFunct = () => {
@@ -110,4 +110,4 @@ const scholarships = () => {
   );
 };
 
-export default scholarships;
+export default Scholarships;

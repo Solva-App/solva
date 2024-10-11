@@ -68,9 +68,9 @@ const Dashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {userInformation.slice(0, 5).map((user) => {
+              {userInformation.slice(0, 5).map((user, index) => {
                 return (
-                  <tr className=" border border-[#D9D9D9]">
+                  <tr key={index} className=" border border-[#D9D9D9]">
                     <td className="text-black px-2 capitalize font-medium text-sm sm:text-base py-2 sm:py-4">
                       <FaUser className="h-8 w-8 inline-block mr-2" />{" "}
                       {/*replace this with user image*/}

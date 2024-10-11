@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import SideNav from "@/components/sideNav";
 
 import { IoIosAddCircleOutline } from "react-icons/io";
-import { CiEdit } from "react-icons/ci";
 import { RiDeleteBin2Line } from "react-icons/ri";
 import { FaCircleUser } from "react-icons/fa6";
 

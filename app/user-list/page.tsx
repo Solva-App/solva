@@ -60,9 +60,9 @@ const UserList = () => {
               </tr>
             </thead>
             <tbody>
-              {userInformation.map((user) => {
+              {userInformation.map((user, index) => {
                 return (
-                  <tr className=" border border-[#D9D9D9]">
+                  <tr key={index} className=" border border-[#D9D9D9]">
                     <td className="text-black px-2 capitalize font-medium sm:text-base text-sm py-4">
                       <FaUser className="h-8 w-8 inline-block mr-2" />{" "}
                       {/*replace this with user image*/}

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 
 import SideNav from "@/components/sideNav";
 import { useRouter } from "next/navigation";
