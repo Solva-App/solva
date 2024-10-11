@@ -10,7 +10,7 @@ import { FaChevronLeft } from "react-icons/fa6";
 const AddProject = () => {
   const router = useRouter();
   const [name, setName] = useState("");
-  const [file, setFile] = useState(null);
+  const [file, setFile] = useState<any>(null);
 
   const addGrant = () => {
     console.log(name, file);
@@ -51,6 +51,8 @@ const AddProject = () => {
             </label>
             <input
               type="file"
+              value={file}
+              onChange={(e) => setFile(e.target.value)}
               className="md:w-1/2 w-full border border-[#5C5F62] font-medium text-[#5C5F62] rounded-[8px] text-base sm:text-xl p-5"
             />
           </div>
