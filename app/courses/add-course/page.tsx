@@ -14,16 +14,18 @@ const AddCourse = () => {
   return (
     <div className="flex">
       <SideNav />
-      <div className="w-full relative p-10 overflow-y-scroll h-screen">
+      <div className="w-full p-5 sm:p-10 overflow-y-scroll h-screen">
         <div className="flex gap-4 items-center">
           <FaChevronLeft onClick={() => router.back()} />
-          <h1 className="text-3xl font-bold">Upload Past Questions</h1>
+          <h1 className="sm:text-3xl text-2xl font-bold">
+            Upload Past Questions
+          </h1>
         </div>
         <hr className="my-4" />
         <div className="flex flex-col gap-8">
           <div className="">
             <select
-              className="w-1/2 border border-[#5C5F62] font-medium text-[#5C5F62] rounded-[8px] text-xl p-5"
+              className="w-full md:w-1/2 border border-[#5C5F62] font-medium text-[#5C5F62] rounded-[8px] text-base sm:text-xl p-3 am:p-5"
               name="university"
               id="university"
             >
@@ -34,7 +36,7 @@ const AddCourse = () => {
           </div>
           <div className="">
             <select
-              className="w-1/2 border border-[#5C5F62] font-medium text-[#5C5F62] rounded-[8px] text-xl p-5"
+             className="w-full md:w-1/2 border border-[#5C5F62] font-medium text-[#5C5F62] rounded-[8px] text-base sm:text-xl p-3 am:p-5"
               name="faculty"
               id="faculty"
             >
@@ -47,7 +49,7 @@ const AddCourse = () => {
           </div>
           <div className="">
             <select
-              className="w-1/2 border border-[#5C5F62] font-medium text-[#5C5F62] rounded-[8px] text-xl p-5"
+             className="w-full md:w-1/2 border border-[#5C5F62] font-medium text-[#5C5F62] rounded-[8px] text-base sm:text-xl p-3 am:p-5"
               name="department"
               id="department"
             >
@@ -63,13 +65,13 @@ const AddCourse = () => {
           <div>
             <input
               type="text"
-              className="w-1/2 border border-[#5C5F62] font-medium text-[#5C5F62] rounded-[8px] text-xl p-5"
+              className="w-full md:w-1/2 border border-[#5C5F62] font-medium text-[#5C5F62] rounded-[8px] text-base sm:text-xl p-3 sm:p-5"
               placeholder="$5,000 Grants from Google"
             />
           </div>
           <div>
             <p className="text-xl font-medium">Images</p>
-            <div className="flex items-center gap-4 py-5">
+            <div className="flex flex-wrap items-center gap-4 py-5">
               <div className="w-32 flex justify-center items-center h-28 border border-[#5C5F62] rounded-[8px]">
                 <MdOutlineAddCircleOutline className="text-2xl" />
               </div>
@@ -82,7 +84,7 @@ const AddCourse = () => {
             </div>
           </div>
           <div className="flex justify-end">
-            <div className=" w-1/3">
+            <div className="w-full md:w-1/3">
               <Button
                 BtnText="Add"
                 // BtnFunction={addGrant}

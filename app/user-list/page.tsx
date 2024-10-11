@@ -28,33 +28,33 @@ const UserList = () => {
   return (
     <div className="flex">
       <SideNav />
-      <div className="w-full relative p-10 overflow-y-scroll h-screen">
+      <div className="w-full p-5 sm:p-10 overflow-y-scroll h-screen">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">User list (12,567)</h1>
-          <button className="text-xl font-medium flex items-center gap-2 rounded-[8px] border border-[#1E1E1E] p-2 cursor-pointer">
-            <CiExport className="h-8 w-8 font-medium " />
+          <h1 className="sm:text-3xl text-xl font-bold">User list (12,567)</h1>
+          <button className="sm:text-xl text-sm font-medium flex items-center gap-2 rounded-[8px] border border-[#1E1E1E] p-2 cursor-pointer">
+            <CiExport className="sm:h-8 h-5 w-5 sm:w-8  font-medium " />
             Export CSV
           </button>
         </div>
         <hr className="my-4" />
 
-        <div>
+        <div className=" overflow-x-scroll">
           <table className=" table-auto w-full">
             <thead className="">
               <tr className=" bg-[#E1E2E180] ">
-                <td className="text-[#5C5F62] font-medium text-base rounded-tl-[8px] py-4 px-3">
+                <td className="text-[#5C5F62] font-medium sm:text-base text-sm rounded-tl-[8px] py-2 sm:py-4 px-3">
                   Name
                 </td>
-                <td className="text-[#5C5F62] font-medium text-base py-4">
+                <td className="text-[#5C5F62] font-medium sm:text-base text-sm py-2 sm:py-4">
                   Category
                 </td>
-                <td className="text-[#5C5F62] font-medium text-base py-4">
+                <td className="text-[#5C5F62] font-medium sm:text-base text-sm py-2 sm:py-4">
                   Status
                 </td>
-                <td className="text-[#5C5F62] font-medium text-base rounded-tr-[8px] py-4 pr-3">
+                <td className="text-[#5C5F62] font-medium sm:text-base text-sm py-2 sm:py-4">
                   Enrolled
                 </td>
-                <td className="text-[#5C5F62] font-medium text-base text-center rounded-tr-[8px] py-4 pr-3">
+                <td className="text-[#5C5F62] font-medium sm:text-base text-sm text-center rounded-tr-[8px] py-2 sm:py-4 sm:pl-0 pl-2 pr-3">
                   Action
                 </td>
               </tr>
@@ -63,7 +63,7 @@ const UserList = () => {
               {userInformation.map((user) => {
                 return (
                   <tr className=" border border-[#D9D9D9]">
-                    <td className="text-black px-2 capitalize font-medium text-base py-4">
+                    <td className="text-black px-2 capitalize font-medium sm:text-base text-sm py-4">
                       <FaUser className="h-8 w-8 inline-block mr-2" />{" "}
                       {/*replace this with user image*/}
                       {user.name}
@@ -77,17 +77,17 @@ const UserList = () => {
                           : user.category.toLocaleLowerCase() === "suspended"
                           ? "border-[#C8A700] bg-[#FFFFF4]"
                           : "border-[#5427D7] bg-[#F3EDF7] "
-                      } inline-block px-6 rounded-[4px] text-center`}
+                      } inline-block px-3 text-sm sm:text-base sm:px-6 rounded-[4px] text-center`}
                     >
                       {user.category}
                     </td>
-                    <td className="text-black font-medium capitalize text-base  py-4">
+                    <td className="text-black sm:px-0 px-2 font-medium capitalize sm:text-base text-sm  py-4">
                       {user.status}
                     </td>
-                    <td className="text-black font-medium capitalize text-base  py-4">
+                    <td className="text-black font-medium sm:text-left text-center capitalize sm:text-base text-sm  py-4">
                       {user.enrolled}
                     </td>
-                    <td className="text-[#5C5F62] font-medium capitalize flex flex-col items-center text-base  py-4">
+                    <td className="text-[#5C5F62]  font-medium capitalize flex flex-col items-center sm:text-base text-sm  py-4">
                       {user.category.toLowerCase() === "suspended" ? (
                         <span
                           onClick={unFlagFunciton}

@@ -5,7 +5,7 @@ const Button = ({ BtnText, BtnFunction, disabled }: any) => {
     <button
       disabled={disabled}
       onClick={BtnFunction}
-      className="bg-primary rounded-[16px] py-6 cursor-pointer text-center w-full text-2xl font-normal text-white"
+      className="bg-primary rounded-[16px] py-4 sm:py-6 cursor-pointer text-center w-full text-xl sm:text-2xl font-normal text-white"
     >
       {BtnText}
     </button>

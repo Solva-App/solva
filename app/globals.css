@@ -19,3 +19,21 @@
     text-wrap: balance;
   }
 }
+
+body {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  overflow: -moz-scrollbars-none;
+}
+
+body::-webkit-scrollbar {
+  width: 0.5rem;
+}
+
+body::-webkit-scrollbar-thumb {
+  background-color: transparent;
+}
+
+.touch-action-none {
+  touch-action: none;
+}
