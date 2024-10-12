@@ -14,6 +14,12 @@ const Scholarships = () => {
   const editScholarshipFunct = () => {
     router.push("/scholarships/edit-scholarship");
   };
+
+  const scholarshipData = [
+    "$5,000 Grants from Google",
+    "$50,000 Grants from Apple",
+    "$15,000 Grants from Sony",
+  ];
   return (
     <div className="flex relative">
       <SideNav />
@@ -31,49 +37,52 @@ const Scholarships = () => {
         <hr className="my-4" />
 
         <div className=" overflow-x-scroll">
-          <table className=" table-auto w-full">
-            <thead className="">
-              <tr className=" bg-[#E1E2E180] ">
-                <td className="text-[#5C5F62] font-medium text-sm sm:text-base rounded-tl-[8px] py-4 px-3">
+          <table className="table-auto w-full">
+            <thead>
+              <tr className="bg-[#F5F5F5] text-left">
+                <th className="text-[#5C5F62] font-medium text-sm sm:text-base py-4 px-4 rounded-tl-lg">
                   Name
-                </td>
-                <td className="text-[#5C5F62] font-medium text-sm sm:text-base py-4">
+                </th>
+                <th className="text-[#5C5F62] text-center font-medium text-sm sm:text-base py-4 px-4">
                   Link
-                </td>
-                <td className="text-[#5C5F62] font-medium text-sm sm:text-base py-4">
+                </th>
+                <th className="text-[#5C5F62] text-center font-medium text-sm sm:text-base py-4 px-4">
                   Date
-                </td>
-                <td className="text-[#5C5F62] font-medium text-sm sm:text-base rounded-tr-[8px] py-4 pr-3">
+                </th>
+                <th className="text-[#5C5F62] text-center font-medium text-sm sm:text-base py-4 px-4 rounded-tr-lg">
                   Action
-                </td>
+                </th>
               </tr>
             </thead>
             <tbody>
-              {/* map table content instead */}
-              <tr className=" border border-[#D9D9D9]">
-                <td className="text-black capitalize px-2 font-medium text-sm sm:text-base py-4">
-                  $5,000 Grants from Google
-                </td>
-                <td className="text-black w-1/4 text-left px-2 font-medium text-sm sm:text-base  py-4">
-                  <a target="_blank" href="https://granta1link.com">
-                    {" "}
-                    https://granta1link.com
-                  </a>
-                </td>
-                <td className="text-[#5C5F62] px-2 font-medium capitalize text-sm sm:text-base  py-4">
-                  May 12, 2024
-                </td>
-                <td className="text-black font-medium flex sm:flex-row flex-col py-4 items-center gap-4 justify-center capitalize text-sm sm:text-base">
-                  <CiEdit
-                    onClick={editScholarshipFunct}
-                    className="text-[#1E1E1E] text-2xl sm:text-xl cursor-pointer"
-                  />
-                  <RiDeleteBin2Line
-                    onClick={() => setDeleteModal(true)}
-                    className="text-[#FF1212] text-2xl sm:text-xl cursor-pointer"
-                  />
-                </td>
-              </tr>
+              {/* Replace with dynamic data */}
+              {scholarshipData.map((data, index) => (
+                <tr key={index} className="border-b border-[#E0E0E0]">
+                  <td className="text-black font-medium text-sm sm:text-base py-4 px-4">
+                    {data}
+                  </td>
+                  <td className="text-black text-sm text-center sm:text-base py-4 px-4">
+                    <a href="  https://granta1link.com" target="_blank" >
+                      https://granta1link.com
+                    </a>
+                  </td>
+                  <td className="text-[#000000] text-center text-sm sm:text-base py-4 px-4">
+                    May 12, 2024
+                  </td>
+                  <td className="text-center py-4 px-4">
+                    <div className="flex items-center justify-center gap-6">
+                      <CiEdit
+                        onClick={editScholarshipFunct}
+                        className="text-[#000000] text-2xl cursor-pointer"
+                      />
+                      <RiDeleteBin2Line
+                        onClick={() => setDeleteModal(true)}
+                        className="text-[#FF1212] text-2xl cursor-pointer"
+                      />
+                    </div>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

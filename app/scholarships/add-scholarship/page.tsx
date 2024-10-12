@@ -13,9 +13,10 @@ const AddScholarship = () => {
   const [link, setlink] = useState("");
   const [date, setDate] = useState("");
 
-  const addGrant = () => {
+  const addScholarship = () => {
     console.log(name, date, link, date);
     // update duntion here
+    router.replace("/scholarships")
   };
 
   return (
@@ -76,7 +77,7 @@ const AddScholarship = () => {
             <div className=" w-full md:w-1/3">
               <Button
                 BtnText="Add"
-                BtnFunction={addGrant}
+                BtnFunction={addScholarship}
                 disabled={!name || !link || !date}
               />
             </div>

@@ -35,22 +35,22 @@ const Courses = () => {
           <table className=" table-auto w-full">
             <thead className="">
               <tr className=" bg-[#E1E2E180] ">
-                <td className="text-[#5C5F62] font-medium text-sm sm:text-base rounded-tl-[8px] py-4 px-3">
+                <td className="text-[#5C5F62] font-medium text-center text-sm sm:text-base rounded-tl-[8px] py-4 px-3">
                   University
                 </td>
-                <td className="text-[#5C5F62] font-medium text-sm sm:text-base py-4">
+                <td className="text-[#5C5F62] font-medium text-center text-sm sm:text-base py-4">
                   Faculty
                 </td>
-                <td className="text-[#5C5F62] font-medium text-sm sm:text-base py-4">
-                  Departrment
+                <td className="text-[#5C5F62] font-medium text-center text-sm sm:text-base py-4">
+                  Department
                 </td>
-                <td className="text-[#5C5F62] font-medium text-sm sm:text-base py-4 px-2">
+                <td className="text-[#5C5F62] font-medium text-center text-sm sm:text-base py-4 px-2">
                   Course code
                 </td>
-                <td className="text-[#5C5F62] font-medium text-sm sm:text-base py-4 px-2">
+                <td className="text-[#5C5F62] font-medium text-center text-sm sm:text-base py-4 px-2">
                   Images
                 </td>
-                <td className="text-[#5C5F62] font-medium text-sm sm:text-base rounded-tr-[8px] py-4 pr-3">
+                <td className="text-[#5C5F62] font-medium text-center text-sm sm:text-base rounded-tr-[8px] py-4 pr-3">
                   Action
                 </td>
               </tr>
@@ -58,25 +58,77 @@ const Courses = () => {
             <tbody>
               {/* map table content instead */}
               <tr className=" border border-[#D9D9D9]">
-                <td className="text-black px-2 capitalize font-medium text-sm sm:text-base py-4">
+                <td className="text-black px-2 text-center capitalize font-medium text-sm sm:text-base py-4">
                   uniben
                 </td>
-                <td className="text-black w-1/4 text-left font-medium  px-2text-sm sm:text-base  py-4">
+                <td className="text-black text-center w-1/4 font-medium  px-2text-sm sm:text-base  py-4">
                   Engineering
                 </td>
-                <td className="text-[#5C5F62] font-medium capitalize px-2 text-sm sm:text-base  py-4">
+                <td className="text-[#5C5F62] text-center font-medium capitalize px-2 text-sm sm:text-base  py-4">
                   Chemical
                 </td>
-                <td className="text-[#5C5F62] font-medium capitalize px-2 text-sm sm:text-base  py-4">
+                <td className="text-[#5C5F62] text-center font-medium capitalize px-2 text-sm sm:text-base  py-4">
                   Che101
                 </td>
-                <td className="text-[#5C5F62] flex items-center font-medium capitalize text-2xl  py-4">
+                <td className="text-[#5C5F62] flex justify-center items-center font-medium capitalize text-2xl  py-4">
                   {/* replace icons with images */}
                   <FaCircleUser />
                   <FaCircleUser className="-ml-3" />
                   <FaCircleUser className="-ml-3" />
                 </td>
-                <td className="text-black font-medium text-base">
+                <td className="text-black font-medium px-4 text-center text-base">
+                  <RiDeleteBin2Line
+                    onClick={() => setDeleteModal(true)}
+                    className="text-[#FF1212] text-xl cursor-pointer"
+                  />
+                </td>
+              </tr>
+              <tr className=" border border-[#D9D9D9]">
+                <td className="text-black px-2 text-center capitalize font-medium text-sm sm:text-base py-4">
+                  uniben
+                </td>
+                <td className="text-black text-center w-1/4 font-medium  px-2text-sm sm:text-base  py-4">
+                  Engineering
+                </td>
+                <td className="text-[#5C5F62] text-center font-medium capitalize px-2 text-sm sm:text-base  py-4">
+                  Chemical
+                </td>
+                <td className="text-[#5C5F62] text-center font-medium capitalize px-2 text-sm sm:text-base  py-4">
+                  Che101
+                </td>
+                <td className="text-[#5C5F62] flex justify-center items-center font-medium capitalize text-2xl  py-4">
+                  {/* replace icons with images */}
+                  <FaCircleUser />
+                  <FaCircleUser className="-ml-3" />
+                  <FaCircleUser className="-ml-3" />
+                </td>
+                <td className="text-black font-medium px-4 text-center text-base">
+                  <RiDeleteBin2Line
+                    onClick={() => setDeleteModal(true)}
+                    className="text-[#FF1212] text-xl cursor-pointer"
+                  />
+                </td>
+              </tr>
+              <tr className=" border border-[#D9D9D9]">
+                <td className="text-black px-2 text-center capitalize font-medium text-sm sm:text-base py-4">
+                  uniben
+                </td>
+                <td className="text-black text-center w-1/4 font-medium  px-2text-sm sm:text-base  py-4">
+                  Engineering
+                </td>
+                <td className="text-[#5C5F62] text-center font-medium capitalize px-2 text-sm sm:text-base  py-4">
+                  Chemical
+                </td>
+                <td className="text-[#5C5F62] text-center font-medium capitalize px-2 text-sm sm:text-base  py-4">
+                  Che101
+                </td>
+                <td className="text-[#5C5F62] flex justify-center items-center font-medium capitalize text-2xl  py-4">
+                  {/* replace icons with images */}
+                  <FaCircleUser />
+                  <FaCircleUser className="-ml-3" />
+                  <FaCircleUser className="-ml-3" />
+                </td>
+                <td className="text-black font-medium px-4 text-center text-base">
                   <RiDeleteBin2Line
                     onClick={() => setDeleteModal(true)}
                     className="text-[#FF1212] text-xl cursor-pointer"

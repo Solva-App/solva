@@ -45,10 +45,10 @@ const ManageJobs = () => {
                 <td className="text-[#5C5F62] font-medium text-sm px-2 sm:text-base py-4">
                   Description
                 </td>
-                <td className="text-[#5C5F62] font-medium text-sm px-2 sm:text-base py-4">
+                <td className="text-[#5C5F62] font-medium text-sm px-2 text-center sm:text-base py-4">
                   Status
                 </td>
-                <td className="text-[#5C5F62] font-medium text-sm px-2 sm:text-base py-4">
+                <td className="text-[#5C5F62] font-medium text-sm px-2 text-center sm:text-base py-4">
                   Date
                 </td>
 
@@ -73,7 +73,7 @@ const ManageJobs = () => {
                         Remote
                       </p>
                     </td>
-                    <td className="text-[#5C5F62] sm:text-left text-center font-medium capitalize text-sm sm:text-base  py-4">
+                    <td className="text-[#5C5F62] text-center font-medium capitalize text-sm sm:text-base  py-4">
                       May 12, 2024
                     </td>
                     <td className="text-black  font-medium  capitalize text-base">

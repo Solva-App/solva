@@ -16,6 +16,7 @@ const EditScholarship = () => {
   const updateGrant = () => {
     console.log(name, date, link, date);
     // update duntion here
+    router.replace("/scholarships")
   };
 
   return (

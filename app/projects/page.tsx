@@ -34,7 +34,7 @@ const Projects = () => {
                 <td className="text-[#5C5F62] font-medium text-base sm:text-base rounded-tl-[8px] py-4 px-3">
                   Name
                 </td>
-                <td className="text-[#5C5F62] font-medium text-sm sm:text-base py-4">
+                <td className="text-[#5C5F62] font-medium text-center text-sm sm:text-base py-4">
                   Files
                 </td>
                 <td className="text-[#5C5F62] font-medium text-right text-base sm:text-base rounded-tr-[8px] py-4 pr-3">
@@ -44,6 +44,34 @@ const Projects = () => {
             </thead>
             <tbody>
               {/* map table content instead */}
+              <tr className=" border border-[#D9D9D9]">
+                <td className="text-black w-1/2 capitalize font-medium text-sm px-2 sm:text-base py-4">
+                  Fully funded scholarship, Babcock
+                </td>
+                <td className="text-[#1E1E1E] w-1/4 font-medium capitalize text-sm px-2 sm:text-base  py-4">
+                  Example of job description for a role by admin....
+                </td>
+                <td className="text-black font-medium flex justify-end px-4 py-5 items-center capitalize text-sm sm:text-base">
+                  <RiDeleteBin2Line
+                    onClick={() => setDeleteModal(true)}
+                    className="text-[#FF1212] text-xl cursor-pointer"
+                  />
+                </td>
+              </tr>
+              <tr className=" border border-[#D9D9D9]">
+                <td className="text-black w-1/2 capitalize font-medium text-sm px-2 sm:text-base py-4">
+                  Fully funded scholarship, Babcock
+                </td>
+                <td className="text-[#1E1E1E] w-1/4 font-medium capitalize text-sm px-2 sm:text-base  py-4">
+                  Example of job description for a role by admin....
+                </td>
+                <td className="text-black font-medium flex justify-end px-4 py-5 items-center capitalize text-sm sm:text-base">
+                  <RiDeleteBin2Line
+                    onClick={() => setDeleteModal(true)}
+                    className="text-[#FF1212] text-xl cursor-pointer"
+                  />
+                </td>
+              </tr>
               <tr className=" border border-[#D9D9D9]">
                 <td className="text-black w-1/2 capitalize font-medium text-sm px-2 sm:text-base py-4">
                   Fully funded scholarship, Babcock

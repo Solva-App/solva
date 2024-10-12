@@ -16,6 +16,7 @@ const EditGrants = () => {
   const updateGrant = () => {
     console.log(name, date, link, date);
     // update duntion here
+    router.replace("/grants")
   };
 
   return (

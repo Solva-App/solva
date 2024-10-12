@@ -12,9 +12,10 @@ const AddProject = () => {
   const [name, setName] = useState("");
   const [file, setFile] = useState<any>(null);
 
-  const addGrant = () => {
+  const addProject = () => {
     console.log(name, file);
     // update duntion here
+    router.replace("/projects")
   };
 
   return (
@@ -61,7 +62,7 @@ const AddProject = () => {
             <div className=" w-full md:w-1/3">
               <Button
                 BtnText="Add"
-                BtnFunction={addGrant}
+                BtnFunction={addProject}
                 // disabled={!name || !file}
               />
             </div>

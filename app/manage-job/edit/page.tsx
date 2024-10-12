@@ -15,6 +15,7 @@ const EditJob = () => {
   const updateJob = () => {
     console.log(role, date, description, date);
     // update duntion here
+    router.replace("/manage-job");
   };
 
   return (
@@ -32,7 +33,10 @@ const EditJob = () => {
         <hr className="my-4" />
         <div className="flex flex-col gap-8">
           <div className="gap-y-3 flex flex-col">
-            <label className="text-base sm:text-xl font-medium" htmlFor="Job Role">
+            <label
+              className="text-base sm:text-xl font-medium"
+              htmlFor="Job Role"
+            >
               Job Role
             </label>
             <input
@@ -44,7 +48,10 @@ const EditJob = () => {
             />
           </div>
           <div className="gap-y-3 flex flex-col">
-            <label className="text-base sm:text-xl font-medium" htmlFor="Job Role">
+            <label
+              className="text-base sm:text-xl font-medium"
+              htmlFor="Job Role"
+            >
               Description
             </label>
             <textarea
@@ -55,7 +62,10 @@ const EditJob = () => {
             />
           </div>
           <div className="gap-y-3 flex flex-col">
-            <label className="text-base sm:text-xl font-medium" htmlFor="Job Role">
+            <label
+              className="text-base sm:text-xl font-medium"
+              htmlFor="Job Role"
+            >
               Status
             </label>
             <input
@@ -67,7 +77,10 @@ const EditJob = () => {
             />
           </div>
           <div className="gap-y-3 flex flex-col">
-            <label className="text-base sm:text-xl font-medium" htmlFor="Job Role">
+            <label
+              className="text-base sm:text-xl font-medium"
+              htmlFor="Job Role"
+            >
               Date
             </label>
             <input

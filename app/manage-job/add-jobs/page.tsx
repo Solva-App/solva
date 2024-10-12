@@ -14,8 +14,9 @@ const AddJobs = () => {
   const [status, setStatus] = useState("");
   const [date, setDate] = useState("");
 
-  const addGrant = () => {
-    console.log(name, date);
+  const addJob = () => {
+    // console.log(name, date);
+    router.replace("/manage-job");
     // update duntion here
   };
 
@@ -30,7 +31,10 @@ const AddJobs = () => {
         <hr className="my-4" />
         <div className="flex flex-col gap-8">
           <div className="gap-y-3 flex flex-col">
-            <label className="text-base sm:text-xl font-medium" htmlFor="Job Role">
+            <label
+              className="text-base sm:text-xl font-medium"
+              htmlFor="Job Role"
+            >
               Job Role
             </label>
             <input
@@ -42,7 +46,10 @@ const AddJobs = () => {
             />
           </div>
           <div className="gap-y-3 flex flex-col">
-            <label className="text-base sm:text-xl font-medium" htmlFor="Job Role">
+            <label
+              className="text-base sm:text-xl font-medium"
+              htmlFor="Job Role"
+            >
               Description
             </label>
             <textarea
@@ -53,7 +60,10 @@ const AddJobs = () => {
             />
           </div>
           <div className="gap-y-3 flex flex-col">
-            <label className="text-base sm:text-xl font-medium" htmlFor="Job Role">
+            <label
+              className="text-base sm:text-xl font-medium"
+              htmlFor="Job Role"
+            >
               Status
             </label>
             <input
@@ -65,7 +75,10 @@ const AddJobs = () => {
             />
           </div>
           <div className="gap-y-3 flex flex-col">
-            <label className="text-base sm:text-xl font-medium" htmlFor="Job Role">
+            <label
+              className="text-base sm:text-xl font-medium"
+              htmlFor="Job Role"
+            >
               Date
             </label>
             <input
@@ -80,7 +93,7 @@ const AddJobs = () => {
             <div className=" w-full sm:w-1/3">
               <Button
                 BtnText="Update"
-                // BtnFunction={updateJob}
+                BtnFunction={addJob}
                 disabled={!role || !description || !status || !date}
               />
             </div>

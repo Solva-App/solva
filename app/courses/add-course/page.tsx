@@ -11,6 +11,10 @@ import { MdOutlineAddCircleOutline } from "react-icons/md";
 const AddCourse = () => {
   const router = useRouter();
 
+  const addCourse = () => {
+    router.replace("/courses");
+  };
+
   return (
     <div className="flex">
       <SideNav />
@@ -36,7 +40,7 @@ const AddCourse = () => {
           </div>
           <div className="">
             <select
-             className="w-full md:w-1/2 border border-[#5C5F62] font-medium text-[#5C5F62] rounded-[8px] text-base sm:text-xl p-3 am:p-5"
+              className="w-full md:w-1/2 border border-[#5C5F62] font-medium text-[#5C5F62] rounded-[8px] text-base sm:text-xl p-3 am:p-5"
               name="faculty"
               id="faculty"
             >
@@ -49,7 +53,7 @@ const AddCourse = () => {
           </div>
           <div className="">
             <select
-             className="w-full md:w-1/2 border border-[#5C5F62] font-medium text-[#5C5F62] rounded-[8px] text-base sm:text-xl p-3 am:p-5"
+              className="w-full md:w-1/2 border border-[#5C5F62] font-medium text-[#5C5F62] rounded-[8px] text-base sm:text-xl p-3 am:p-5"
               name="department"
               id="department"
             >
@@ -87,7 +91,7 @@ const AddCourse = () => {
             <div className="w-full md:w-1/3">
               <Button
                 BtnText="Add"
-                // BtnFunction={addGrant}
+                BtnFunction={addCourse}
                 // disabled={!name || !link || !date}
               />
             </div>

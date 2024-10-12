@@ -16,6 +16,7 @@ const AddGrants = () => {
   const addGrant = () => {
     console.log(name, date, link, date);
     // update duntion here
+    router.replace("/grants")
   };
 
   return (
