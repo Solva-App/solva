@@ -14,13 +14,21 @@ const ManageJobs = () => {
   const editJobFunction = () => {
     router.push("/manage-job/edit");
   };
+  const roleTitle = [
+    "Full Stack Development",
+    "Graphics Design",
+    "Ui/Ux Design",
+  ];
   return (
     <div className="flex relative">
       <SideNav />
       <div className="w-full  p-5 sm:p-10 overflow-y-scroll h-screen">
         <div className="flex items-center sm:gap-0 gap-2 justify-between">
           <h1 className="sm:text-3xl text-xl font-bold">Manage jobs</h1>
-          <button className="sm:text-xl text-base font-medium flex items-center gap-2 rounded-[8px] text-white bg-primary p-2 cursor-pointer">
+          <button
+            onClick={() => router.push("/manage-job/add-jobs")}
+            className="sm:text-xl text-base font-medium flex items-center gap-2 rounded-[8px] text-white bg-primary p-2 cursor-pointer"
+          >
             <IoIosAddCircleOutline className="sm:h-8 h-5 w-5 sm:w-8 font-medium " />
             Add new job
           </button>
@@ -51,30 +59,38 @@ const ManageJobs = () => {
             </thead>
             <tbody>
               {/* map table content instead */}
-              <tr className=" border border-[#D9D9D9]">
-                <td className="text-black capitalize px-2 font-medium text-sm sm:text-base py-4">
-                  Full Stack Development
-                </td>
-                <td className="text-black w-1/4 text-left px-2 font-medium capitalize text-sm sm:text-base  py-4">
-                  Example of job description for a role by admin....
-                </td>
-                <td className="text-black my-4 border capitalize mx-2 text-sm sm:text-base border-[#5427D7] bg-[#F3EDF7] inline-block px-3 rounded-[4px] text-center">
-                  Remote
-                </td>
-                <td className="text-[#5C5F62] sm:text-left text-center font-medium capitalize text-sm sm:text-base  py-4">
-                  May 12, 2024
-                </td>
-                <td className="text-black font-medium flex flex-col sm:flex-row  items-center py-4 gap-2 justify-center capitalize text-sm sm:text-base">
-                  <CiEdit
-                    onClick={editJobFunction}
-                    className="text-[#1E1E1E] text-2xl  sm:text-xl cursor-pointer"
-                  />
-                  <RiDeleteBin2Line
-                    onClick={() => setDeleteModal(true)}
-                    className="text-[#FF1212] text-2xl  sm:text-xl cursor-pointer"
-                  />
-                </td>
-              </tr>
+              {roleTitle.map((role, index) => {
+                return (
+                  <tr key={index} className=" border border-[#D9D9D9]">
+                    <td className="text-black capitalize px-2 font-medium text-sm sm:text-base py-4">
+                      {role}
+                    </td>
+                    <td className="text-black w-1/4 text-left px-2 font-medium capitalize text-sm sm:text-base  py-4">
+                      Example of job description for a role by admin....
+                    </td>
+                    <td className="text-black sm:text-base text-sm capitalize  px-2  text-center">
+                      <p className="border border-primary rounded-[4px] bg-[#F3EDF7] px-3">
+                        Remote
+                      </p>
+                    </td>
+                    <td className="text-[#5C5F62] sm:text-left text-center font-medium capitalize text-sm sm:text-base  py-4">
+                      May 12, 2024
+                    </td>
+                    <td className="text-black  font-medium  capitalize text-base">
+                      <span className="gap-2 flex flex-col sm:flex-row items-center justify-center">
+                        <CiEdit
+                          onClick={editJobFunction}
+                          className="text-[#1E1E1E] text-2xl  sm:text-xl cursor-pointer"
+                        />
+                        <RiDeleteBin2Line
+                          onClick={() => setDeleteModal(true)}
+                          className="text-[#FF1212] text-2xl  sm:text-xl cursor-pointer"
+                        />
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

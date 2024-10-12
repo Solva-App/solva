@@ -2,7 +2,7 @@
 import React from "react";
 
 import { CiHome } from "react-icons/ci";
-import { FaListUl } from "react-icons/fa";
+import { GoListUnordered } from "react-icons/go";
 import { BiMoneyWithdraw } from "react-icons/bi";
 import { FaSuitcase } from "react-icons/fa";
 import { FaHandHolding } from "react-icons/fa";
@@ -21,7 +21,7 @@ const SideNav = () => {
       link: "dashboard",
     },
     {
-      icon: <FaListUl />,
+      icon: <GoListUnordered />,
       title: "User List",
       link: "user-list",
     },
@@ -65,7 +65,7 @@ const SideNav = () => {
         Solva Admin
       </h1>
       <hr />
-      <div className="flex flex-col justify-between md:items-start items-center h-[83%]">
+      <div className="flex flex-col justify-between md:items-start items-center overflow-x-scroll h-[85%]">
         <div className="my-8">
           {navTexts.map((nav, index) => {
             return (
@@ -76,7 +76,7 @@ const SideNav = () => {
                     !pathname.includes(`/${nav.link}`)
                       ? "bg-none text-white "
                       : "text-black bg-white"
-                  } flex items-center md:pl-5 md:gap-3 gap-0 text-center cursor-pointer my-5 md:my-2 py-1 px-2 md:py-3 w-full md:mx-3 rounded-[4px] sm:rounded-[8px]`}
+                  } flex items-center rounded-[4px] sm:rounded-[8px] my-3 md:my-1 md:gap-3 gap-0 md:py-3 py-1 cursor-pointer justify-start mx-3 px-2 `}
                 >
                   <span className="md:text-3xl text-2xl">{nav.icon} </span>
                   <span className="lg:text-2xl text-base hidden md:block font-medium">
@@ -94,7 +94,7 @@ const SideNav = () => {
                 !pathname.includes("/settings")
                   ? "bg-none text-white "
                   : "text-black bg-white"
-              } flex items-center md:pl-5 md:gap-3 gap-0 text-center cursor-pointer my-5 md:my-2 py-1 px-2 md:py-3 w-full md:mx-3 rounded-[4px] sm:rounded-[8px]`}
+              } flex items-center rounded-[4px] sm:rounded-[8px] my-5 md:my-2 md:gap-3 gap-0 md:py-3 py-1 cursor-pointer justify-start mx-3 px-2 `}
             >
               {" "}
               <CgLogOut className="md:text-3xl text-2xl" />

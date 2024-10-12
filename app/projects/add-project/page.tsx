@@ -23,7 +23,7 @@ const AddProject = () => {
       <div className="w-full p-5 sm:p-10 overflow-y-scroll h-screen">
         <div className="flex gap-4 items-center">
           <FaChevronLeft onClick={() => router.back()} />
-          <h1 className="sm:text-3xl text-2xl font-bold">Add Scholarship</h1>
+          <h1 className="sm:text-3xl text-2xl font-bold">Add Project</h1>
         </div>
         <hr className="my-4" />
         <div className="flex flex-col gap-8">
