@@ -16,14 +16,14 @@ export const userInformation = [
   {
     id: 3,
     name: "Julian O. Adam",
-    category: "Freelancer",
+    category: "user",
     status: "Active",
     enrolled: "May 12, 2024",
   },
   {
     id: 4,
     name: "Julian O. Adam",
-    category: "suspended",
+    category: "user",
     status: "Active",
     enrolled: "May 12, 2024",
   },
@@ -37,7 +37,7 @@ export const userInformation = [
   {
     id: 6,
     name: "Julian O. Adam",
-    category: "freelancer",
+    category: "user",
     status: "Active",
     enrolled: "May 12, 2024",
   },

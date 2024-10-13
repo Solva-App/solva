@@ -229,10 +229,11 @@ const SideNav: React.FC = () => {
           })}
         </div>
         <div className="">
-          <Link href={"/settings"} className="">
+          <Link href={"/"} className="">
             <div
+
               className={`link ${
-                pathname.includes("/settings")
+                pathname.includes("/log-out")
                   ? "text-black bg-white"
                   : "text-white"
               } flex items-center rounded-[4px] sm:rounded-[8px] my-5 md:my-2 md:gap-3 gap-0 md:py-3 py-1 cursor-pointer justify-start mx-3 px-2 `}

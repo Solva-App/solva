@@ -33,6 +33,7 @@ const AddCourse = () => {
               name="university"
               id="university"
             >
+              <option value="">University</option>
               <option value="Babcock">Babcock</option>
               <option value="Unilorin">Unilorin</option>
               <option value="FUTA">FUTA</option>
@@ -44,6 +45,7 @@ const AddCourse = () => {
               name="faculty"
               id="faculty"
             >
+              <option value=" ">Faculty</option>
               <option value="Faculty of Sciences">Faculty of Sciences</option>
               <option value="Faculty of Arts">Faculty of Arts</option>
               <option value="Faculty of Engineering">
@@ -57,7 +59,7 @@ const AddCourse = () => {
               name="department"
               id="department"
             >
-              <option value="Computer Science">Computer Science</option>
+              <option value="">Department</option>
               <option value="Information Technology">
                 Information Technology
               </option>
@@ -70,7 +72,7 @@ const AddCourse = () => {
             <input
               type="text"
               className="w-full md:w-1/2 border border-[#5C5F62] font-medium text-[#5C5F62] rounded-[8px] text-base sm:text-xl p-3 sm:p-5"
-              placeholder="$5,000 Grants from Google"
+              placeholder="Course code"
             />
           </div>
           <div>
@@ -83,6 +85,9 @@ const AddCourse = () => {
                 <MdOutlineAddCircleOutline className="text-2xl" />
               </div>
               <div className="w-32 flex justify-center items-center h-28 border border-[#5C5F62] rounded-[8px]">
+                <MdOutlineAddCircleOutline className="text-2xl" />
+              </div>
+              <div className="w-32 flex justify-center items-center h-28 border-none">
                 <MdOutlineAddCircleOutline className="text-2xl" />
               </div>
             </div>
