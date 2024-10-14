@@ -103,14 +103,17 @@ const CashOut = () => {
               {cashOutData.map((data, index) => {
                 return (
                   <tr key={index} className=" border border-[#D9D9D9]">
-                   <td className="text-black px-2 capitalize font-medium text-sm sm:text-base py-4">
-  <FaUser className="h-8 w-8" />
-  <br />
-  <div className="-mt-5 break-words">
-    <p>{data.name.split(" ")[0]} {data.name.split(" ")[1].charAt(0)}.</p>
-    <p>{data.name.split(" ")[2]}</p>
-  </div>
-</td>
+                    <td className="text-black px-2 capitalize font-medium text-sm sm:text-base py-4">
+                      <FaUser className="h-8 w-8" />
+                      <br />
+                      <div className="-mt-5 break-words">
+                        <p>
+                          {data.name.split(" ")[0]}{" "}
+                          {data.name.split(" ")[1].charAt(0)}.
+                        </p>
+                        <p>{data.name.split(" ")[2]}</p>
+                      </div>
+                    </td>
 
                     <td className="text-black text-center font-medium capitalize text-sm sm:text-base  py-4">
                       {data.totalAmt}

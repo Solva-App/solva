@@ -95,7 +95,7 @@ const AddCourse = () => {
           <div className="flex justify-end">
             <div className="w-full md:w-1/3">
               <Button
-                BtnText="Add"
+                BtnText="Update"
                 BtnFunction={addCourse}
                 // disabled={!name || !link || !date}
               />
