@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 type NavItem = {
   title: string;
   link: string;
-  svg: (isActive: boolean) => JSX.Element;
+  svg: (isActive: boolean) => JSX.Element | null;
 };
 
 const SideNav: React.FC = () => {
@@ -172,7 +172,6 @@ const SideNav: React.FC = () => {
           viewBox="0 0 35 35"
           stroke={isActive ? "black" : "white"}
         >
-          
           <path
             d="M19.0896 29.1667H7.29167V8.75008H4.375V29.1667C4.375 29.9403 4.68229 30.6822 5.22927 31.2291C5.77625 31.7761 6.51812 32.0834 7.29167 32.0834H20.1396C19.6033 31.1887 19.2466 30.198 19.0896 29.1667ZM27.7083 2.91675H20.4167V10.2084L17.5 8.02092L14.5833 10.2084V2.91675H13.125C12.3515 2.91675 11.6096 3.22404 11.0626 3.77102C10.5156 4.318 10.2083 5.05987 10.2083 5.83341V23.3334C10.2083 24.107 10.5156 24.8488 11.0626 25.3958C11.6096 25.9428 12.3515 26.2501 13.125 26.2501H19.0896C19.302 24.9925 19.7867 23.7965 20.5098 22.7459C21.233 21.6953 22.1771 20.8155 23.276 20.1681C24.3749 19.5207 25.6021 19.1213 26.8715 18.998C28.141 18.8747 29.422 19.0304 30.625 19.4542V5.83341C30.625 5.05987 30.3177 4.318 29.7707 3.77102C29.2237 3.22404 28.4819 2.91675 27.7083 2.91675ZM29.1667 21.8751V26.2501H33.5417V29.1667H29.1667V33.5417H26.25V29.1667H21.875V26.2501H26.25V21.8751H29.1667Z"
             fill={isActive ? "black" : "white"}
@@ -198,6 +197,11 @@ const SideNav: React.FC = () => {
           />
         </svg>
       ),
+    },
+    {
+      title: "Advert Dashboard",
+      link: "advert",
+      svg: () => null,
     },
   ];
 
@@ -231,7 +235,6 @@ const SideNav: React.FC = () => {
         <div className="">
           <Link href={"/"} className="">
             <div
-
               className={`link ${
                 pathname.includes("/log-out")
                   ? "text-black bg-white"
