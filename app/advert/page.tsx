@@ -1,6 +1,7 @@
 "use client";
 import Button from "@/components/button";
 import SideNav from "@/components/sideNav";
+import Image from "next/image";
 import React, { useState } from "react";
 import { MdOutlineAddCircleOutline } from "react-icons/md";
 import { RiDeleteBin2Line } from "react-icons/ri";
@@ -44,17 +45,18 @@ const Advert = () => {
             <p className="text-base pb-5 sm:text-xl font-medium">Images</p>
             <div className="flex gap-5 flex-wrap items-center">
               {[0, 1, 2].map((item, index) => (
-                <div className="flex flex-col items-center gap-2">
+                <div key={index} className="flex flex-col items-center gap-2">
                   <div
-                    key={index}
                     className="w-32 flex justify-center items-center cursor-pointer h-28 border border-[#5C5F62] rounded-[8px]"
                     onClick={() => handleClick(index)}
                   >
                     {images[index] ? (
-                      <img
+                      <Image
                         src={images[index]!}
                         alt={`Uploaded Image ${index}`}
                         className="w-full h-full object-cover"
+                        width={100}
+                        height={100}
                       />
                     ) : (
                       <MdOutlineAddCircleOutline className="text-2xl" />
