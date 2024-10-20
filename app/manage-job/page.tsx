@@ -19,6 +19,7 @@ const ManageJobs = () => {
     "Graphics Design",
     "Ui/Ux Design",
   ];
+  
   return (
     <div className="flex relative">
       <SideNav />

@@ -1,7 +1,10 @@
 "use client";
 import React from "react";
-import { CgLogOut } from "react-icons/cg";
 import Link from "next/link";
+
+import { CgLogOut } from "react-icons/cg";
+import { RiAdvertisementLine } from "react-icons/ri";
+
 import { usePathname } from "next/navigation";
 
 type NavItem = {
@@ -12,8 +15,6 @@ type NavItem = {
 
 const SideNav: React.FC = () => {
   const pathname = usePathname();
-
-  // Array of navigation items, each with a title, link, and SVG
   const navTexts: NavItem[] = [
     {
       title: "Dashboard",
@@ -201,7 +202,11 @@ const SideNav: React.FC = () => {
     {
       title: "Advert Dashboard",
       link: "advert",
-      svg: () => null,
+      svg: (isActive) => (
+        <RiAdvertisementLine
+          className={`${isActive ? "text-black" : "text-white"} text-2xl`}
+        />
+      ),
     },
   ];
 
