@@ -68,15 +68,18 @@ const EditJob = () => {
             >
               Status
             </label>
-            <input
-              type="text"
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
+            <select
               className="w-full md:w-1/2 border  border-[#5C5F62] font-medium text-[#5C5F62] rounded-[8px] text-base sm:text-xl p-5"
-              placeholder="Remote"
-            />
+              name=""
+              id=""
+            >
+              <option value="">Select Status</option>
+              <option value="">Remote</option>
+              <option value="">Onsite</option>
+              <option value="">Hybrid</option>
+            </select>
           </div>
-          <div className="gap-y-3 flex flex-col">
+          {/* <div className="gap-y-3 flex flex-col">
             <label
               className="text-base sm:text-xl font-medium"
               htmlFor="Job Role"
@@ -90,13 +93,13 @@ const EditJob = () => {
               className="w-full md:w-1/2 border border-[#5C5F62] font-medium text-[#5C5F62] rounded-[8px] text-base sm:text-xl p-5"
               placeholder="May 12, 2024"
             />
-          </div>
+          </div> */}
           <div className="flex justify-end">
             <div className=" w-full sm:w-1/3">
               <Button
                 BtnText="Update"
                 BtnFunction={updateJob}
-                disabled={!role || !description || !status || !date}
+                // disabled={!role || !description || !status || !date}
               />
             </div>
           </div>

@@ -52,24 +52,13 @@ const EditGrants = () => {
               placeholder="https://granta1link.com"
             />
           </div>
-          <div className="gap-y-3 flex flex-col">
-            <label className="text-base sm:text-xl font-medium" htmlFor="Job Role">
-              Date
-            </label>
-            <input
-              type="text"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="md:w-1/2 w-full border border-[#5C5F62] font-medium text-[#5C5F62] rounded-[8px] text-base sm:text-xl p-5"
-              placeholder="May 12, 2024"
-            />
-          </div>
+          
           <div className="flex justify-end">
             <div className=" w-full md:w-1/3">
               <Button
                 BtnText="Update"
                 BtnFunction={updateGrant}
-                disabled={!name || !link || !date}
+                // disabled={!name || !link || !date}
               />
             </div>
           </div>

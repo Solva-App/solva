@@ -32,7 +32,7 @@ const Projects = () => {
             <thead className="">
               <tr className=" bg-[#E1E2E180] ">
                 <td className="text-[#5C5F62] font-medium text-base sm:text-base rounded-tl-[8px] py-4 px-3">
-                  Name
+                  S/N
                 </td>
                 <td className="text-[#5C5F62] font-medium text-center text-sm sm:text-base py-4">
                   Files
@@ -46,7 +46,7 @@ const Projects = () => {
               {/* map table content instead */}
               <tr className=" border border-[#D9D9D9]">
                 <td className="text-black w-1/2 capitalize font-medium text-sm px-2 sm:text-base py-4">
-                  Fully funded scholarship, Babcock
+                  1
                 </td>
                 <td className="text-[#1E1E1E] w-1/4 font-medium capitalize text-sm px-2 sm:text-base  py-4">
                   Example of job description for a role by admin....
@@ -60,7 +60,7 @@ const Projects = () => {
               </tr>
               <tr className=" border border-[#D9D9D9]">
                 <td className="text-black w-1/2 capitalize font-medium text-sm px-2 sm:text-base py-4">
-                  Fully funded scholarship, Babcock
+                  2
                 </td>
                 <td className="text-[#1E1E1E] w-1/4 font-medium capitalize text-sm px-2 sm:text-base  py-4">
                   Example of job description for a role by admin....
@@ -74,7 +74,7 @@ const Projects = () => {
               </tr>
               <tr className=" border border-[#D9D9D9]">
                 <td className="text-black w-1/2 capitalize font-medium text-sm px-2 sm:text-base py-4">
-                  Fully funded scholarship, Babcock
+                  3
                 </td>
                 <td className="text-[#1E1E1E] w-1/4 font-medium capitalize text-sm px-2 sm:text-base  py-4">
                   Example of job description for a role by admin....

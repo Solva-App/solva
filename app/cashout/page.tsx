@@ -115,20 +115,16 @@ const CashOut = () => {
                       </div>
                     </td>
 
-                    <td className="text-black text-center font-medium capitalize text-sm sm:text-base  py-4">
+                    <td className="text-black text-center font-medium capitalize text-sm sm:text-base py-4">
                       {data.totalAmt}
                     </td>
-                    <td className="text-black text-center font-medium capitalize px-2 text-sm sm:text-base  py-4">
+                    <td className="text-black text-center font-medium capitalize px-2 text-sm sm:text-base py-4">
                       {data.reqAmt}
                     </td>
-                    <td className="text-black text-center gap-2 font-medium capitalize text-sm sm:text-base">
+                    <td className="text-black text-center font-medium capitalize px-2 py-4 text-sm sm:text-base">
                       {data.currBal}
-                      <FiEdit3
-                        className="inline-block"
-                        // onClick={editfunctin}
-                      />
                     </td>
-                    <td className="text-[#5C5F62] text-center font-medium capitalizetext-sm sm:text-base px-2 py-4">
+                    <td className="text-[#5C5F62] text-center font-medium capitalize text-sm sm:text-base px-2 py-4">
                       {data.acctDtls}
                     </td>
                     <td className="text-black sm:text-base text-sm capitalize  px-2  text-center">

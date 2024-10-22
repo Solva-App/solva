@@ -48,6 +48,9 @@ const Courses = () => {
                   Course code
                 </td>
                 <td className="text-[#5C5F62] font-medium text-center text-sm sm:text-base py-4 px-2">
+                  Title
+                </td>
+                <td className="text-[#5C5F62] font-medium text-center text-sm sm:text-base py-4 px-2">
                   Images
                 </td>
                 <td className="text-[#5C5F62] font-medium text-center text-sm sm:text-base rounded-tr-[8px] py-4 pr-3">
@@ -70,10 +73,11 @@ const Courses = () => {
                 <td className="text-[#5C5F62] text-center font-medium capitalize px-2 text-sm sm:text-base  py-4">
                   Che101
                 </td>
-                <td className="text-[#5C5F62] flex justify-center items-center font-medium capitalize text-2xl  py-4">
+                <td className="text-[#5C5F62] text-center font-medium capitalize px-2 text-sm sm:text-base  py-4">
+                  Chemistry (100L)
+                </td>
+                <td className="text-[#5C5F62] flex items-center justify-center font-medium capitalize text-2xl  py-4">
                   {/* replace icons with images */}
-                  <FaCircleUser />
-                  <FaCircleUser className="-ml-3" />
                   <FaCircleUser className="-ml-3" />
                 </td>
                 <td className="text-black font-medium px-4 text-center text-base">
@@ -96,10 +100,11 @@ const Courses = () => {
                 <td className="text-[#5C5F62] text-center font-medium capitalize px-2 text-sm sm:text-base  py-4">
                   Che101
                 </td>
-                <td className="text-[#5C5F62] flex justify-center items-center font-medium capitalize text-2xl  py-4">
+                <td className="text-[#5C5F62] text-center font-medium capitalize px-2 text-sm sm:text-base  py-4">
+                  Chemistry (100L)
+                </td>
+                <td className="text-[#5C5F62] flex items-center justify-center font-medium capitalize text-2xl  py-4">
                   {/* replace icons with images */}
-                  <FaCircleUser />
-                  <FaCircleUser className="-ml-3" />
                   <FaCircleUser className="-ml-3" />
                 </td>
                 <td className="text-black font-medium px-4 text-center text-base">
@@ -122,10 +127,11 @@ const Courses = () => {
                 <td className="text-[#5C5F62] text-center font-medium capitalize px-2 text-sm sm:text-base  py-4">
                   Che101
                 </td>
-                <td className="text-[#5C5F62] flex justify-center items-center font-medium capitalize text-2xl  py-4">
+                <td className="text-[#5C5F62] text-center font-medium capitalize px-2 text-sm sm:text-base  py-4">
+                  Chemistry (100L)
+                </td>
+                <td className="text-[#5C5F62] flex items-center justify-center font-medium capitalize text-2xl  py-4">
                   {/* replace icons with images */}
-                  <FaCircleUser />
-                  <FaCircleUser className="-ml-3" />
                   <FaCircleUser className="-ml-3" />
                 </td>
                 <td className="text-black font-medium px-4 text-center text-base">
@@ -135,6 +141,7 @@ const Courses = () => {
                   />
                 </td>
               </tr>
+            
             </tbody>
           </table>
         </div>

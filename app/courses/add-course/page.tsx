@@ -76,18 +76,16 @@ const AddCourse = () => {
             />
           </div>
           <div>
+            <input
+              type="text"
+              className="w-full md:w-1/2 border border-[#5C5F62] font-medium text-[#5C5F62] rounded-[8px] text-base sm:text-xl p-3 sm:p-5"
+              placeholder="Title"
+            />
+          </div>
+          <div>
             <p className="text-xl font-medium">Images</p>
             <div className="flex flex-wrap items-center gap-4 py-5">
               <div className="w-32 flex justify-center items-center h-28 border border-[#5C5F62] rounded-[8px]">
-                <MdOutlineAddCircleOutline className="text-2xl" />
-              </div>
-              <div className="w-32 flex justify-center items-center h-28 border border-[#5C5F62] rounded-[8px]">
-                <MdOutlineAddCircleOutline className="text-2xl" />
-              </div>
-              <div className="w-32 flex justify-center items-center h-28 border border-[#5C5F62] rounded-[8px]">
-                <MdOutlineAddCircleOutline className="text-2xl" />
-              </div>
-              <div className="w-32 flex justify-center items-center h-28 border-none">
                 <MdOutlineAddCircleOutline className="text-2xl" />
               </div>
             </div>
