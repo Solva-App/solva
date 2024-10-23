@@ -44,7 +44,7 @@ const Courses = () => {
                 <td className="text-[#5C5F62] font-medium text-center text-sm sm:text-base py-4">
                   Department
                 </td>
-                <td className="text-[#5C5F62] font-medium text-center text-sm sm:text-base py-4 px-2">
+                <td className="text-[#5C5F62] font-medium text-center text-sm sm:text-base py-4 px-4">
                   Course code
                 </td>
                 <td className="text-[#5C5F62] font-medium text-center text-sm sm:text-base py-4 px-2">
