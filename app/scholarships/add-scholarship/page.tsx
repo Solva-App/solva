@@ -6,17 +6,19 @@ import { useRouter } from "next/navigation";
 import Button from "@/components/button";
 
 import { FaChevronLeft } from "react-icons/fa6";
+import { useScholar } from "../useSchola";
 
 const AddScholarship = () => {
   const router = useRouter();
   const [name, setName] = useState("");
   const [link, setlink] = useState("");
-  const [date, setDate] = useState("");
+  const [desc, setDesc] = useState("");
 
-  const addScholarship = () => {
-    console.log(name, date, link, date);
-    // update duntion here
-    router.replace("/scholarships")
+  const { createScholar, loading } = useScholar();
+
+  const addScholar = () => {
+    if (!name || !desc || !link) return;
+    createScholar({ name, desc, link });
   };
 
   return (
@@ -40,8 +42,8 @@ const AddScholarship = () => {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="md:w-1/2 w-full border border-[#5C5F62] font-medium text-[#5C5F62] rounded-[8px] text-base sm:text-xl p-5"
-              placeholder="$5,000 Grants from Google"
+              className="md:w-1/2 w-full border border-[#5C5F62] font-medium text-black rounded-[8px] text-base sm:text-xl p-5"
+              placeholder="Input Scholarship"
             />
           </div>
           <div className="gap-y-3 flex flex-col">
@@ -54,31 +56,27 @@ const AddScholarship = () => {
             <input
               value={link}
               onChange={(e) => setlink(e.target.value)}
-              className="md:w-1/2 w-full border border-[#5C5F62] font-medium text-[#5C5F62] rounded-[8px] text-base sm:text-xl p-5"
-              placeholder="https://granta1link.com"
+              className="md:w-1/2 w-full border border-[#5C5F62] font-medium text-black rounded-[8px] text-base sm:text-xl p-5"
+              placeholder="https://scholarship1link.com"
             />
           </div>
-          {/* <div className="gap-y-3 flex flex-col">
-            <label
-              className="text-base sm:text-xl font-medium"
-              htmlFor="Job Role"
-            >
-              Date
+          <div className="gap-y-3 flex flex-col">
+            <label className="text-base sm:text-xl font-medium">
+              Description
             </label>
-            <input
-              type="text"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="md:w-1/2 w-full border border-[#5C5F62] font-medium text-[#5C5F62] rounded-[8px] text-base sm:text-xl p-5"
-              placeholder="May 12, 2024"
+            <textarea
+              value={desc}
+              onChange={(e) => setDesc(e.target.value)}
+              className="w-full md:w-1/2 border h-[153px] border-[#5C5F62] font-medium text-black rounded-[8px] text-base sm:text-xl p-5"
+              placeholder="Job description here..."
             />
-          </div> */}
+          </div>
           <div className="flex justify-end">
             <div className=" w-full md:w-1/3">
               <Button
-                BtnText="Add"
-                BtnFunction={addScholarship}
-                // disabled={!name || !link || !date}
+                BtnText={loading ? "Adding..." : "Add Scholarship"}
+                BtnFunction={addScholar}
+                disabled={!name || !link || !desc || loading}
               />
             </div>
           </div>

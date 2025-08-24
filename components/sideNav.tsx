@@ -5,7 +5,8 @@ import Link from "next/link";
 import { CgLogOut } from "react-icons/cg";
 import { RiAdvertisementLine } from "react-icons/ri";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 
 type NavItem = {
   title: string;
@@ -50,9 +51,9 @@ const SideNav: React.FC = () => {
           <path
             d="M11.4743 8.31543H28.8076M11.4743 16.3154H28.8076M11.4743 24.3154H28.8076M4.80762 8.31543H4.82095M4.80762 16.3154H4.82095M4.80762 24.3154H4.82095"
             stroke={isActive ? "black" : "white"}
-            stroke-width="3"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           />
         </svg>
       ),
@@ -90,16 +91,16 @@ const SideNav: React.FC = () => {
           <path
             d="M15.2186 31.7154H12.9755C7.23954 31.7154 4.37237 31.7154 2.58999 29.8994C0.807617 28.0834 0.807617 25.1602 0.807617 19.3154C0.807617 13.4706 0.807617 10.5474 2.58999 8.73142C4.37237 6.91542 7.23954 6.91542 12.9755 6.91542H19.0602C24.7961 6.91542 27.6649 6.91542 29.4473 8.73142C30.8184 10.1282 31.1336 12.181 31.2072 15.7154"
             stroke={isActive ? "black" : "white"}
-            stroke-width="1.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           />
           <path
             d="M23.2073 6.91542L23.0473 6.41942C22.2553 3.95542 21.8601 2.72343 20.9177 2.01943C19.9738 1.31543 18.7226 1.31543 16.2154 1.31543H15.7946C13.2906 1.31543 12.0379 1.31543 11.0955 2.01943C10.1515 2.72343 9.75628 3.95542 8.96429 6.41942L8.8075 6.91542M24.9849 19.3234C25.2809 19.0514 25.4281 18.9154 25.6073 18.9154C25.7865 18.9154 25.9337 19.0514 26.2297 19.3234L27.3705 20.3746C27.5081 20.501 27.5769 20.565 27.6617 20.5954C27.7481 20.6274 27.8409 20.6242 28.0297 20.6162L29.5688 20.5554C29.9656 20.5394 30.164 20.533 30.3 20.6466C30.436 20.7602 30.4632 20.957 30.516 21.3506L30.7272 22.9282C30.7528 23.1106 30.764 23.2002 30.8088 23.2802C30.8536 23.357 30.9256 23.413 31.0696 23.5266L32.3112 24.5026C32.6184 24.7458 32.772 24.8658 32.8024 25.0386C32.8328 25.2114 32.7288 25.3778 32.524 25.7106L31.6824 27.0658C31.5864 27.221 31.5384 27.2994 31.5224 27.3858C31.5064 27.4722 31.5256 27.5634 31.564 27.7426L31.8984 29.3074C31.9784 29.6914 32.02 29.8834 31.932 30.037C31.844 30.1906 31.6568 30.2514 31.284 30.373L29.8024 30.8546C29.6264 30.9122 29.5368 30.941 29.468 30.9986C29.3992 31.0578 29.356 31.141 29.2712 31.3058L28.548 32.6994C28.364 33.0562 28.2712 33.2338 28.1032 33.2946C27.9353 33.3554 27.7513 33.2786 27.3801 33.125L25.9593 32.5362C25.7849 32.4642 25.6985 32.4274 25.6073 32.4274C25.5161 32.4274 25.4297 32.4642 25.2553 32.5362L23.8345 33.125C23.4633 33.2786 23.2793 33.3554 23.1113 33.2946C22.9433 33.2338 22.8505 33.0546 22.6665 32.6994L21.9433 31.3058C21.8569 31.141 21.8153 31.0578 21.7465 31.0002C21.6777 30.9426 21.5881 30.9122 21.4121 30.8562L19.9306 30.373C19.5578 30.2514 19.3706 30.1906 19.2826 30.037C19.1946 29.8834 19.2346 29.693 19.3162 29.3074L19.6522 27.7426C19.689 27.5634 19.7082 27.4738 19.6922 27.3874C19.6593 27.2716 19.6051 27.1631 19.5322 27.0674L18.6922 25.7106C18.4842 25.3778 18.3818 25.2114 18.4122 25.0386C18.4426 24.8658 18.5962 24.7458 18.9034 24.5042L20.145 23.5282C20.2889 23.413 20.3609 23.357 20.4057 23.2786C20.4505 23.2002 20.4617 23.1106 20.4857 22.9266L20.6985 21.3506C20.7513 20.9586 20.7785 20.7602 20.9145 20.6466C21.0505 20.533 21.2489 20.5394 21.6457 20.5554L23.1865 20.6162C23.3737 20.6242 23.4665 20.6274 23.5529 20.5954C23.6377 20.5634 23.7065 20.501 23.8441 20.3746L24.9849 19.3234Z"
             stroke={isActive ? "black" : "white"}
-            stroke-width="1.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           />
         </svg>
       ),
@@ -118,16 +119,16 @@ const SideNav: React.FC = () => {
           <path
             d="M15.0417 8.50008H17.9583C18.7319 8.50008 19.4737 8.19279 20.0207 7.64581C20.5677 7.09883 20.875 6.35696 20.875 5.58341C20.875 4.80987 20.5677 4.068 20.0207 3.52102C19.4737 2.97404 18.7319 2.66675 17.9583 2.66675H13.5833C12.7083 2.66675 11.9792 2.95842 11.5417 3.54175L3.375 11.4167"
             stroke={isActive ? "black" : "white"}
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           />
           <path
             d="M9.20829 17.25L11.5416 15.2084C11.9791 14.625 12.7083 14.3334 13.5833 14.3334H19.4166C21.0208 14.3334 22.4791 13.75 23.5 12.5834L30.2083 6.1667C30.771 5.63488 31.0995 4.9013 31.1214 4.12732C31.1433 3.35334 30.8568 2.60237 30.325 2.03961C29.7931 1.47686 29.0596 1.14841 28.2856 1.12653C27.5116 1.10465 26.7606 1.39113 26.1979 1.92295L20.0729 7.61045M1.91663 9.95836L10.6666 18.7084"
             stroke={isActive ? "black" : "white"}
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           />
         </svg>
       ),
@@ -143,7 +144,7 @@ const SideNav: React.FC = () => {
           viewBox="0 0 36 35"
           stroke={isActive ? "black" : "none"}
         >
-          <g clip-path="url(#clip0_363_1633)">
+          <g clipPath="url(#clip0_363_1633)">
             <path
               d="M15.5084 6.38462C16.2741 6.02142 17.1109 5.83301 17.9584 5.83301C18.8059 5.83301 19.6427 6.02142 20.4084 6.38462L34.6242 13.1192C34.8719 13.2364 35.0815 13.421 35.2291 13.6518C35.3766 13.8827 35.4562 14.1504 35.4586 14.4244C35.4611 14.6984 35.3863 14.9675 35.2428 15.2009C35.0994 15.4343 34.8931 15.6226 34.6476 15.7442L20.5017 22.7617C19.7114 23.1543 18.8409 23.3586 17.9584 23.3586C17.0759 23.3586 16.2054 23.1543 15.4151 22.7617L3.37507 16.7884V23.3334C3.37507 23.7201 3.22142 24.0911 2.94793 24.3646C2.67444 24.6381 2.30351 24.7917 1.91674 24.7917C1.52996 24.7917 1.15903 24.6381 0.885538 24.3646C0.612048 24.0911 0.458402 23.7201 0.458402 23.3334V14.5105C0.444067 14.222 0.515691 13.9358 0.664196 13.6881C0.812701 13.4405 1.0314 13.2425 1.29257 13.1192L15.5084 6.38462ZM6.29174 21.493V26.25C6.29178 26.4419 6.32967 26.6318 6.40324 26.809C6.47681 26.9862 6.58462 27.1471 6.72049 27.2825L6.72632 27.2913L6.7934 27.3525L6.9684 27.5159C7.11424 27.652 7.32521 27.8338 7.60132 28.0613C8.14673 28.5075 8.93424 29.0967 9.91715 29.6888C11.8713 30.8584 14.683 32.0834 17.9584 32.0834C21.2338 32.0834 24.0484 30.8584 25.9996 29.6888C27.0494 29.0586 28.0377 28.3311 28.9513 27.5159L29.1263 27.3525L29.173 27.3059L29.1905 27.2884L29.1934 27.2855L29.1992 27.2825C29.3346 27.1469 29.4418 26.9858 29.5149 26.8087C29.588 26.6315 29.6254 26.4417 29.6251 26.25V21.49L21.7967 25.375C20.6038 25.9671 19.2901 26.2752 17.9584 26.2752C16.6267 26.2752 15.313 25.9671 14.1201 25.375L6.29174 21.493Z"
               fill={isActive ? "black" : "white"}
@@ -210,6 +211,13 @@ const SideNav: React.FC = () => {
     },
   ];
 
+  const router = useRouter();
+  const logOut = () => {
+    Cookies.remove("accessToken");
+    Cookies.remove("refreshToken");
+    router.replace("/");
+  };
+
   return (
     <div className="w-1/3 inline-block overflow-hidden bg-primary h-screen py-7">
       <h1 className="text-white text-base md:text-3xl font-bold text-center px-2 sm:px-0 pb-3">
@@ -228,8 +236,8 @@ const SideNav: React.FC = () => {
                     isActive ? "text-black bg-white" : "text-white"
                   } flex items-center rounded-[4px] sm:rounded-[8px] my-3 md:my-1 md:gap-3 gap-0 md:py-3 py-1 cursor-pointer justify-start mx-3 px-2`}
                 >
-                  {nav.svg(isActive)}
-                  <span className="lg:text-2xl text-base hidden md:block font-medium">
+                  <span className=" flex-none">{nav.svg(isActive)}</span>
+                  <span className="lg:text-xl text-base hidden md:block font-medium">
                     {nav.title}
                   </span>
                 </div>
@@ -238,20 +246,19 @@ const SideNav: React.FC = () => {
           })}
         </div>
         <div className="">
-          <Link href={"/"} className="">
-            <div
-              className={`link ${
-                pathname.includes("/log-out")
-                  ? "text-black bg-white"
-                  : "text-white"
-              } flex items-center rounded-[4px] sm:rounded-[8px] my-5 md:my-2 md:gap-3 gap-0 md:py-3 py-1 cursor-pointer justify-start mx-3 px-2 `}
-            >
-              <CgLogOut className="text-3xl" />
-              <span className="lg:text-2xl text-base hidden md:block font-medium">
-                Logout
-              </span>
-            </div>
-          </Link>
+          <div
+            onClick={logOut}
+            className={`link ${
+              pathname.includes("/log-out")
+                ? "text-black bg-white"
+                : "text-white"
+            } flex items-center rounded-[4px] sm:rounded-[8px] my-5 md:my-2 md:gap-3 gap-0 md:py-3 py-1 cursor-pointer justify-start mx-3 px-2 `}
+          >
+            <CgLogOut className="text-3xl" />
+            <span className="lg:text-2xl text-base hidden md:block font-medium">
+              Logout
+            </span>
+          </div>
         </div>
       </div>
     </div>

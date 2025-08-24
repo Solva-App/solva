@@ -1,125 +1,141 @@
 "use client";
-import React, { useState } from "react";
-
+import React, { useEffect, useState } from "react";
 import SideNav from "@/components/sideNav";
-
-import { IoIosAddCircleOutline } from "react-icons/io";
-import { RiDeleteBin2Line } from "react-icons/ri";
 import { useRouter } from "next/navigation";
+import { useProject } from "./useProjects";
+import { AxiosError } from "axios";
+import { apis } from "@/lib/endpoints";
+import Cookies from "js-cookie";
+import { toast } from "react-toastify";
+import { createAxiosInstance } from "@/lib/axios";
 
-const Projects = () => {
-  const [openDeleteModal, setDeleteModal] = useState(false);
+const Documents = () => {
   const router = useRouter();
-  // const deleteProject = () => {};
+  const { fetchProject, fetched, loadFetch } = useProject();
+  const axios = createAxiosInstance();
+
+  const [approvingId, setApprovingId] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetchProject();
+  }, []);
+
+  const approveDocument = async (id: number) => {
+    try {
+      const token = Cookies.get("accessToken");
+      setApprovingId(id);
+      const response = await axios.patch(`${apis.project}/approve/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 200) {
+        fetchProject();
+      }
+    } catch (error: any) {
+      const err = error as AxiosError<{ message?: string }>;
+      toast.error(err.response?.data?.message || "Something went wrong");
+    } finally {
+      setApprovingId(null);
+    }
+  };
+
   return (
     <div className="flex relative">
       <SideNav />
       <div className="w-full p-5 sm:p-10 overflow-y-scroll h-screen">
         <div className="flex items-center justify-between">
-          <h1 className="sm:text-3xl text-2xl font-bold">Manage Projects</h1>
-          <button
-            onClick={() => router.push("/projects/add-project")}
-            className="sm:text-xl text-base font-medium flex items-center gap-1 sm:gap-2 rounded-[8px] text-white bg-primary p-2 cursor-pointer"
-          >
-            <IoIosAddCircleOutline className="h-8 w-8 font-medium " />
-            Add new
-          </button>
+          <h1 className="sm:text-3xl text-2xl font-bold">Manage Documents</h1>
         </div>
         <hr className="my-4" />
 
-        <div className=" overflow-x-scroll">
-          <table className=" table-auto w-full">
-            <thead className="">
-              <tr className=" bg-[#E1E2E180] ">
-                <td className="text-[#5C5F62] font-medium text-base sm:text-base rounded-tl-[8px] py-4 px-3">
-                  S/N
-                </td>
-                <td className="text-[#5C5F62] font-medium text-center text-sm sm:text-base py-4">
-                  Files
-                </td>
-                <td className="text-[#5C5F62] font-medium text-right text-base sm:text-base rounded-tr-[8px] py-4 pr-3">
+        <div className="overflow-x-scroll">
+          <table className="table-auto w-full">
+            <thead>
+              <tr className="bg-[#F5F5F5] text-left">
+                <th className="text-[#5C5F62] font-medium text-sm sm:text-base py-4 px-4 rounded-tl-lg">
+                  Name
+                </th>
+                <th className="text-[#5C5F62] text-center font-medium text-sm sm:text-base py-4 px-4">
+                  Preview
+                </th>
+                <th className="text-[#5C5F62] text-center font-medium text-sm sm:text-base py-4 px-4">
+                  Date
+                </th>
+                <th className="text-[#5C5F62] text-center font-medium text-sm sm:text-base py-4 px-4 rounded-tr-lg">
                   Action
-                </td>
+                </th>
               </tr>
             </thead>
             <tbody>
-              {/* map table content instead */}
-              <tr className=" border border-[#D9D9D9]">
-                <td className="text-black w-1/2 capitalize font-medium text-sm px-2 sm:text-base py-4">
-                  1
-                </td>
-                <td className="text-[#1E1E1E] w-1/4 font-medium capitalize text-sm px-2 sm:text-base  py-4">
-                  Example of job description for a role by admin....
-                </td>
-                <td className="text-black font-medium flex justify-end px-4 py-5 items-center capitalize text-sm sm:text-base">
-                  <RiDeleteBin2Line
-                    onClick={() => setDeleteModal(true)}
-                    className="text-[#FF1212] text-xl cursor-pointer"
-                  />
-                </td>
-              </tr>
-              <tr className=" border border-[#D9D9D9]">
-                <td className="text-black w-1/2 capitalize font-medium text-sm px-2 sm:text-base py-4">
-                  2
-                </td>
-                <td className="text-[#1E1E1E] w-1/4 font-medium capitalize text-sm px-2 sm:text-base  py-4">
-                  Example of job description for a role by admin....
-                </td>
-                <td className="text-black font-medium flex justify-end px-4 py-5 items-center capitalize text-sm sm:text-base">
-                  <RiDeleteBin2Line
-                    onClick={() => setDeleteModal(true)}
-                    className="text-[#FF1212] text-xl cursor-pointer"
-                  />
-                </td>
-              </tr>
-              <tr className=" border border-[#D9D9D9]">
-                <td className="text-black w-1/2 capitalize font-medium text-sm px-2 sm:text-base py-4">
-                  3
-                </td>
-                <td className="text-[#1E1E1E] w-1/4 font-medium capitalize text-sm px-2 sm:text-base  py-4">
-                  Example of job description for a role by admin....
-                </td>
-                <td className="text-black font-medium flex justify-end px-4 py-5 items-center capitalize text-sm sm:text-base">
-                  <RiDeleteBin2Line
-                    onClick={() => setDeleteModal(true)}
-                    className="text-[#FF1212] text-xl cursor-pointer"
-                  />
-                </td>
-              </tr>
+              {loadFetch ? (
+                <tr>
+                  <td colSpan={5} className="text-center py-6 text-gray-500">
+                    Loading documents...
+                  </td>
+                </tr>
+              ) : fetched.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="text-center py-6 text-gray-500">
+                    No documents found
+                  </td>
+                </tr>
+              ) : (
+                fetched.map((doc: any, index: number) => (
+                  <tr key={index} className="border-b border-[#E0E0E0]">
+                    <td className="text-black font-medium text-sm sm:text-base py-4 px-4">
+                      {doc.name}
+                    </td>
+
+                    <td className="text-center py-4 px-4">
+                      {doc.mimetype.startsWith("image/") ? (
+                        <img
+                          src={doc.url}
+                          alt={doc.name}
+                          className="w-16 h-16 object-cover rounded-md mx-auto"
+                        />
+                      ) : (
+                        <a
+                          href={doc.url}
+                          target="_blank"
+                          className="text-blue-500 underline"
+                        >
+                          View File
+                        </a>
+                      )}
+                    </td>
+
+                    <td className="text-[#000000] text-center text-sm sm:text-base py-4 px-4">
+                      {new Date(doc.createdAt).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </td>
+
+                    <td className="text-center py-4 px-4">
+                      <button
+                        onClick={() => approveDocument(doc.id)}
+                        disabled={!doc.requiresApproval}
+                        className={`px-4 py-2 rounded-lg font-medium ${
+                          doc.status === "awaiting-approval"
+                            ? "bg-green-600 text-white hover:bg-green-700"
+                            : "bg-gray-400 text-white"
+                        }`}
+                      >
+                        {approvingId === doc.id ? "Approving..." : "Approve"}
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
-        </div>
-        <div>
-          {openDeleteModal && (
-            <div className="absolute w-full h-screen top-0 left-0 flex justify-center items-center">
-              <div className="w-96 h-52 sm:h-60 mx-2 bg-[#F7F7F7] border p-5 border-[#9A8787] rounded-[16px]">
-                <h1 className="text-[#1E1E1E] text-center font-bold text-2xl sm:text-3xl">
-                  Confirm Delete
-                </h1>
-                <p className="text-sm sm:text-base text-[#5C5F62] py-4 sm:py-6 text-center font-medium">
-                  Once deleted you cannot recover it, comfirm to delete
-                </p>
-                <div className="flex items-center gap-5">
-                  <button
-                    onClick={() => setDeleteModal(false)}
-                    className="bg-[#E1E2E180] rounded-[8px] w-full py-3 text-base sm:text-xl font-medium"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    // onClick={}
-                    className="bg-[#DD0F0F] rounded-[8px] w-full py-3 text-base sm:text-xl text-white font-medium"
-                  >
-                    Confirm
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>
   );
 };
 
-export default Projects;
+export default Documents;

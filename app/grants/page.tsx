@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import SideNav from "@/components/sideNav";
 
@@ -7,18 +7,30 @@ import { IoIosAddCircleOutline } from "react-icons/io";
 import { CiEdit } from "react-icons/ci";
 import { RiDeleteBin2Line } from "react-icons/ri";
 import { useRouter } from "next/navigation";
+import { useGrants } from "./useGrants";
 
 const Grants = () => {
-  const [openDeleteModal, setDeleteModal] = useState(false);
-  const router = useRouter();
-  const editJobFunction = () => {
-    router.push("/grants/edit-grant");
+  const {
+    loadFetch,
+    fetched,
+    fetchGrants,
+    delGrant,
+    deleteGrant,
+    setDeleteModal,
+    openDeleteModal,
+    router,
+  } = useGrants();
+
+  const [selectedGrant, setSelectedGrant] = useState<string | null>(null);
+  const deleteModal = (id: string) => {
+    setDeleteModal(true);
+    setSelectedGrant(id);
   };
-  const scholarshipData = [
-    "$5,000 Grants from Google",
-    "$50,000 Grants from Apple",
-    "$15,000 Grants from Sony",
-  ];
+
+  useEffect(() => {
+    fetchGrants();
+  }, []);
+
   return (
     <div className="flex relative">
       <SideNav />
@@ -55,38 +67,58 @@ const Grants = () => {
             </thead>
             <tbody>
               {/* Replace with dynamic data */}
-              {scholarshipData.map((data, index) => (
-                <tr key={index} className="border-b border-[#E0E0E0]">
-                  <td className="text-black font-medium text-sm sm:text-base py-4 px-4">
-                    {data}
-                  </td>
-                  <td className="text-black text-sm text-center sm:text-base py-4 px-4">
-                    <a href="  https://granta1link.com" target="_blank">
-                      https://granta1link.com
-                    </a>
-                  </td>
-                  <td className="text-[#000000] text-center text-sm sm:text-base py-4 px-4">
-                    May 12, 2024
-                  </td>
-                  <td className="text-center py-4 px-4">
-                    <div className="flex items-center justify-center gap-6">
-                      <CiEdit
-                        onClick={editJobFunction}
-                        className="text-[#000000] text-2xl cursor-pointer"
-                      />
-                      <RiDeleteBin2Line
-                        onClick={() => setDeleteModal(true)}
-                        className="text-[#FF1212] text-2xl cursor-pointer"
-                      />
-                    </div>
+              {loadFetch ? (
+                <tr>
+                  <td colSpan={5} className="text-center py-6 text-gray-500">
+                    Loading grants...
                   </td>
                 </tr>
-              ))}
+              ) : fetched.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="text-center py-6 text-gray-500">
+                    No grants found
+                  </td>
+                </tr>
+              ) : (
+                fetched.map((data: any, index) => (
+                  <tr key={index} className="border-b border-[#E0E0E0]">
+                    <td className="text-black font-medium text-sm sm:text-base py-4 px-4">
+                      {data.name}
+                    </td>
+                    <td className="text-black text-sm text-center sm:text-base py-4 px-4">
+                      <a href={data.link} target="_blank">
+                        {data.link}
+                      </a>
+                    </td>
+                    <td className="text-[#000000] text-center text-sm sm:text-base py-4 px-4">
+                      {new Date(data.createdAt).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </td>
+                    <td className="text-center py-4 px-4">
+                      <div className="flex items-center justify-center gap-6">
+                        <CiEdit
+                          onClick={() => {
+                            router.push(`/grants/${data.id}`);
+                          }}
+                          className="text-[#000000] text-2xl cursor-pointer"
+                        />
+                        <RiDeleteBin2Line
+                          onClick={() => deleteModal(data.id)}
+                          className="text-[#FF1212] text-2xl cursor-pointer"
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
         <div>
-          {openDeleteModal && (
+          {openDeleteModal && selectedGrant && (
             <div className="absolute w-full h-screen top-0 left-0 flex justify-center items-center">
               <div className="w-96 h-52 sm:h-60 mx-2 bg-[#F7F7F7] border p-5 border-[#9A8787] rounded-[16px]">
                 <h1 className="text-[#1E1E1E] text-center font-bold text-2xl sm:text-3xl">
@@ -103,10 +135,10 @@ const Grants = () => {
                     Cancel
                   </button>
                   <button
-                    // onClick={}
+                    onClick={() => deleteGrant(selectedGrant)}
                     className="bg-[#DD0F0F] rounded-[8px] w-full py-3 text-base sm:text-xl text-white font-medium"
                   >
-                    Confirm
+                    {delGrant ? "Deleting" : "Confirm"}
                   </button>
                 </div>
               </div>
