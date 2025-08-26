@@ -74,7 +74,7 @@ const Advert = () => {
 
     const formData = new FormData();
     images.forEach((file) => {
-      if (file) formData.append("slides[]", file);
+      if (file) formData.append("slides", file);
     });
 
     try {
