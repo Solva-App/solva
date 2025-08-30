@@ -23,11 +23,7 @@ export const useCashOut = () => {
   const fetchCashOut = async () => {
     try {
       const token = Cookies.get("accessToken");
-      const response = await axios.get(`${apis.cash}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axios.get(`${apis.cash}`);
 
       if (response.status === 200) {
         setCashOut(response.data.data);
@@ -46,7 +42,7 @@ export const useCashOut = () => {
       const response = await axios.patch(
         `${apis.cash}/approve/${id}`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+      
       );
 
       if (response.status === 200) {
@@ -65,7 +61,7 @@ export const useCashOut = () => {
       const response = await axios.patch(
         `${apis.cash}/decline/${id}`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+      
       );
 
       if (response.status === 200) {

@@ -32,11 +32,7 @@ export const useJobs = () => {
           description: desc,
           status: [status],
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        
       );
 
       if (response.status === 200) {
@@ -88,11 +84,7 @@ export const useJobs = () => {
           description: desc,
           status: [status],
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        
       );
 
       if (response.status === 200) {

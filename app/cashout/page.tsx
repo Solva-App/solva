@@ -135,15 +135,15 @@ const CashOut = () => {
                     </td>
                     <td className="px-2 py-4 text-center">
                       {data.status === "awaiting-response" ? (
-                        <IoMdCheckmarkCircleOutline
-                          className="text-[#42832C] text-2xl cursor-pointer"
-                          onClick={() => openModal("approve", data.id)}
-                        />
+                        <button className="bg-[#42832C] text-white p-2 rounded-sm text-sm cursor-pointer"
+                          onClick={() => openModal("approve", data.id)}>
+                          Approve
+                        </button>
                       ) : (
-                        <IoIosCloseCircleOutline
-                          className="text-[#FF1212] text-2xl cursor-pointer"
-                          onClick={() => openModal("decline", data.id)}
-                        />
+                        <button className="bg-[#FF1212] text-white p-2 rounded-sm text-sm cursor-pointer"
+                          onClick={() => openModal("decline", data.id)}>
+                          Decline
+                        </button>
                       )}
                     </td>
                   </tr>
@@ -162,9 +162,8 @@ const CashOut = () => {
               ? "Approve Cashout"
               : "Decline Cashout"
           }
-          message={`Are you sure you want to ${
-            modalType === "approve" ? "approve" : "decline"
-          } this cashout request?`}
+          message={`Are you sure you want to ${modalType === "approve" ? "approve" : "decline"
+            } this cashout request?`}
         />
       </div>
     </div>

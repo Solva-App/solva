@@ -32,11 +32,6 @@ export const useGrants = () => {
           description: desc,
           link,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
       );
 
       if (response.status === 200) {
@@ -70,11 +65,6 @@ export const useGrants = () => {
           description: desc,
           link,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
       );
 
       if (response.status === 200) {

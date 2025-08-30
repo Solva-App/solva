@@ -7,6 +7,7 @@ import { RiAdvertisementLine } from "react-icons/ri";
 
 import { usePathname, useRouter } from "next/navigation";
 import Cookies from "js-cookie";
+import { IoIosNotifications } from "react-icons/io";
 
 type NavItem = {
   title: string;
@@ -67,7 +68,7 @@ const SideNav: React.FC = () => {
           width="33"
           height="33"
           viewBox="0 0 33 33"
-          // stroke={isActive ? "black" : "none"}
+        // stroke={isActive ? "black" : "none"}
         >
           <path
             d="M30.8863 0.31543H1.79537C1.4096 0.31543 1.03963 0.484001 0.766847 0.784059C0.494067 1.08412 0.34082 1.49108 0.34082 1.91543V14.7154C0.34082 15.1398 0.494067 15.5467 0.766847 15.8468C1.03963 16.1469 1.4096 16.3154 1.79537 16.3154H6.159V30.7154C6.159 31.1398 6.31225 31.5467 6.58503 31.8468C6.85781 32.1469 7.22778 32.3154 7.61355 32.3154H25.0681C25.4539 32.3154 25.8238 32.1469 26.0966 31.8468C26.3694 31.5467 26.5226 31.1398 26.5226 30.7154V16.3154H30.8863C31.272 16.3154 31.642 16.1469 31.9148 15.8468C32.1876 15.5467 32.3408 15.1398 32.3408 14.7154V1.91543C32.3408 1.49108 32.1876 1.08412 31.9148 0.784059C31.642 0.484001 31.272 0.31543 30.8863 0.31543ZM9.06809 29.1154V25.9154C9.83963 25.9154 10.5796 26.2526 11.1251 26.8527C11.6707 27.4528 11.9772 28.2667 11.9772 29.1154H9.06809ZM23.6135 29.1154H20.7045C20.7045 28.2667 21.011 27.4528 21.5565 26.8527C22.1021 26.2526 22.842 25.9154 23.6135 25.9154V29.1154ZM23.6135 22.7154C22.0705 22.7154 20.5906 23.3897 19.4995 24.5899C18.4084 25.7902 17.7954 27.418 17.7954 29.1154H14.8863C14.8863 27.418 14.2733 25.7902 13.1822 24.5899C12.091 23.3897 10.6112 22.7154 9.06809 22.7154V9.91543H23.6135V22.7154ZM29.4317 13.1154H26.5226V8.31543C26.5226 7.89108 26.3694 7.48412 26.0966 7.18406C25.8238 6.884 25.4539 6.71543 25.0681 6.71543H7.61355C7.22778 6.71543 6.85781 6.884 6.58503 7.18406C6.31225 7.48412 6.159 7.89108 6.159 8.31543V13.1154H3.24991V3.51543H29.4317V13.1154ZM16.3408 21.1154C17.2039 21.1154 18.0475 20.8339 18.7651 20.3065C19.4827 19.7791 20.042 19.0294 20.3723 18.1523C20.7026 17.2752 20.789 16.3101 20.6206 15.379C20.4522 14.4479 20.0366 13.5926 19.4264 12.9213C18.8161 12.25 18.0386 11.7929 17.1921 11.6077C16.3457 11.4225 15.4683 11.5175 14.6709 11.8808C13.8736 12.2441 13.1921 12.8593 12.7126 13.6487C12.2331 14.438 11.9772 15.3661 11.9772 16.3154C11.9772 17.5885 12.4369 18.8094 13.2553 19.7095C14.0736 20.6097 15.1835 21.1154 16.3408 21.1154ZM16.3408 14.7154C16.6285 14.7154 16.9097 14.8093 17.1489 14.9851C17.3881 15.1609 17.5746 15.4108 17.6846 15.7031C17.7947 15.9955 17.8235 16.3172 17.7674 16.6276C17.7113 16.9379 17.5728 17.223 17.3693 17.4468C17.1659 17.6706 16.9067 17.823 16.6246 17.8847C16.3424 17.9464 16.05 17.9147 15.7842 17.7936C15.5184 17.6725 15.2912 17.4675 15.1314 17.2043C14.9716 16.9412 14.8863 16.6319 14.8863 16.3154C14.8863 15.8911 15.0395 15.4841 15.3123 15.1841C15.5851 14.884 15.9551 14.7154 16.3408 14.7154Z"
@@ -209,6 +210,15 @@ const SideNav: React.FC = () => {
         />
       ),
     },
+    {
+      title: "Notification",
+      link: "notification",
+      svg: (isActive) => (
+        <IoIosNotifications
+          className={`${isActive ? "text-black" : "text-white"} text-2xl`}
+        />
+      ),
+    },
   ];
 
   const router = useRouter();
@@ -232,9 +242,8 @@ const SideNav: React.FC = () => {
               <Link href={`/${nav.link}`} key={index} className="">
                 <div
                   key={index}
-                  className={`link ${
-                    isActive ? "text-black bg-white" : "text-white"
-                  } flex items-center rounded-[4px] sm:rounded-[8px] my-3 md:my-1 md:gap-3 gap-0 md:py-3 py-1 cursor-pointer justify-start mx-3 px-2`}
+                  className={`link ${isActive ? "text-black bg-white" : "text-white"
+                    } flex items-center rounded-[4px] sm:rounded-[8px] my-3 md:my-1 md:gap-3 gap-0 md:py-3 py-1 cursor-pointer justify-start mx-3 px-2`}
                 >
                   <span className=" flex-none">{nav.svg(isActive)}</span>
                   <span className="lg:text-xl text-base hidden md:block font-medium">
@@ -248,11 +257,10 @@ const SideNav: React.FC = () => {
         <div className="">
           <div
             onClick={logOut}
-            className={`link ${
-              pathname.includes("/log-out")
+            className={`link ${pathname.includes("/log-out")
                 ? "text-black bg-white"
                 : "text-white"
-            } flex items-center rounded-[4px] sm:rounded-[8px] my-5 md:my-2 md:gap-3 gap-0 md:py-3 py-1 cursor-pointer justify-start mx-3 px-2 `}
+              } flex items-center rounded-[4px] sm:rounded-[8px] my-5 md:my-2 md:gap-3 gap-0 md:py-3 py-1 cursor-pointer justify-start mx-3 px-2 `}
           >
             <CgLogOut className="text-3xl" />
             <span className="lg:text-2xl text-base hidden md:block font-medium">

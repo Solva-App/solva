@@ -32,11 +32,7 @@ export const useScholar = () => {
           description: desc,
           link,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+       
       );
 
       if (response.status === 200) {
@@ -64,11 +60,7 @@ export const useScholar = () => {
           description: desc,
           link,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+       
       );
 
       if (response.status === 200) {

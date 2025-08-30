@@ -1,150 +1,126 @@
+"use client";
+import { useState, useEffect } from "react";
 import { createAxiosInstance } from "@/lib/axios";
 import { apis } from "@/lib/endpoints";
-import { AxiosError } from "axios";
-import { useState } from "react";
 import { toast } from "react-toastify";
-import Cookies from "js-cookie";
-import { useRouter } from "next/navigation";
+import { AxiosError } from "axios";
 
-export interface scholaI {
+export interface DocumentType {
+  id: number;
   name: string;
-  desc: string;
-  link: string;
-  id?: number;
-  description?: string;
+  url: string;
+  mimetype: string;
+  size: number;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  model: string;
+  modelId: number;
+  owner: number;
+  requiresApproval: boolean;
 }
 
-export const useProject = () => {
-  const [scholar, setScholar] = useState<scholaI[]>([]);
-  const [openDeleteModal, setDeleteModal] = useState(false);
+export interface ProjectType {
+  id: number;
+  name: string;
+  description: string;
+  owner: number;
+  createdAt: string;
+  updatedAt: string;
+  documents: DocumentType[];
+  status?: string;
+}
+
+export function useProjects() {
+  const [projects, setProjects] = useState<ProjectType[]>([]);
   const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState<number | null>(null); // for approve/decline/delete buttons
+  const [error, setError] = useState<string | null>(null);
   const axios = createAxiosInstance();
-  const router = useRouter();
 
-  const createScholar = async ({ name, desc, link }: scholaI) => {
+  /** Fetch all projects */
+  const getProjects = async () => {
     setLoading(true);
+    setError(null);
     try {
-      const token = Cookies.get("accessToken");
-      const response = await axios.post(
-        `${apis.scholar}/create`,
-        {
-          name,
-          description: desc,
-          link,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.status === 200) {
-        toast.success("Scholarship created successfully");
-        setScholar((prev) => [...prev, { name, desc, link }]);
-        router.replace("/scholarships");
+      const res = await axios.get(`${apis.project}`);
+      if (res.status === 200) {
+        const mapped: ProjectType[] = res.data.data.map((item: any) => ({
+          ...item.project,
+          documents: item.document,
+        }));
+        setProjects(mapped);
       }
-    } catch (error: any) {
-      const err = error as AxiosError<{ message?: string }>;
-      toast.error(err.response?.data?.message || "Something went wrong");
+    } catch (err) {
+      const error = err as AxiosError<{ message?: string }>;
+      toast.error(error.response?.data?.message || "Failed to fetch projects");
+      setError(error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const [editLoad, setEditLoad] = useState(false);
-  const editScholar = async ({ name, desc, link, id }: scholaI) => {
-    setEditLoad(true);
+  /** Approve a project */
+  const approveProject = async (id: number) => {
+    setActionLoading(id);
     try {
-      const token = Cookies.get("accessToken");
-      const response = await axios.patch(
-        `${apis.scholar}/${id}`,
-        {
-          name,
-          description: desc,
-          link,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      await axios.patch(`${apis.project}/approve/${id}`);
+      toast.success("Project approved");
+      setProjects((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, status: "approved" } : p))
       );
-
-      if (response.status === 200) {
-        toast.success("Scholarship edited successfully");
-        // setScholar((prev) => [...prev, { name, desc, link }]);
-        router.replace("/scholarships");
-      }
-    } catch (error: any) {
-      const err = error as AxiosError<{ message?: string }>;
-      toast.error(err.response?.data?.message || "Something went wrong");
+    } catch (err) {
+      const error = err as AxiosError<{ message?: string }>;
+      toast.error(error.response?.data?.message || "Failed to approve");
     } finally {
-      setEditLoad(false);
+      setActionLoading(null);
     }
   };
 
-  const [fetched, setFetched] = useState<scholaI[]>([]);
-  const [loadFetch, setLoadFetch] = useState(true);
-  const fetchProject = async () => {
+  /** Decline a project */
+  const declineProject = async (id: number) => {
+    setActionLoading(id);
     try {
-      const token = Cookies.get("accessToken");
-      const response = await axios.get(`${apis.project}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.status === 200) {
-        setFetched(response.data.data);
-        setLoadFetch(false);
-      }
-    } catch (error: any) {
-      const err = error as AxiosError<{ message?: string }>;
-      toast.error(err.response?.data?.message || "Something went wrong");
+      await axios.patch(`${apis.project}/decline/${id}`);
+      toast.success("Project declined");
+      setProjects((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, status: "declined" } : p))
+      );
+    } catch (err) {
+      const error = err as AxiosError<{ message?: string }>;
+      toast.error(error.response?.data?.message || "Failed to decline");
     } finally {
-      setLoadFetch(false);
+      setActionLoading(null);
     }
   };
 
-  const [delGrant, setDelGrant] = useState(false);
-  const deleteGrant = async (id: string) => {
+  /** Delete a project */
+  const deleteProject = async (id: number) => {
+    setActionLoading(id);
     try {
-      setDelGrant(true);
-      const token = Cookies.get("accessToken");
-      const response = await axios.delete(`${apis.scholar}/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.status === 200) {
-        setDelGrant(false);
-        fetchProject();
-        setDeleteModal(false);
-       
-      }
-    } catch (error: any) {
-      const err = error as AxiosError<{ message?: string }>;
-      toast.error(err.response?.data?.message || "Something went wrong");
+      await axios.delete(`${apis.project}/${id}`);
+      toast.success("Project deleted");
+      setProjects((prev) => prev.filter((p) => p.id !== id));
+    } catch (err) {
+      const error = err as AxiosError<{ message?: string }>;
+      toast.error(error.response?.data?.message || "Failed to delete");
     } finally {
-      setDelGrant(false);
+      setActionLoading(null);
     }
   };
+
+  useEffect(() => {
+    getProjects();
+  }, []);
 
   return {
-    createScholar,
+    projects,
     loading,
-    scholar,
-    editLoad,
-    editScholar,
-    fetchProject,
-    loadFetch,
-    fetched,
-    delGrant,
-    deleteGrant,
-    setDeleteModal,
-    openDeleteModal,
-    router,
+    actionLoading,
+    error,
+    getProjects,
+    approveProject,
+    declineProject,
+    deleteProject,
   };
-};
+}

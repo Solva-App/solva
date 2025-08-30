@@ -4,11 +4,12 @@ import SideNav from "@/components/sideNav";
 import { CiExport } from "react-icons/ci";
 import { FaUser } from "react-icons/fa6";
 import { useAllUsers } from "@/hooks/users/useAllUsers";
-import axios from "axios";
+// import axios from "axios";
 import { toast } from "react-toastify";
 import { apis } from "@/lib/endpoints";
 import Cookies from "js-cookie";
 import { BiLoader } from "react-icons/bi";
+import { createAxiosInstance } from "@/lib/axios";
 
 const UserList = () => {
   const [flagAccount, setFlagAccount] = useState<userI | null>(null);
@@ -18,6 +19,7 @@ const UserList = () => {
   const [loadingAction, setLoadingAction] = useState(false);
 
   const { loading, fetchUsers, users } = useAllUsers();
+  const axios = createAxiosInstance()
 
   useEffect(() => {
     fetchUsers();
@@ -41,11 +43,7 @@ const UserList = () => {
       await axios.patch(
         `${apis.flag}/flag/${flagAccount.id}`,
         {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        
       );
       toast.success(`${flagAccount.fullName} flagged successfully`);
       setFlagModal(false);
@@ -66,11 +64,7 @@ const UserList = () => {
       await axios.patch(
         `${apis.flag}/unflag/${unflagAccount.id}`,
         {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        
       );
       toast.success(`${unflagAccount.fullName} unflagged successfully`);
       setUnflagModal(false);
@@ -83,6 +77,26 @@ const UserList = () => {
     }
   };
 
+  const [downloadPdf, setDownloadPdf] = useState(false)
+
+  const downloadUserList = async () => {
+    try {
+      setDownloadPdf(true);
+      const response = await axios.get(`${apis.flag}/admin/download`);
+      console.log(response, "dowload res")
+      if (response.status === 200) {
+        setDownloadPdf(false)
+        if (response.data.url) {
+          window.open(response.data.url, "_blank", "noopener,noreferrer");
+        }
+      }
+    } catch (error: any) {
+      setDownloadPdf(false)
+    } finally {
+      setDownloadPdf(false)
+    }
+  }
+
   return (
     <div className="flex">
       <SideNav />
@@ -91,8 +105,8 @@ const UserList = () => {
           <h1 className="sm:text-3xl text-xl font-bold">
             User list ({users.length})
           </h1>
-          <button className="sm:text-xl text-sm font-medium flex items-center gap-2 rounded-[8px] border border-[#1E1E1E] p-2 cursor-pointer">
-            <CiExport className="sm:h-8 h-5 w-5 sm:w-8 font-medium" />
+          <button disabled={downloadPdf} onClick={downloadUserList} className="sm:text-xl text-sm font-medium flex items-center gap-2 rounded-[8px] border border-[#1E1E1E] p-2 cursor-pointer">
+            {downloadPdf ? <BiLoader className="sm:h-8 h-5 w-5 sm:w-8 font-medium animate-spin" /> : <CiExport className="sm:h-8 h-5 w-5 sm:w-8 font-medium" />}
             Export CSV
           </button>
         </div>
@@ -121,62 +135,61 @@ const UserList = () => {
             </thead>
             <tbody>
               {
-              loading ? (
-                <tr>
-                  <td colSpan={5} className="text-center py-6 text-gray-500">
-                    Loading users...
-                  </td>
-                </tr>
-              ) : users.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="text-center py-6 text-gray-500">
-                    No users found
-                  </td>
-                </tr>
-              ) : (
-                users.map((user: userI) => (
-                  <tr key={user.id} className="border border-[#D9D9D9]">
-                    <td className="text-black px-2 capitalize font-medium text-sm sm:text-base py-2 sm:py-4">
-                      <FaUser className="h-8 w-8 inline-block mr-2" />{" "}
-                      {user.fullName}
-                    </td>
-                    <td className="text-black sm:text-base text-sm sm:my-4 my-2 border capitalize border-[#5427D7] bg-[#F3EDF7] inline-block px-2 sm:px-6 rounded-[4px] text-center">
-                      {user.category}
-                    </td>
-                    <td
-                      className={`${
-                        user.isActive ? "text-black" : "text-red-500"
-                      } font-medium capitalize text-sm sm:text-base px-2 py-2 sm:py-4`}
-                    >
-                      {user.isActive ? "Active" : "Inactive"}
-                    </td>
-                    <td className="text-black font-medium capitalize text-sm sm:text-base py-2 sm:py-4">
-                      {new Date(user.createdAt).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </td>
-                    <td className="text-center">
-                      {!user.isSuspended ? (
-                        <button
-                          onClick={() => showFlagModal(user)}
-                          className="text-red-600 font-medium"
-                        >
-                          Flag
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => showUnflagModal(user)}
-                          className="text-green-600 font-medium"
-                        >
-                          Unflag
-                        </button>
-                      )}
+                loading ? (
+                  <tr>
+                    <td colSpan={5} className="text-center py-6 text-gray-500">
+                      Loading users...
                     </td>
                   </tr>
-                ))
-              )}
+                ) : users.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="text-center py-6 text-gray-500">
+                      No users found
+                    </td>
+                  </tr>
+                ) : (
+                  users.map((user: userI) => (
+                    <tr key={user.id} className="border border-[#D9D9D9]">
+                      <td className="text-black px-2 capitalize font-medium text-sm sm:text-base py-2 sm:py-4">
+                        <FaUser className="h-8 w-8 inline-block mr-2" />{" "}
+                        {user.fullName}
+                      </td>
+                      <td className="text-black sm:text-base text-sm sm:my-4 my-2 border capitalize border-[#5427D7] bg-[#F3EDF7] inline-block px-2 sm:px-6 rounded-[4px] text-center">
+                        {user.category}
+                      </td>
+                      <td
+                        className={`${user.isActive ? "text-black" : "text-red-500"
+                          } font-medium capitalize text-sm sm:text-base px-2 py-2 sm:py-4`}
+                      >
+                        {user.isActive ? "Active" : "Inactive"}
+                      </td>
+                      <td className="text-black font-medium capitalize text-sm sm:text-base py-2 sm:py-4">
+                        {new Date(user.createdAt).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </td>
+                      <td className="text-center">
+                        {!user.isSuspended ? (
+                          <button
+                            onClick={() => showFlagModal(user)}
+                            className="text-red-600 font-medium"
+                          >
+                            Flag
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => showUnflagModal(user)}
+                            className="text-green-600 font-medium"
+                          >
+                            Unflag
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
             </tbody>
           </table>
         </div>

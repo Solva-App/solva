@@ -1,68 +1,140 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createAxiosInstance } from "@/lib/axios";
 import { apis } from "@/lib/endpoints";
 import { toast } from "react-toastify";
-import { useRouter } from "next/navigation";
 import { AxiosError } from "axios";
 
-interface CoursePayload {
+export interface DocumentType {
+  id: number;
+  name: string;
+  url: string;
+  status: string;
+  mimetype: string;
+  size: number;
+  model: string;
+  modelId: number;
+  owner: number;
+  requiresApproval: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface QuestionType {
+  id: number;
+  owner: number;
   title: string;
-  department: string;
   university: string;
-  courseCode: string;
   faculty: string;
-  documents: File[];
+  department: string;
+  courseCode: string;
+  requiresApproval: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CourseType {
+  question: QuestionType;
+  id: number;
+  title: string;
+  courseCode: string;
+  department: string;
+  faculty: string;
+  university: string;
+  owner: number;
+  createdAt: string;
+  updatedAt: string;
+  requiresApproval: boolean;
+  status?: string;
+  document?: DocumentType[];
 }
 
 export function useCourses() {
+  const [courses, setCourses] = useState<CourseType[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
   const axios = createAxiosInstance();
-  const router = useRouter();
 
-  const createCourse = async (payload: CoursePayload) => {
+  const getCourses = async () => {
     setLoading(true);
     setError(null);
-    setSuccess(false);
-
     try {
-      const formData = new FormData();
-      formData.append("title", payload.title);
-      formData.append("department", payload.department);
-      formData.append("university", payload.university);
-      formData.append("courseCode", payload.courseCode);
-      formData.append("faculty", payload.faculty);
-
-      payload.documents.forEach((file) => {
-        formData.append("documents", file);
-      });
-
-      const res = await axios.post(`${apis.past}/create`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
+      const res = await axios.get(`${apis.past}/admin/all`);
       if (res.status === 200) {
-        toast.success("Past Question created successfully");
-        setSuccess(true);
-        router.replace("/courses");
+        setCourses(res.data.data);
       }
-    } catch (error: any) {
-      const err = error as AxiosError<{ message?: string }>;
-      toast.error(err.response?.data?.message || "Something went wrong");
-      throw err;
+    } catch (err: any) {
+      const error = err as AxiosError<{ message?: string }>;
+      toast.error(error.response?.data?.message || "Failed to fetch courses");
+      setError(error.message);
     } finally {
       setLoading(false);
     }
   };
 
+  const approveCourse = async (course: CourseType) => {
+    const body = {
+      title: course.question.title,
+      department: course.question.department,
+      university: course.question.university,
+      courseCode: course.question.courseCode,
+      faculty: course.question.faculty,
+    };
+
+    console.log(course, "courses docs")
+
+    try {
+      const res = await axios.patch(`${apis.past}/approve/${course.question.id}`, body);
+
+      if (res.status === 200) {
+        toast.success("Course approved");
+      }
+
+    } catch (err: any) {
+      const error = err as AxiosError<{ message?: string }>;
+      toast.error(error.response?.data?.message || "Failed to approve");
+    }
+  };
+
+  const declineCourse = async (id: number) => {
+    try {
+      const res = await axios.patch(`${apis.past}/decline/${id}`);
+      if (res.status === 200) {
+        toast.success("Course declined");
+
+
+      }
+    } catch (err: any) {
+      const error = err as AxiosError<{ message?: string }>;
+      toast.error(error.response?.data?.message || "Failed to decline");
+    }
+  };
+
+  const deleteCourse = async (id: number) => {
+    try {
+      const res = await axios.delete(`${apis.past}/${id}`);
+      if (res.status === 200) {
+        toast.success("Course deleted");
+        setCourses((prev) => prev.filter((c) => c.id !== id));
+        getCourses()
+      }
+    } catch (err: any) {
+      const error = err as AxiosError<{ message?: string }>;
+      toast.error(error.response?.data?.message || "Failed to delete");
+    }
+  };
+
+  useEffect(() => {
+    getCourses();
+  }, []);
+
   return {
-    createCourse,
+    courses,
     loading,
     error,
-    success,
+    getCourses,
+    approveCourse,
+    declineCourse,
+    deleteCourse,
   };
 }

@@ -9,9 +9,12 @@ export const apis = {
   grant: `${baseURL}/grants`,
   scholar: `${baseURL}/scholarships`,
   stats: `${baseURL}/stats`,
+
   past: `${baseURL}/questions`,
-  project: `${baseURL}/documents`,
+  
+  project: `${baseURL}/projects`,
   slider: `${baseURL}/slider`,
+  notification: `${baseURL}/notification`,
   
   
 };
