@@ -34,11 +34,10 @@ export interface ProjectType {
 export function useProjects() {
   const [projects, setProjects] = useState<ProjectType[]>([]);
   const [loading, setLoading] = useState(false);
-  const [actionLoading, setActionLoading] = useState<number | null>(null); // for approve/decline/delete buttons
+  const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const axios = createAxiosInstance();
 
-  /** Fetch all projects */
   const getProjects = async () => {
     setLoading(true);
     setError(null);
@@ -60,24 +59,31 @@ export function useProjects() {
     }
   };
 
-  /** Approve a project */
-  const approveProject = async (id: number) => {
-    setActionLoading(id);
+  const approveProject = async (project: any) => {
+    const body = {
+      name: project.name,
+      description: project.description,
+
+    };
+
+    console.log(project, "courses docs")
+
     try {
-      await axios.patch(`${apis.project}/approve/${id}`);
-      toast.success("Project approved");
-      setProjects((prev) =>
-        prev.map((p) => (p.id === id ? { ...p, status: "approved" } : p))
-      );
-    } catch (err) {
+      const res = await axios.patch(`${apis.project}/approve/${project.id}`, body);
+
+      if (res.status === 200) {
+        toast.success("Project approved");
+        getProjects()
+      }
+
+    } catch (err: any) {
       const error = err as AxiosError<{ message?: string }>;
+
       toast.error(error.response?.data?.message || "Failed to approve");
-    } finally {
-      setActionLoading(null);
     }
   };
 
-  /** Decline a project */
+
   const declineProject = async (id: number) => {
     setActionLoading(id);
     try {
@@ -94,7 +100,6 @@ export function useProjects() {
     }
   };
 
-  /** Delete a project */
   const deleteProject = async (id: number) => {
     setActionLoading(id);
     try {

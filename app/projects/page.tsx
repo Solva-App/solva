@@ -53,7 +53,7 @@ const Project = () => {
         <div className="flex items-center justify-between mb-4">
           <h1 className="sm:text-3xl text-2xl font-bold">Manage Projects</h1>
           <button
-            onClick={() => router.push("/courses/add-project")}
+            onClick={() => router.push("/projects/add-project")}
             className="sm:text-xl text-base font-medium flex items-center gap-2 rounded-lg text-white bg-primary p-2 hover:bg-primary/90 transition"
           >
             <IoIosAddCircleOutline className="sm:h-8 h-5 w-5 sm:w-8" />
@@ -69,53 +69,87 @@ const Project = () => {
                 <tr>
                   <th className="text-center py-4 px-3">Project Name</th>
                   <th className="text-center py-4 px-3">Documents</th>
+                  <th className="text-center py-4 px-3">Status</th>
                   <th className="text-center py-4 px-3">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {projects.map((project: ProjectType | any) => (
-                  <tr key={project.id} className="border border-[#D9D9D9] hover:bg-gray-50 transition">
-                    <td className="text-center py-4">{project.name}</td>
-                    <td className="text-center py-4">
-                      <p className="font-medium">{project.documents.length} file(s)</p>
-                      <button
-                        onClick={() => setViewDocs(project)}
-                        className="mt-2 bg-primary text-white px-3 py-1 rounded hover:bg-primary/80 transition text-sm"
-                      >
-                        View
-                      </button>
-                    </td>
-                    <td className="text-center flex-col py-4 flex items-center justify-center gap-2">
-                      <button
-                        onClick={() => handleApprove(project.id)}
-                        className="bg-green-600 p-2 disabled:cursor-not-allowed rounded text-white hover:bg-green-700 transition disabled:hidden"
-                        disabled={
-                          project.documents.every((doc: { status: string; }) => doc.status === "approved")
-                        }
-                      >
-                        {approving === project.id ? "Approving..." : "Approve"}
-                      </button>
-                      <button
-                        onClick={() => handleDisapprove(project.id)}
-                        className="bg-yellow-600 p-2 disabled:cursor-not-allowed rounded text-white hover:bg-yellow-600 transition disabled:hidden"
-                        disabled={
-                          project.documents.every((doc: { status: string; }) => doc.status === "declined")
-                        }
-                      >
-                        {disapproving === project.id ? "Processing..." : "Disapprove"}
-                      </button>
-                      <button
-                        onClick={() => handleDelete(project.id)}
-                        className="bg-red-600 p-2 rounded text-white hover:bg-red-700 transition disabled:opacity-50"
-                        disabled={deleting && deleteModalId === project.id}
-                      >
-                        {deleting && deleteModalId === project.id ? "Deleting..." : "Delete"}
-                      </button>
-                    </td>
-                  </tr>
+                {projects.map((project: ProjectType | any) => {
+                  return (
+                    <tr key={project.id} className="border border-[#D9D9D9] hover:bg-gray-50 transition">
+                      <td className="text-center py-4">{project.name}</td>
+                      <td className="text-center py-4">
+                        <p className="font-medium">{project.documents.length} file(s)</p>
+                        <button
+                          onClick={() => setViewDocs(project)}
+                          className="mt-2 bg-primary text-white px-3 py-1 rounded hover:bg-primary/80 transition text-sm"
+                        >
+                          View
+                        </button>
+                      </td>
+                      <td className="text-center py-4">
+                        <span
+                          className={`px-2 py-1 rounded text-white font-semibold ${project.requiresApproval === true
+                              ? "bg-yellow-500"  
+                              : project.requiresApproval === false
+                                ? "bg-green-600"  
+                                : "bg-red-600"    
+                            }`}
+                        >
+                          {project.requiresApproval === true
+                            ? "Pending"
+                            : project.requiresApproval === false
+                              ? "Approved"
+                              : "Declined"}
+                        </span>
 
-                ))}
+                      </td>
+                      <td className="text-center flex-col py-4 flex items-center justify-center gap-2">
+                        {/* {project.documents.some((doc: { status: string }) => doc.status === "pending") && (
+            <>
+              <button
+                onClick={() => handleApprove(project.id)}
+                className="bg-green-600 p-2 rounded text-white hover:bg-green-700 transition"
+              >
+                {approving === project.id ? "Approving..." : "Approve"}
+              </button>
+              <button
+                onClick={() => handleDisapprove(project.id)}
+                className="bg-yellow-600 p-2 rounded text-white hover:bg-yellow-700 transition"
+              >
+                {disapproving === project.id ? "Processing..." : "Disapprove"}
+              </button>
+            </>
+          )} */}
+                        <button
+                          disabled={!project.requiresApproval}
+                          onClick={() => approveProject(project)}
+                          className="bg-green-600 disabled:hidden p-2 rounded text-white hover:bg-green-700 transition"
+                        >
+                          {approving === project.id ? "Approving..." : "Approve"}
+                        </button>
+
+                        <button
+                          disabled={project.requiresApproval}
+                          onClick={() => handleDisapprove(project.id)}
+                          className="bg-yellow-600 disabled:hidden p-2 rounded text-white hover:bg-yellow-700 transition"
+                        >
+                          {disapproving === project.id ? "Processing..." : "Disapprove"}
+                        </button>
+
+                        <button
+                          onClick={() => handleDelete(project.id)}
+                          className="bg-red-600 p-2 rounded text-white hover:bg-red-700 transition disabled:opacity-50"
+                          disabled={deleting && deleteModalId === project.id}
+                        >
+                          {deleting && deleteModalId === project.id ? "Deleting..." : "Delete"}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
+
             </table>
           </div>
         )}

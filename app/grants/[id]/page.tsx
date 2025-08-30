@@ -44,8 +44,10 @@ const EditGrants = () => {
     return (
       <div className="flex">
         <SideNav />
-        <div className="w-full p-5 sm:p-10 h-screen flex items-center justify-center">
-          <p className="text-lg">Loading grant...</p>
+        <div className="w-full p-6 sm:p-10 h-screen flex items-center justify-center">
+          <p className="text-lg text-gray-500 animate-pulse">
+            Loading grant details...
+          </p>
         </div>
       </div>
     );
@@ -54,54 +56,72 @@ const EditGrants = () => {
   return (
     <div className="flex">
       <SideNav />
-      <div className="w-full p-5 sm:p-10 overflow-y-scroll h-screen">
-        <div className="flex gap-2 sm:gap-4 items-center">
-          <FaChevronLeft onClick={() => router.back()} />
-          <h1 className="sm:text-3xl text-2xl font-bold">Edit Grants</h1>
+      <div className="w-full p-6 sm:p-10 overflow-y-scroll h-screen bg-gray-50">
+        {/* Header */}
+        <div className="flex gap-3 items-center">
+          <FaChevronLeft
+            onClick={() => router.back()}
+            className="cursor-pointer text-gray-700 hover:text-primary hover:scale-110 transition duration-200"
+          />
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+            Edit Grant
+          </h1>
         </div>
-        <hr className="my-4" />
+        <hr className="my-4 border-gray-300" />
 
-        <div className="flex flex-col gap-8">
-          <div className="gap-y-3 flex flex-col">
-            <label className="text-base sm:text-xl font-medium">Name</label>
+        {/* Form */}
+        <div className="flex flex-col gap-8 max-w-2xl">
+          {/* Name */}
+          <div className="flex flex-col gap-2">
+            <label className="text-gray-700 font-medium text-base sm:text-lg">
+              Name
+            </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="md:w-1/2 w-full border border-[#5C5F62] font-medium text-black rounded-[8px] text-base sm:text-xl p-5"
               placeholder="$5,000 Grants from Google"
+              className="border border-gray-300 rounded-xl p-4 text-base sm:text-lg font-medium text-gray-800 placeholder-gray-400 
+                         focus:outline-none focus:ring-2 focus:ring-primary hover:border-primary transition"
             />
           </div>
 
-          <div className="gap-y-3 flex flex-col">
-            <label className="text-base sm:text-xl font-medium">Link</label>
+          {/* Link */}
+          <div className="flex flex-col gap-2">
+            <label className="text-gray-700 font-medium text-base sm:text-lg">
+              Link
+            </label>
             <input
               type="url"
               value={link}
               onChange={(e) => setLink(e.target.value)}
-              className="md:w-1/2 w-full border border-[#5C5F62] font-medium text-black rounded-[8px] text-base sm:text-xl p-5"
               placeholder="https://grantalink.com"
+              className="border border-gray-300 rounded-xl p-4 text-base sm:text-lg font-medium text-gray-800 placeholder-gray-400 
+                         focus:outline-none focus:ring-2 focus:ring-primary hover:border-primary transition"
             />
           </div>
 
-          <div className="gap-y-3 flex flex-col">
-            <label className="text-base sm:text-xl font-medium">
+          {/* Description */}
+          <div className="flex flex-col gap-2">
+            <label className="text-gray-700 font-medium text-base sm:text-lg">
               Description
             </label>
             <textarea
               value={desc}
               onChange={(e) => setDesc(e.target.value)}
-              className="md:w-1/2 w-full border border-[#5C5F62] font-medium text-black rounded-[8px] text-base sm:text-xl p-5"
-              placeholder="Short description about the grant"
+              placeholder="Short description about the grant..."
+              className="border border-gray-300 rounded-xl p-4 h-40 text-base sm:text-lg font-medium text-gray-800 placeholder-gray-400 
+                         focus:outline-none focus:ring-2 focus:ring-primary hover:border-primary transition"
             />
           </div>
 
+          {/* Submit */}
           <div className="flex justify-end">
-            <div className=" w-full md:w-1/3">
+            <div className="w-full md:w-1/3">
               <Button
-                BtnText={editLoad ? "Updating..." : "Update"}
-                disabled={!name || !link || !desc || editLoad}
+                BtnText={editLoad ? "Updating..." : "Update Grant"}
                 BtnFunction={updateGrant}
+                disabled={!name || !link || !desc || editLoad}
               />
             </div>
           </div>

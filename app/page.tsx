@@ -6,6 +6,7 @@ import Link from "next/link";
 import axios, { AxiosError } from "axios";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
+import { Eye, EyeOff } from "lucide-react";
 
 import Button from "@/components/button";
 import { apis } from "@/lib/endpoints";
@@ -20,14 +21,9 @@ export default function Home() {
 
   const signInFunction = async () => {
     setLoading(true);
-
     try {
-      const response = await axios.post(apis.login, {
-        email,
-        password,
-      });
+      const response = await axios.post(apis.login, { email, password });
 
-      
       if (response.status === 200 && response.data.data.tokens.accessToken) {
         const { accessToken, refreshToken } = response.data.data.tokens;
 
@@ -60,41 +56,45 @@ export default function Home() {
   };
 
   return (
-    <div className="bg-[#F3EDF7] w-full h-screen block md:flex gap-4 items-center justify-center p-6">
-      <div className="w-full flex flex-col items-center ">
-        <div className=" w-44 h-44 pb-2 rounded-[8px] bg-[#D9D9D9]"></div>
-        <h1 className=" text-2xl sm:text-4xl font-semibold pb-2 pt-6 text-center">
-          Solva App Admin
-        </h1>
-        <p className=" font-normal text-base sm:text-xl py-2 text-center">
-          This is a part for the management to view and manage app content
-        </p>
-      </div>
+    <div className="bg-gradient-to-br from-purple-100 to-purple-50 w-full h-screen flex items-center justify-center p-6">
+      <div className="bg-white shadow-lg rounded-2xl w-full max-w-md p-8 flex flex-col gap-6">
+        {/* Logo / Branding */}
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-20 h-20 rounded-full bg-purple-200 flex items-center justify-center text-purple-700 font-bold text-2xl shadow-md">
+            SA
+          </div>
+          <h1 className="text-2xl font-semibold text-gray-800">
+            Solva App Admin
+          </h1>
+          <p className="text-gray-500 text-center text-sm">
+            Management portal to view and manage app content
+          </p>
+        </div>
 
-      <div className="w-full">
-        <div className="w-full h-auto sm:h-96 bg-white border flex flex-col items-center gap-5 p-4 sm:p-7 border-[#D9D9D9] rounded-[16px]">
+        {/* Form */}
+        <div className="flex flex-col gap-4">
           <input
             type="email"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="border border-[#5C5F62] py-3 sm:py-6 indent-5 rounded-[16px] w-full placeholder:text-[#5C5F62] text-[#5C5F62] text-xl sm:text-2xl font-normal"
+            className="border rounded-xl px-4 py-3 w-full text-gray-700 placeholder-gray-400 focus:ring-2 focus:ring-purple-400 focus:outline-none shadow-sm"
           />
 
-          <div className="w-full relative">
+          <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="border border-[#5C5F62] py-3 sm:py-6 indent-5 rounded-[16px] w-full placeholder:text-[#5C5F62] text-[#5C5F62] text-xl sm:text-2xl font-normal"
+              className="border rounded-xl px-4 py-3 w-full text-gray-700 placeholder-gray-400 focus:ring-2 focus:ring-purple-400 focus:outline-none shadow-sm"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-[#5C5F62] text-sm"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
             >
-              {showPassword ? "Hide" : "Show"}
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
 
@@ -102,12 +102,13 @@ export default function Home() {
             disabled={!email || !password || loading}
             BtnText={loading ? "Loading..." : "Login"}
             BtnFunction={signInFunction}
+            className="w-full bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition disabled:opacity-50"
           />
-        </div>
 
-        {/* <p className="text-primary cursor-pointer font-normal text-xl sm:text-2xl text-center py-4">
-          <Link href="/forgot-password">Forgot Password?</Link>
-        </p> */}
+          {/* <p className="text-purple-600 text-sm text-center cursor-pointer hover:underline">
+            <Link href="/forgot-password">Forgot Password?</Link>
+          </p> */}
+        </div>
       </div>
     </div>
   );

@@ -88,10 +88,12 @@ export function useCourses() {
 
       if (res.status === 200) {
         toast.success("Course approved");
+        getCourses()
       }
 
     } catch (err: any) {
       const error = err as AxiosError<{ message?: string }>;
+
       toast.error(error.response?.data?.message || "Failed to approve");
     }
   };
@@ -102,11 +104,15 @@ export function useCourses() {
       if (res.status === 200) {
         toast.success("Course declined");
 
-
+        getCourses()
       }
     } catch (err: any) {
       const error = err as AxiosError<{ message?: string }>;
-      toast.error(error.response?.data?.message || "Failed to decline");
+      if (error?.response?.data?.message === "No documents awaiting approval for this question.") {
+        toast.error("Can't perform this action on this course because it has already been disapproved")
+      } else {
+        toast.error(error.response?.data?.message || "Failed to decline");
+      }
     }
   };
 

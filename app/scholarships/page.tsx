@@ -1,8 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-
 import SideNav from "@/components/sideNav";
-
 import { IoIosAddCircleOutline } from "react-icons/io";
 import { CiEdit } from "react-icons/ci";
 import { RiDeleteBin2Line } from "react-icons/ri";
@@ -11,9 +9,6 @@ import { useScholar } from "./useSchola";
 
 const Scholarships = () => {
   const router = useRouter();
-  const editScholarshipFunct = () => {
-    router.push("/scholarships/edit-scholarship");
-  };
 
   const {
     loadFetch,
@@ -26,6 +21,7 @@ const Scholarships = () => {
   } = useScholar();
 
   const [selectedGrant, setSelectedGrant] = useState<string | null>(null);
+
   const deleteModal = (id: string) => {
     setDeleteModal(true);
     setSelectedGrant(id);
@@ -38,80 +34,90 @@ const Scholarships = () => {
   return (
     <div className="flex relative">
       <SideNav />
-      <div className="w-full p-5 sm:p-10 overflow-y-scroll h-screen">
-        <div className="flex items-center justify-between">
-          <h1 className="sm:text-3xl text-2xl font-bold">Manage Scholarship</h1>
+      <div className="w-full p-5 sm:p-10 overflow-y-scroll h-screen bg-gray-50">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            Manage Scholarships
+          </h1>
           <button
             onClick={() => router.push("/scholarships/add-scholarship")}
-            className="sm:text-xl text-base font-medium flex items-center gap-1 sm:gap-2 rounded-[8px] text-white bg-primary p-2 cursor-pointer"
+            className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl shadow hover:shadow-md transition"
           >
-            <IoIosAddCircleOutline className="h-8 w-8 font-medium " />
-            Add new
+            <IoIosAddCircleOutline className="text-2xl" />
+            <span className="hidden sm:inline text-lg font-medium">
+              Add New
+            </span>
           </button>
         </div>
-        <hr className="my-4" />
 
-        <div className=" overflow-x-scroll">
+        <div className="overflow-x-auto rounded-xl shadow-sm border bg-white">
           <table className="table-auto w-full">
-            <thead>
-              <tr className="bg-[#F5F5F5] text-left">
-                <th className="text-[#5C5F62] font-medium text-sm sm:text-base py-4 px-4 rounded-tl-lg">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="text-left px-4 py-3 text-sm font-semibold text-gray-600">
                   Name
                 </th>
-                <th className="text-[#5C5F62] text-center font-medium text-sm sm:text-base py-4 px-4">
+                <th className="text-center px-4 py-3 text-sm font-semibold text-gray-600">
                   Link
                 </th>
-                <th className="text-[#5C5F62] text-center font-medium text-sm sm:text-base py-4 px-4">
+                <th className="text-center px-4 py-3 text-sm font-semibold text-gray-600">
                   Date
                 </th>
-                <th className="text-[#5C5F62] text-center font-medium text-sm sm:text-base py-4 px-4 rounded-tr-lg">
+                <th className="text-center px-4 py-3 text-sm font-semibold text-gray-600">
                   Action
                 </th>
               </tr>
             </thead>
             <tbody>
-              {/* Replace with dynamic data */}
               {loadFetch ? (
                 <tr>
-                  <td colSpan={5} className="text-center py-6 text-gray-500">
-                    Loading scholarship...
+                  <td colSpan={4} className="text-center py-6 text-gray-500">
+                    Loading scholarships...
                   </td>
                 </tr>
               ) : fetched.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="text-center py-6 text-gray-500">
-                    No scholarship found
+                  <td colSpan={4} className="text-center py-6 text-gray-400 italic">
+                    No scholarships found
                   </td>
                 </tr>
               ) : (
-                fetched.map((data: any, index) => (
-                  <tr key={index} className="border-b border-[#E0E0E0]">
-                    <td className="text-black font-medium text-sm sm:text-base py-4 px-4">
+                fetched.map((data: any) => (
+                  <tr
+                    key={data.id}
+                    className="border-t hover:bg-gray-50 transition"
+                  >
+                    <td className="px-4 py-3 text-gray-900 font-medium">
                       {data.name}
                     </td>
-                    <td className="text-black text-sm text-center sm:text-base py-4 px-4">
-                      <a href={data.link} target="_blank">
+                    <td className="px-4 py-3 text-center">
+                      <a
+                        href={data.link}
+                        target="_blank"
+                        className="text-blue-600 hover:underline break-words"
+                      >
                         {data.link}
                       </a>
                     </td>
-                    <td className="text-[#000000] text-center text-sm sm:text-base py-4 px-4">
+                    <td className="px-4 py-3 text-center text-gray-700">
                       {new Date(data.createdAt).toLocaleDateString("en-US", {
                         year: "numeric",
                         month: "short",
                         day: "numeric",
                       })}
                     </td>
-                    <td className="text-center py-4 px-4">
-                      <div className="flex items-center justify-center gap-6">
+                    <td className="px-4 py-3 text-center">
+                      <div className="flex items-center justify-center gap-4">
                         <CiEdit
-                          onClick={() => {
-                            router.push(`/scholarships/${data.id}`);
-                          }}
-                          className="text-[#000000] text-2xl cursor-pointer"
+                          onClick={() =>
+                            router.push(`/scholarships/${data.id}`)
+                          }
+                          className="text-gray-600 hover:text-primary text-2xl cursor-pointer transition"
                         />
                         <RiDeleteBin2Line
                           onClick={() => deleteModal(data.id)}
-                          className="text-[#FF1212] text-2xl cursor-pointer"
+                          className="text-red-500 hover:text-red-600 text-2xl cursor-pointer transition"
                         />
                       </div>
                     </td>
@@ -121,34 +127,35 @@ const Scholarships = () => {
             </tbody>
           </table>
         </div>
-        <div>
-          {openDeleteModal && selectedGrant && (
-            <div className="absolute w-full h-screen top-0 left-0 flex justify-center items-center">
-              <div className="w-96 h-52 sm:h-60 mx-2 bg-[#F7F7F7] border p-5 border-[#9A8787] rounded-[16px]">
-                <h1 className="text-[#1E1E1E] text-center font-bold text-2xl sm:text-3xl">
-                  Confirm Delete
-                </h1>
-                <p className="text-sm sm:text-base text-[#5C5F62] py-4 sm:py-6 text-center font-medium">
-                  Once deleted you cannot recover it, comfirm to delete
-                </p>
-                <div className="flex items-center gap-5">
-                  <button
-                    onClick={() => setDeleteModal(false)}
-                    className="bg-[#E1E2E180] rounded-[8px] w-full py-3 text-base sm:text-xl font-medium"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => deleteGrant(selectedGrant)}
-                    className="bg-[#DD0F0F] rounded-[8px] w-full py-3 text-base sm:text-xl text-white font-medium"
-                  >
-                    {delGrant ? "Deleting" : "Confirm"}
-                  </button>
-                </div>
+
+        {/* Delete Modal */}
+        {openDeleteModal && selectedGrant && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm z-50">
+            <div className="w-96 bg-white rounded-2xl shadow-lg p-6 text-center">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+                Confirm Delete
+              </h1>
+              <p className="text-gray-600 mt-2 mb-6 text-sm sm:text-base">
+                This action cannot be undone. Are you sure you want to delete
+                this scholarship?
+              </p>
+              <div className="flex gap-4">
+                <button
+                  onClick={() => setDeleteModal(false)}
+                  className="w-1/2 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg font-medium transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => deleteGrant(selectedGrant)}
+                  className="w-1/2 py-2 bg-red-600 text-white hover:bg-red-700 rounded-lg font-medium transition"
+                >
+                  {delGrant ? "Deleting..." : "Confirm"}
+                </button>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,8 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-
 import SideNav from "@/components/sideNav";
-
 import { IoIosAddCircleOutline } from "react-icons/io";
 import { CiEdit } from "react-icons/ci";
 import { RiDeleteBin2Line } from "react-icons/ri";
@@ -19,10 +17,11 @@ const ManageJobs = () => {
     setDeleteModal,
     openDeleteModal,
     deleteJob,
-    delGrant
+    delGrant,
   } = useJobs();
 
   const [selectedGrant, setSelectedGrant] = useState<string | null>(null);
+
   const deleteModal = (id: string) => {
     setDeleteModal(true);
     setSelectedGrant(id);
@@ -35,126 +34,128 @@ const ManageJobs = () => {
   return (
     <div className="flex relative">
       <SideNav />
-      <div className="w-full  p-5 sm:p-10 overflow-y-scroll h-screen">
-        <div className="flex items-center sm:gap-0 gap-2 justify-between">
-          <h1 className="sm:text-3xl text-xl font-bold">Manage jobs</h1>
+      <div className="w-full p-5 sm:p-10 overflow-y-scroll h-screen">
+        {/* HEADER */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+            Manage Jobs
+          </h1>
           <button
             onClick={() => router.push("/manage-job/add-jobs")}
-            className="sm:text-xl text-base font-medium flex items-center gap-2 rounded-[8px] text-white bg-primary p-2 cursor-pointer"
+            className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-white text-base sm:text-lg font-medium shadow-md hover:bg-primary/90 transition"
           >
-            <IoIosAddCircleOutline className="sm:h-8 h-5 w-5 sm:w-8 font-medium " />
-            Add new job
+            <IoIosAddCircleOutline className="h-5 w-5 sm:h-6 sm:w-6" />
+            Add Job
           </button>
         </div>
-        <hr className="my-4" />
 
-        <div className=" overflow-x-scroll">
-          <table className=" table-auto w-full">
-            <thead className="">
-              <tr className=" bg-[#E1E2E180] ">
-                <td className="text-[#5C5F62] font-medium text-sm sm:text-base rounded-tl-[8px] py-4 px-3">
+        <hr className="my-6 border-gray-300" />
+
+        {/* TABLE */}
+        <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
+          <table className="table-auto w-full border-collapse">
+            <thead className="sticky top-0 bg-gray-100">
+              <tr className="text-gray-700">
+                <th className="py-3 px-4 text-left text-sm sm:text-base font-semibold">
                   Role
-                </td>
-                <td className="text-[#5C5F62] font-medium text-sm px-2 sm:text-base py-4">
+                </th>
+                <th className="py-3 px-4 text-left text-sm sm:text-base font-semibold">
                   Description
-                </td>
-                <td className="text-[#5C5F62] font-medium text-sm px-2 text-center sm:text-base py-4">
+                </th>
+                <th className="py-3 px-4 text-center text-sm sm:text-base font-semibold">
                   Status
-                </td>
-                <td className="text-[#5C5F62] font-medium text-sm px-2 text-center sm:text-base py-4">
+                </th>
+                <th className="py-3 px-4 text-center text-sm sm:text-base font-semibold">
                   Date
-                </td>
-
-                <td className="text-[#5C5F62] font-medium text-sm sm:text-base rounded-tr-[8px] py-4 pr-3">
+                </th>
+                <th className="py-3 px-4 text-center text-sm sm:text-base font-semibold">
                   Action
-                </td>
+                </th>
               </tr>
             </thead>
             <tbody>
-              {/* map table content instead */}
               {loadFetch ? (
                 <tr>
-                  <td colSpan={5} className="text-center py-6 text-gray-500">
+                  <td colSpan={5} className="py-6 text-center text-gray-500">
                     Loading jobs...
                   </td>
                 </tr>
               ) : fetched.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="text-center py-6 text-gray-500">
+                  <td colSpan={5} className="py-6 text-center text-gray-500">
                     No jobs found
                   </td>
                 </tr>
               ) : (
-                fetched.map((role: any, index) => {
-                  return (
-                    <tr key={index} className=" border border-[#D9D9D9]">
-                      <td className="text-black capitalize px-2 font-medium text-sm sm:text-base py-4">
-                        {role.title}
-                      </td>
-                      <td className="text-black w-1/4 text-left px-2 font-medium capitalize text-sm sm:text-base  py-4">
-                        {role.description}
-                      </td>
-                      <td className="text-black sm:text-base text-sm capitalize  px-2  text-center">
-                        <p className="border border-primary rounded-[4px] bg-[#F3EDF7] px-3">
-                          {role.status.join(", ")}
-                        </p>
-                      </td>
-                      <td className="text-[#5C5F62] text-center font-medium capitalize text-sm sm:text-base  py-4">
-                        {new Date(role.createdAt).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </td>
-                      <td className="text-black  font-medium  capitalize text-base">
-                        <span className="gap-2 flex flex-col sm:flex-row items-center justify-center">
-                          <CiEdit
-                            onClick={() => {
-                              router.push(`/manage-job/${role.id}`);
-                            }}
-                            className="text-[#1E1E1E] text-2xl  sm:text-xl cursor-pointer"
-                          />
-                          <RiDeleteBin2Line
-                            onClick={() => deleteModal(role.id)}
-                            className="text-[#FF1212] text-2xl  sm:text-xl cursor-pointer"
-                          />
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })
+                fetched.map((role: any, index) => (
+                  <tr
+                    key={index}
+                    className="border-t border-gray-200 hover:bg-gray-50 transition"
+                  >
+                    <td className="py-3 px-4 text-sm sm:text-base font-medium text-gray-800 capitalize">
+                      {role.title}
+                    </td>
+                    <td className="py-3 px-4 text-sm sm:text-base text-gray-700 w-1/3 truncate">
+                      {role.description}
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      <span className="inline-block rounded-md border border-primary bg-primary/10 px-3 py-1 text-xs sm:text-sm font-medium text-primary">
+                        {role.status.join(", ")}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-center text-gray-600 text-sm sm:text-base">
+                      {new Date(role.createdAt).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center justify-center gap-3">
+                        <CiEdit
+                          onClick={() => router.push(`/manage-job/${role.id}`)}
+                          className="cursor-pointer text-gray-700 hover:text-primary transition text-xl"
+                        />
+                        <RiDeleteBin2Line
+                          onClick={() => deleteModal(role.id)}
+                          className="cursor-pointer text-red-500 hover:text-red-700 transition text-xl"
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
         </div>
-        <div>
-          {openDeleteModal && selectedGrant && (
-            <div className="absolute w-full h-screen top-0 left-0 flex justify-center items-center">
-              <div className="w-96 h-52 sm:h-60 mx-2 bg-[#F7F7F7] border p-5 border-[#9A8787] rounded-[16px]">
-                <h1 className="text-[#1E1E1E] text-center font-bold text-2xl sm:text-3xl">
-                  Confirm Delete
-                </h1>
-                <p className="text-sm sm:text-base text-[#5C5F62] py-4 sm:py-6 text-center font-medium">
-                  Once deleted you cannot recover it, comfirm to delete
-                </p>
-                <div className="flex items-center gap-5">
-                  <button
-                    onClick={() => setDeleteModal(false)}
-                    className="bg-[#E1E2E180] rounded-[8px] w-full py-3 text-base sm:text-xl font-medium"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => deleteJob(selectedGrant)}
-                    className="bg-[#DD0F0F] rounded-[8px] w-full py-3 text-base sm:text-xl text-white font-medium"
-                  >
-                    {delGrant ? "Deleting" : "Confirm"}
-                  </button>
-                </div>
+
+        {/* DELETE MODAL */}
+        {openDeleteModal && selectedGrant && (
+          <div className="absolute inset-0 flex justify-center items-center bg-black/30 backdrop-blur-sm z-50">
+            <div className="w-96 max-w-sm bg-white p-6 rounded-2xl shadow-xl animate-fadeIn">
+              <h2 className="text-center text-xl sm:text-2xl font-bold text-gray-800">
+                Confirm Delete
+              </h2>
+              <p className="text-center text-sm sm:text-base text-gray-600 mt-4">
+                Once deleted, this action cannot be undone. Are you sure?
+              </p>
+              <div className="flex items-center gap-4 mt-6">
+                <button
+                  onClick={() => setDeleteModal(false)}
+                  className="w-full rounded-xl bg-gray-200 py-3 text-sm sm:text-base font-medium hover:bg-gray-300 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => deleteJob(selectedGrant)}
+                  className="w-full rounded-xl bg-red-600 py-3 text-sm sm:text-base text-white font-medium hover:bg-red-700 transition"
+                >
+                  {delGrant ? "Deleting..." : "Confirm"}
+                </button>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

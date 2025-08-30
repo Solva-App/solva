@@ -229,8 +229,8 @@ const SideNav: React.FC = () => {
   };
 
   return (
-    <div className="w-1/3 inline-block overflow-hidden bg-primary h-screen py-7">
-      <h1 className="text-white text-base md:text-3xl font-bold text-center px-2 sm:px-0 pb-3">
+    <div className="md:w-1/4 w-[80px] inline-block overflow-hidden bg-primary h-screen py-7">
+      <h1 className="text-white text-sm md:text-3xl font-bold text-center px-2 sm:px-0 pb-3">
         Solva Admin
       </h1>
       <hr />
@@ -243,7 +243,7 @@ const SideNav: React.FC = () => {
                 <div
                   key={index}
                   className={`link ${isActive ? "text-black bg-white" : "text-white"
-                    } flex items-center rounded-[4px] sm:rounded-[8px] my-3 md:my-1 md:gap-3 gap-0 md:py-3 py-1 cursor-pointer justify-start mx-3 px-2`}
+                    } flex items-center rounded-[4px] sm:rounded-[8px] my-3 md:my-1 md:gap-3 gap-0 md:py-2 py-1 cursor-pointer justify-start mx-1 md:mx-3 px-2`}
                 >
                   <span className=" flex-none">{nav.svg(isActive)}</span>
                   <span className="lg:text-xl text-base hidden md:block font-medium">
