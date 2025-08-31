@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from "axios";
+import axios, { AxiosHeaders, AxiosInstance, AxiosRequestConfig } from "axios";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 
@@ -25,7 +25,8 @@ const refreshToken = async (): Promise<string> => {
     { refreshToken }
   );
 
-  const { accessToken, refreshToken: newRefresh } = response.data;
+  const { accessToken, refreshToken: newRefresh } = response.data.data;
+  console.log(response, "refresh response")
 
   Cookies.set("accessToken", accessToken, {
     secure: process.env.NODE_ENV === "production",
@@ -33,13 +34,13 @@ const refreshToken = async (): Promise<string> => {
     path: "/",
   });
 
-  if (newRefresh) {
-    Cookies.set("refreshToken", newRefresh, {
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      path: "/",
-    });
-  }
+  // if (newRefresh) {
+  //   Cookies.set("refreshToken", newRefresh, {
+  //     secure: process.env.NODE_ENV === "production",
+  //     sameSite: "strict",
+  //     path: "/",
+  //   });
+  // }
 
   return accessToken;
 };
@@ -52,59 +53,69 @@ export const createAxiosInstance = (): AxiosInstance => {
     },
   });
 
-  instance.interceptors.request.use(config => {
-    const token = Cookies.get("accessToken");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    } else {
-      delete config.headers.Authorization;
-    }
-    return config;
-  });
+  instance.interceptors.request.use(
+    (config) => {
+      if (typeof window === "undefined") return config;
+
+      const token = Cookies.get("accessToken");
+      if (token) {
+        config.headers = config.headers ?? {};
+        (config.headers as any).Authorization = `Bearer ${token}`;
+      }
+
+      return config;
+    },
+    (error) => Promise.reject(error)
+  );
+
 
   instance.interceptors.response.use(
-    response => response,
-    async error => {
-      const originalRequest = error.config;
+    (response) => response,
+    async (error) => {
+      const originalRequest = error.config as any;
       const status = error?.response?.status;
       const message = error?.response?.data?.message || "";
 
-      if (status === 401 && message.toLowerCase().includes("expired") && !originalRequest._retry) {
+      if (
+        status === 401 &&
+        message.toLowerCase().includes("expired") &&
+        !originalRequest._retry
+      ) {
+        originalRequest._retry = true;
+
         if (isRefreshing) {
           return new Promise((resolve, reject) => {
             failedQueue.push({ resolve, reject });
           })
-            .then(token => {
-              originalRequest.headers.Authorization = `Bearer ${token}`;
+            .then((token) => {
+              originalRequest.headers = new AxiosHeaders(originalRequest.headers);
+              originalRequest.headers.set("Authorization", `Bearer ${token}`);
               return instance(originalRequest);
             })
-            .catch(err => Promise.reject(err));
+            .catch((err) => Promise.reject(err));
         }
 
-        originalRequest._retry = true;
         isRefreshing = true;
 
         try {
           const newToken = await refreshToken();
           processQueue(null, newToken);
 
-          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          originalRequest.headers = new AxiosHeaders(originalRequest.headers);
+          originalRequest.headers.set("Authorization", `Bearer ${newToken}`);
           return instance(originalRequest);
         } catch (refreshErr) {
           processQueue(refreshErr, null);
-
           Cookies.remove("accessToken");
-          Cookies.remove("refreshToken");
-
           if (typeof window !== "undefined") {
             toast.error("Session expired. Please log in again.");
             window.location.href = "/";
           }
-
           return Promise.reject(refreshErr);
         } finally {
           isRefreshing = false;
         }
+
       }
 
       return Promise.reject(error);

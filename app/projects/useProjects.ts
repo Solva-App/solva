@@ -42,7 +42,7 @@ export function useProjects() {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get(`${apis.project}`);
+      const res = await axios.get(`${apis.project}/admin/all`);
       if (res.status === 200) {
         const mapped: ProjectType[] = res.data.data.map((item: any) => ({
           ...item.project,
@@ -59,29 +59,29 @@ export function useProjects() {
     }
   };
 
+  const [approvingId, setApprovingId] = useState<number | null>(null);
   const approveProject = async (project: any) => {
+    setApprovingId(project.id); 
     const body = {
       name: project.name,
       description: project.description,
-
     };
-
-    console.log(project, "courses docs")
 
     try {
       const res = await axios.patch(`${apis.project}/approve/${project.id}`, body);
 
       if (res.status === 200) {
         toast.success("Project approved");
-        getProjects()
+        getProjects(); 
       }
-
     } catch (err: any) {
       const error = err as AxiosError<{ message?: string }>;
-
       toast.error(error.response?.data?.message || "Failed to approve");
+    } finally {
+      setApprovingId(null);
     }
   };
+
 
 
   const declineProject = async (id: number) => {
@@ -127,5 +127,6 @@ export function useProjects() {
     approveProject,
     declineProject,
     deleteProject,
+    approvingId
   };
 }

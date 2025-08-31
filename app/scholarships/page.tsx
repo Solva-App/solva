@@ -88,14 +88,14 @@ const Scholarships = () => {
                     key={data.id}
                     className="border-t hover:bg-gray-50 transition"
                   >
-                    <td className="px-4 py-3 text-gray-900 font-medium">
+                    <td className="px-4 py-3 font-semibold text-gray-900">
                       {data.name}
                     </td>
                     <td className="px-4 py-3 text-center">
                       <a
                         href={data.link}
                         target="_blank"
-                        className="text-blue-600 hover:underline break-words"
+                        className="text-primary underline hover:underline break-words"
                       >
                         {data.link}
                       </a>

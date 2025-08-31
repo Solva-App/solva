@@ -137,12 +137,12 @@ const UserList = () => {
                     key={user.id}
                     className="border-b hover:bg-gray-50 transition"
                   >
-                    <td className="py-3 px-3 font-medium text-gray-800 capitalize">
-                      <FaUser className="inline-block mr-2 text-gray-500" />
+                    <td className="py-3 font-semibold px-3 font-medium text-gray-800 capitalize">
+                      {/* <FaUser className="inline-block mr-2 text-gray-500" /> */}
                       {user.fullName}
                     </td>
                     <td className="py-3 px-3">
-                      <span className="bg-purple-100 text-purple-700 text-xs px-3 py-1 rounded-full">
+                      <span className="bg-purple-100 uppercase text-purple-700 text-xs px-3 py-1 rounded-full">
                         {user.category}
                       </span>
                     </td>

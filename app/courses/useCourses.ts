@@ -72,6 +72,8 @@ export function useCourses() {
     }
   };
 
+  const [approvingId, setApprovingId] = useState<number | null>(null);
+
   const approveCourse = async (course: CourseType) => {
     const body = {
       title: course.question.title,
@@ -81,22 +83,22 @@ export function useCourses() {
       faculty: course.question.faculty,
     };
 
-    console.log(course, "courses docs")
-
     try {
+      setApprovingId(course.question.id); 
       const res = await axios.patch(`${apis.past}/approve/${course.question.id}`, body);
 
       if (res.status === 200) {
         toast.success("Course approved");
-        getCourses()
+        getCourses(); 
       }
-
     } catch (err: any) {
       const error = err as AxiosError<{ message?: string }>;
-
       toast.error(error.response?.data?.message || "Failed to approve");
+    } finally {
+      setApprovingId(null); 
     }
   };
+
 
   const declineCourse = async (id: number) => {
     try {
@@ -142,5 +144,6 @@ export function useCourses() {
     approveCourse,
     declineCourse,
     deleteCourse,
+    approvingId
   };
 }

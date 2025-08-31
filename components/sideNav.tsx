@@ -24,8 +24,8 @@ const SideNav: React.FC = () => {
       svg: (isActive) => (
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          width="28"
-          height="31"
+          width="20"
+          height="20"
           viewBox="0 0 28 31"
           fill="none"
           stroke={isActive ? "black" : "white"}
@@ -44,8 +44,8 @@ const SideNav: React.FC = () => {
       svg: (isActive) => (
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          width="33"
-          height="33"
+         width="20"
+          height="20"
           viewBox="0 0 33 33"
           fill={isActive ? "none" : "white"}
         >
@@ -65,8 +65,8 @@ const SideNav: React.FC = () => {
       svg: (isActive) => (
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          width="33"
-          height="33"
+           width="20"
+          height="20"
           viewBox="0 0 33 33"
         // stroke={isActive ? "black" : "none"}
         >
@@ -83,8 +83,8 @@ const SideNav: React.FC = () => {
       svg: (isActive) => (
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          width="34"
-          height="35"
+          width="20"
+          height="20"
           viewBox="0 0 34 35"
           // stroke={isActive ? "black" : "white"}
           fill={isActive ? "none" : "#5427D7"}
@@ -112,7 +112,7 @@ const SideNav: React.FC = () => {
       svg: (isActive) => (
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          width="33"
+           width="20"
           height="20"
           viewBox="0 0 33 20"
           fill={isActive ? "none" : "#5427D7"}
@@ -140,8 +140,8 @@ const SideNav: React.FC = () => {
       svg: (isActive) => (
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          width="36"
-          height="35"
+          width="20"
+          height="20"
           viewBox="0 0 36 35"
           stroke={isActive ? "black" : "none"}
         >
@@ -170,8 +170,8 @@ const SideNav: React.FC = () => {
       svg: (isActive) => (
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          width="35"
-          height="35"
+          width="20"
+          height="20"
           viewBox="0 0 35 35"
           stroke={isActive ? "black" : "white"}
         >
@@ -188,8 +188,8 @@ const SideNav: React.FC = () => {
       svg: (isActive) => (
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          width="33"
-          height="33"
+          width="20"
+          height="20"
           viewBox="0 0 33 33"
           stroke={isActive ? "black" : "white"}
         >
@@ -230,7 +230,7 @@ const SideNav: React.FC = () => {
 
   return (
     <div className="md:w-1/4 w-[80px] inline-block overflow-hidden bg-primary h-screen py-7">
-      <h1 className="text-white text-sm md:text-3xl font-bold text-center px-2 sm:px-0 pb-3">
+      <h1 className="text-white text-xl font-bold text-center px-2 sm:px-0 pb-3">
         Solva Admin
       </h1>
       <hr />
@@ -246,7 +246,7 @@ const SideNav: React.FC = () => {
                     } flex items-center rounded-[4px] sm:rounded-[8px] my-3 md:my-1 md:gap-3 gap-0 md:py-2 py-1 cursor-pointer justify-start mx-1 md:mx-3 px-2`}
                 >
                   <span className=" flex-none">{nav.svg(isActive)}</span>
-                  <span className="lg:text-xl text-base hidden md:block font-medium">
+                  <span className="text-sm hidden md:block font-medium">
                     {nav.title}
                   </span>
                 </div>
@@ -262,8 +262,8 @@ const SideNav: React.FC = () => {
                 : "text-white"
               } flex items-center rounded-[4px] sm:rounded-[8px] my-5 md:my-2 md:gap-3 gap-0 md:py-3 py-1 cursor-pointer justify-start mx-3 px-2 `}
           >
-            <CgLogOut className="text-3xl" />
-            <span className="lg:text-2xl text-base hidden md:block font-medium">
+            <CgLogOut className=" w-5 h-4" />
+            <span className="text-sm hidden md:block font-medium">
               Logout
             </span>
           </div>

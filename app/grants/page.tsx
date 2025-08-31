@@ -85,10 +85,10 @@ const Grants = () => {
                     key={index}
                     className="border-t hover:bg-gray-50 transition"
                   >
-                    <td className="text-gray-800 font-medium text-sm sm:text-base py-3 px-4">
+                    <td className="text-gray-800  font-semibold text-sm sm:text-base py-3 px-4">
                       {data.name}
                     </td>
-                    <td className="text-blue-600 text-sm text-center sm:text-base py-3 px-4">
+                    <td className="text-primary underline text-sm text-center sm:text-base py-3 px-4">
                       <a
                         href={data.link}
                         target="_blank"

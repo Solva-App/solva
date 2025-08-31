@@ -40,7 +40,7 @@ const Dashboard = () => {
           {(loadStats ? Array(3).fill(null) : data).map((item, index) => (
             <div
               key={index}
-              className={`min-w-[180px] sm:min-w-[220px] bg-white border border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm 
+              className={`w-full bg-white border border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm 
               transition-transform duration-200 hover:scale-[1.02]`}
             >
               {loadStats ? (
