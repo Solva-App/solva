@@ -4,6 +4,7 @@ import { AxiosError } from "axios";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";
+import { userI } from "@/props.types";
 
 export const useAllUsers = () => {
   const [users, setUsers] = useState<userI[]>([]);
