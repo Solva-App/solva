@@ -21,7 +21,7 @@ const EmailSuccess = () => {
           password at this time.
         </p>
         <Button
-          disabled={null}
+          // disabled={null}
           BtnText="Return to Login"
           BtnFunction={returnToLogin}
         />
