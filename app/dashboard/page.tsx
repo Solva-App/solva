@@ -67,13 +67,11 @@ const Dashboard = () => {
         <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
           <table className="table-auto w-full border-collapse">
             <thead>
-              <tr className="bg-gray-100 text-left">
+              <tr className=" text-left">
                 {["Name", "Category", "Status", "Enrolled"].map((header, idx) => (
                   <th
                     key={idx}
-                    className={`py-3 px-4 text-gray-700 font-medium text-sm sm:text-base ${
-                      idx === 0 ? "rounded-tl-xl" : ""
-                    } ${idx === 3 ? "rounded-tr-xl" : ""}`}
+                    className={`py-3 px-4 text-gray-700 font-medium text-sm sm:text-base `}
                   >
                     {header}
                   </th>

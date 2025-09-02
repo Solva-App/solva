@@ -109,7 +109,7 @@ const UserList = () => {
         {/* TABLE */}
         <div className="overflow-x-auto rounded-lg shadow bg-white">
           <table className="table-auto w-full text-sm sm:text-base">
-            <thead className="bg-gray-100 text-gray-700 uppercase text-xs sm:text-sm">
+            <thead className=" text-gray-700 uppercase text-xs sm:text-sm">
               <tr>
                 <th className="py-3 px-3 text-left">Name</th>
                 <th className="py-3 px-3 text-left">Category</th>
@@ -137,7 +137,7 @@ const UserList = () => {
                     key={user.id}
                     className="border-b hover:bg-gray-50 transition"
                   >
-                    <td className="py-3 font-semibold px-3 font-medium text-gray-800 capitalize">
+                    <td className="py-3 font-semibold px-3  text-gray-800 capitalize">
                       {/* <FaUser className="inline-block mr-2 text-gray-500" /> */}
                       {user.fullName}
                     </td>

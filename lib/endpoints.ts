@@ -1,4 +1,4 @@
-export const baseURL = "https://solva-backend-prod.onrender.com/api/v1";
+export const baseURL = "https://api.solvaafrica.com/api/v1";
 
 export const apis = {
   login: `${baseURL}/users/admin/login`,
@@ -11,10 +11,8 @@ export const apis = {
   stats: `${baseURL}/stats`,
 
   past: `${baseURL}/questions`,
-  
+
   project: `${baseURL}/projects`,
   slider: `${baseURL}/slider`,
   notification: `${baseURL}/notification`,
-  
-  
 };

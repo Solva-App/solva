@@ -230,7 +230,7 @@ const SideNav: React.FC = () => {
 
   return (
     <div className="md:w-1/4 w-[80px] inline-block overflow-hidden bg-primary h-screen py-7">
-      <h1 className="text-white text-xl font-bold text-center px-2 sm:px-0 pb-3">
+      <h1 className="text-white text-sm md:text-xl font-bold text-center px-2 sm:px-0 pb-3">
         Solva Admin
       </h1>
       <hr />

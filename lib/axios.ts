@@ -1,6 +1,7 @@
 import axios, { AxiosHeaders, AxiosInstance, AxiosRequestConfig } from "axios";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
+import { baseURL } from "./endpoints";
 
 let isRefreshing = false;
 let failedQueue: {
@@ -9,7 +10,7 @@ let failedQueue: {
 }[] = [];
 
 const processQueue = (error: unknown, token: string | null = null) => {
-  failedQueue.forEach(prom => {
+  failedQueue.forEach((prom) => {
     if (error) prom.reject(error);
     else prom.resolve(token);
   });
@@ -20,13 +21,12 @@ const refreshToken = async (): Promise<string> => {
   const refreshToken = Cookies.get("refreshToken");
   if (!refreshToken) throw new Error("No refresh token found");
 
-  const response = await axios.post(
-    "https://solva-backend-prod.onrender.com/api/v1/users/admin/generate/token",
-    { refreshToken }
-  );
+  const response = await axios.post(`${baseURL}/users/admin/generate/token`, {
+    refreshToken,
+  });
 
-  const { accessToken, refreshToken: newRefresh } = response.data.data;
-  console.log(response, "refresh response")
+  const { accessToken } = response.data.data;
+  console.log(response, "refresh response");
 
   Cookies.set("accessToken", accessToken, {
     secure: process.env.NODE_ENV === "production",
@@ -34,20 +34,12 @@ const refreshToken = async (): Promise<string> => {
     path: "/",
   });
 
-  // if (newRefresh) {
-  //   Cookies.set("refreshToken", newRefresh, {
-  //     secure: process.env.NODE_ENV === "production",
-  //     sameSite: "strict",
-  //     path: "/",
-  //   });
-  // }
-
   return accessToken;
 };
 
 export const createAxiosInstance = (): AxiosInstance => {
   const instance = axios.create({
-    baseURL: "https://solva-backend-prod.onrender.com/api/v1",
+    baseURL: `${baseURL}`,
     headers: {
       "Content-Type": "application/json",
     },
@@ -68,7 +60,6 @@ export const createAxiosInstance = (): AxiosInstance => {
     (error) => Promise.reject(error)
   );
 
-
   instance.interceptors.response.use(
     (response) => response,
     async (error) => {
@@ -88,7 +79,9 @@ export const createAxiosInstance = (): AxiosInstance => {
             failedQueue.push({ resolve, reject });
           })
             .then((token) => {
-              originalRequest.headers = new AxiosHeaders(originalRequest.headers);
+              originalRequest.headers = new AxiosHeaders(
+                originalRequest.headers
+              );
               originalRequest.headers.set("Authorization", `Bearer ${token}`);
               return instance(originalRequest);
             })
@@ -109,13 +102,12 @@ export const createAxiosInstance = (): AxiosInstance => {
           Cookies.remove("accessToken");
           if (typeof window !== "undefined") {
             toast.error("Session expired. Please log in again.");
-            window.location.href = "/";
+            // window.location.href = "/";
           }
           return Promise.reject(refreshErr);
         } finally {
           isRefreshing = false;
         }
-
       }
 
       return Promise.reject(error);

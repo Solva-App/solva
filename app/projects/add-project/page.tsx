@@ -8,6 +8,7 @@ import { MdClose, MdOutlineCloudUpload } from "react-icons/md";
 import { toast } from "react-toastify";
 import { createAxiosInstance } from "@/lib/axios";
 import { apis } from "@/lib/endpoints";
+import Image from "next/image";
 
 const AddProject = () => {
   const router = useRouter();
@@ -20,9 +21,43 @@ const AddProject = () => {
   const axios = createAxiosInstance();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setDocuments([...documents, ...Array.from(e.target.files)]);
+    if (!e.target.files) return;
+
+    const allowedTypes = [
+      "application/pdf",
+      // "image/png",
+      // "image/jpeg",
+      // "image/jpg",
+    ];
+    const maxSize = 5 * 1024 * 1024;
+
+    const newFiles: File[] = [];
+    const errors: string[] = [];
+
+    Array.from(e.target.files).forEach((file) => {
+      if (!allowedTypes.includes(file.type)) {
+        errors.push(`"${file.name}" is not a supported file type.`);
+        return;
+      }
+
+      if (file.size > maxSize) {
+        errors.push(`"${file.name}" exceeds the 5MB size limit.`);
+        return;
+      }
+
+      newFiles.push(file);
+    });
+
+    if (errors.length > 0) {
+      toast.error(errors.join(" "));
     }
+
+    if (newFiles.length > 0) {
+      setDocuments((prev) => [...prev, ...newFiles]);
+    }
+
+    // Reset input value so user can reselect same file if needed
+    e.target.value = "";
   };
 
   const removeFile = (index: number) => {
@@ -32,7 +67,9 @@ const AddProject = () => {
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!name || !description || documents.length === 0) {
-      toast.error("Please fill all required fields and upload at least one file.");
+      toast.error(
+        "Please fill all required fields and upload at least one file."
+      );
       return;
     }
 
@@ -87,7 +124,9 @@ const AddProject = () => {
           </div>
 
           <div className="flex flex-col gap-2 mb-6">
-            <label className="font-semibold text-gray-700">Project Description</label>
+            <label className="font-semibold text-gray-700">
+              Project Description
+            </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -97,14 +136,16 @@ const AddProject = () => {
           </div>
 
           <div className="flex flex-col gap-2 mb-6">
-            <label className="font-semibold text-gray-700">Upload Documents</label>
+            <label className="font-semibold text-gray-700">
+              Upload Documents
+            </label>
             <div
               className="flex flex-col justify-center items-center border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-primary hover:bg-primary/10 transition relative"
               onClick={() => fileInputRef.current?.click()}
             >
               <MdOutlineCloudUpload className="text-4xl text-gray-600 mb-2" />
               <p className="text-gray-600 text-sm mb-1">
-                Click to upload or drag & drop files here
+                Click to upload or drag & drop pdf here
               </p>
               {documents.length > 0 && (
                 <span className="absolute top-2 right-3 bg-primary text-white text-xs px-2 py-1 rounded-full">
@@ -115,32 +156,52 @@ const AddProject = () => {
             <input
               type="file"
               multiple
-              accept="image/*"
+              accept=".pdf*"
               className="hidden"
               ref={fileInputRef}
               onChange={handleFileChange}
             />
 
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mt-3">
-              {documents.map((file, idx) => (
-                <div
-                  key={idx}
-                  className="relative w-full h-28 border rounded-lg overflow-hidden group"
-                >
-                  <img
-                    src={URL.createObjectURL(file)}
-                    alt={file.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeFile(idx)}
-                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-80 hover:opacity-100 transition"
+              {documents.map((file, idx) => {
+                const fileUrl = URL.createObjectURL(file);
+                const isPdf =
+                  file.type === "application/pdf" ||
+                  file.name.toLowerCase().endsWith(".pdf");
+
+                return (
+                  <div
+                    key={idx}
+                    className="relative w-full h-28 border rounded-lg overflow-hidden group flex items-center justify-center bg-gray-100"
                   >
-                    <MdClose className="text-xs" />
-                  </button>
-                </div>
-              ))}
+                    {isPdf ? (
+                      <a
+                        href={fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 text-sm underline text-center px-2"
+                      >
+                        Preview PDF
+                      </a>
+                    ) : (
+                      <Image
+                        width={100}
+                        height={100}
+                        src={fileUrl}
+                        alt={file.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                      />
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => removeFile(idx)}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-80 hover:opacity-100 transition"
+                    >
+                      <MdClose className="text-xs" />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
