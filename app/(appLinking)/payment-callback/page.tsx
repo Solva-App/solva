@@ -4,7 +4,7 @@ import { useEffect } from "react";
 
 const PaymentCallbackClient = () => {
   useEffect(() => {
-    window.location.href = "solvaapp://";
+    window.location.href = "myapp://";
   }, []);
 
   return (
