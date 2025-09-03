@@ -1,9 +1,12 @@
+"use client";
+
 import { useEffect } from "react";
-import { useRouter } from "next/router";
+import { useSearchParams } from "next/navigation";
 
 const PaymentCallback = () => {
-  const router = useRouter();
-  const { trxref, reference } = router.query;
+  const searchParams = useSearchParams();
+  const trxref = searchParams.get("trxref");
+  const reference = searchParams.get("reference");
 
   useEffect(() => {
     if (trxref && reference) {
@@ -12,6 +15,7 @@ const PaymentCallback = () => {
       window.location.href = appLink;
     }
   }, [trxref, reference]);
+
   return (
     <div style={{ textAlign: "center", marginTop: 50 }}>
       <h1>Redirecting to your app...</h1>
