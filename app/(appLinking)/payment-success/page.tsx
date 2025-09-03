@@ -3,23 +3,19 @@ import { useRouter } from "next/router";
 
 const PaymentCallback = () => {
   const router = useRouter();
+  const { trxref, reference } = router.query;
 
   useEffect(() => {
-    if (!router.isReady) return;
+    if (trxref && reference) {
+      const appLink = `myapp://payment-success?trxref=${trxref}&reference=${reference}`;
 
-    const queryString = new URLSearchParams(router.query as Record<string, string>).toString();
-    const appLink = `solvaapp://payment-success?${queryString}`;
-    setTimeout(() => {
       window.location.href = appLink;
-    }, 100);
-
-    console.log("Redirecting to app with link:", appLink);
-  }, [router.isReady, router.query]);
-
+    }
+  }, [trxref, reference]);
   return (
-    <div style={{ textAlign: "center", marginTop: "50px" }}>
-      <h1>Redirecting to App...</h1>
-      <p>If nothing happens, please make sure the app is installed.</p>
+    <div style={{ textAlign: "center", marginTop: 50 }}>
+      <h1>Redirecting to your app...</h1>
+      <p>If nothing happens, please make sure your app is installed.</p>
     </div>
   );
 };
