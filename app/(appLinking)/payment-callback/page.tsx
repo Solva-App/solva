@@ -1,20 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
-import { useSearchParams } from "next/navigation";
 
-const PaymentCallback = () => {
-  const searchParams = useSearchParams();
-  const trxref = searchParams.get("trxref");
-  const reference = searchParams.get("reference");
-
+const PaymentCallbackClient = () => {
   useEffect(() => {
-    if (trxref && reference) {
-      const appLink = `solvaapp://payment-success?trxref=${trxref}&reference=${reference}`;
-
-      window.location.href = appLink;
-    }
-  }, [trxref, reference]);
+    window.location.href = "solvaapp://";
+  }, []);
 
   return (
     <div style={{ textAlign: "center", marginTop: 50 }}>
@@ -24,4 +15,4 @@ const PaymentCallback = () => {
   );
 };
 
-export default PaymentCallback;
+export default PaymentCallbackClient;
