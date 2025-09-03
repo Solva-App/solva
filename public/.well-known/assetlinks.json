@@ -3,7 +3,7 @@
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
-      "package_name": "com.solvaafrica",
+      "package_name": "com.bytegrn.solvaafrica.dev",
       "sha256_cert_fingerprints": [
         "D6:C4:60:2D:E6:6C:74:19:D1:D2:D8:0E:00:7E:59:01:2E:4F:DF:8A:BE:78:38:12:5D:DA:96:A6:C9:72:3D:F5",
         "A2:AC:1E:54:48:8F:9B:5A:66:E2:53:74:4A:05:59:94:8D:7D:BC:0F:5B:64:75:96:0E:74:F9:2A:76:02:10:7C",
