@@ -7,7 +7,7 @@ const PaymentCallback = () => {
 
   useEffect(() => {
     if (trxref && reference) {
-      const appLink = `myapp://payment-success?trxref=${trxref}&reference=${reference}`;
+      const appLink = `solvaapp://payment-success?trxref=${trxref}&reference=${reference}`;
 
       window.location.href = appLink;
     }
