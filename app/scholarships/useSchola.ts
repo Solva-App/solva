@@ -7,11 +7,11 @@ import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 
 export interface scholaI {
-  name: string;
-  desc: string;
+  // name: string;
+  // desc: string;
   link: string;
   id?: number;
-  description?: string;
+  // description?: string;
 }
 
 export const useScholar = () => {
@@ -21,15 +21,15 @@ export const useScholar = () => {
   const axios = createAxiosInstance();
   const router = useRouter();
 
-  const createScholar = async ({ name, desc, link }: scholaI) => {
+  const createScholar = async ({  link }: scholaI) => {
     setLoading(true);
     try {
       const token = Cookies.get("accessToken");
       const response = await axios.post(
         `${apis.scholar}/create`,
         {
-          name,
-          description: desc,
+          // name,
+          // description: desc,
           link,
         },
        
@@ -37,7 +37,7 @@ export const useScholar = () => {
 
       if (response.status === 200) {
         toast.success("Scholarship created successfully");
-        setScholar((prev) => [...prev, { name, desc, link }]);
+        setScholar((prev) => [...prev, {  link }]);
         router.replace("/scholarships");
       }
     } catch (error: any) {
@@ -49,15 +49,15 @@ export const useScholar = () => {
   };
 
   const [editLoad, setEditLoad] = useState(false);
-  const editScholar = async ({ name, desc, link, id }: scholaI) => {
+  const editScholar = async ({  link, id }: scholaI) => {
     setEditLoad(true);
     try {
       const token = Cookies.get("accessToken");
       const response = await axios.patch(
         `${apis.scholar}/${id}`,
         {
-          name,
-          description: desc,
+          // name,
+          // description: desc,
           link,
         },
        
@@ -65,7 +65,7 @@ export const useScholar = () => {
 
       if (response.status === 200) {
         toast.success("Scholarship edited successfully");
-        // setScholar((prev) => [...prev, { name, desc, link }]);
+        // setScholar((prev) => [...prev, {  link }]);
         router.replace("/scholarships");
       }
     } catch (error: any) {

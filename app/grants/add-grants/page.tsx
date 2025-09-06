@@ -14,7 +14,7 @@ const AddGrants = () => {
   const { createGrant, loading } = useGrants();
 
   const addGrant = () => {
-    if (!name || !desc || !link) return;
+    if ( !link) return;
     createGrant({ name, desc, link });
   };
 
@@ -40,7 +40,7 @@ const AddGrants = () => {
         <div className="bg-white shadow-md rounded-2xl p-6 sm:p-8 max-w-2xl mx-auto">
           <div className="flex flex-col gap-6">
             {/* Name Input */}
-            <div className="flex flex-col gap-2">
+            {/* <div className="flex flex-col gap-2">
               <label className="text-sm sm:text-base font-medium text-gray-700">
                 Name
               </label>
@@ -52,7 +52,7 @@ const AddGrants = () => {
                            focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary hover:border-primary transition-all"
                 placeholder="$5,000 Grants from Google"
               />
-            </div>
+            </div> */}
 
             {/* Link Input */}
             <div className="flex flex-col gap-2">
@@ -70,7 +70,7 @@ const AddGrants = () => {
             </div>
 
             {/* Description Input */}
-            <div className="flex flex-col gap-2">
+            {/* <div className="flex flex-col gap-2">
               <label className="text-sm sm:text-base font-medium text-gray-700">
                 Description
               </label>
@@ -81,7 +81,7 @@ const AddGrants = () => {
                            focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary hover:border-primary transition-all"
                 placeholder="Enter description here..."
               />
-            </div>
+            </div> */}
 
             {/* Button */}
             <div className="flex justify-end">
@@ -89,7 +89,7 @@ const AddGrants = () => {
                 <Button
                   BtnText={loading ? "Adding..." : "Add Grant"}
                   BtnFunction={addGrant}
-                  disabled={!name || !link || !desc || loading}
+                  disabled={ !link || loading}
                 />
               </div>
             </div>

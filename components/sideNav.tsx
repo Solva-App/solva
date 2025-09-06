@@ -225,7 +225,7 @@ const SideNav: React.FC = () => {
   const logOut = () => {
     Cookies.remove("accessToken");
     Cookies.remove("refreshToken");
-    router.replace("/");
+    router.replace("/login");
   };
 
   return (

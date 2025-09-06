@@ -55,9 +55,9 @@ const Scholarships = () => {
           <table className="table-auto w-full">
             <thead className="bg-gray-100">
               <tr>
-                <th className="text-left px-4 py-3 text-sm font-semibold text-gray-600">
+                {/* <th className="text-left px-4 py-3 text-sm font-semibold text-gray-600">
                   Name
-                </th>
+                </th> */}
                 <th className="text-center px-4 py-3 text-sm font-semibold text-gray-600">
                   Link
                 </th>
@@ -88,9 +88,9 @@ const Scholarships = () => {
                     key={data.id}
                     className="border-t hover:bg-gray-50 transition"
                   >
-                    <td className="px-4 py-3 font-semibold text-gray-900">
+                    {/* <td className="px-4 py-3 font-semibold text-gray-900">
                       {data.name}
-                    </td>
+                    </td> */}
                     <td className="px-4 py-3 text-center">
                       <a
                         href={data.link}

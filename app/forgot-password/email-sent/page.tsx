@@ -7,7 +7,7 @@ const EmailSuccess = () => {
   const router = useRouter();
 
   const returnToLogin = () => {
-    router.push("/");
+    router.push("/login");
   };
   return (
     <div className="w-full flex justify-center ">

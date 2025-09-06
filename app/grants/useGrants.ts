@@ -7,11 +7,11 @@ import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 
 export interface GrantI {
-  name: string;
-  desc: string;
+  // name: string;
+  // desc: string;
   link: string;
   id?: number;
-  description?: string;
+  // description?: string;
 }
 
 export const useGrants = () => {
@@ -21,22 +21,22 @@ export const useGrants = () => {
   const router = useRouter();
   const [openDeleteModal, setDeleteModal] = useState(false);
 
-  const createGrant = async ({ name, desc, link }: GrantI) => {
+  const createGrant = async ({ link }: GrantI) => {
     setLoading(true);
     try {
       const token = Cookies.get("accessToken");
       const response = await axios.post(
         `${apis.grant}/create`,
         {
-          name,
-          description: desc,
+          // name,
+          // description: desc,
           link,
         },
       );
 
       if (response.status === 200) {
         toast.success("Grant created successfully");
-        setGrants((prev) => [...prev, { name, desc, link }]);
+        setGrants((prev) => [...prev, {  link }]);
         router.replace("/grants");
       }
     } catch (error: any) {
@@ -49,7 +49,7 @@ export const useGrants = () => {
 
   const [editLoad, setEditLoad] = useState(false);
 
-  const editGrant = async ({ name, desc, link, id }: GrantI) => {
+  const editGrant = async ({  link, id }: GrantI) => {
     if (!id) {
       toast.error("Grant ID is required");
       return;
@@ -61,8 +61,8 @@ export const useGrants = () => {
       const response = await axios.patch(
         `${apis.grant}/${id}`,
         {
-          name,
-          description: desc,
+          // name,
+          // description: desc,
           link,
         },
       );

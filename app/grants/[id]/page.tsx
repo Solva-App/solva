@@ -11,9 +11,9 @@ const EditGrants = () => {
   const { id } = useParams<{ id: string }>();
   const { editGrant, editLoad, fetched, fetchGrants } = useGrants();
 
-  const [name, setName] = useState("");
+  // const [name, setName] = useState("");
+  // const [desc, setDesc] = useState("");
   const [link, setLink] = useState("");
-  const [desc, setDesc] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,16 +28,16 @@ const EditGrants = () => {
     if (id && fetched.length > 0) {
       const grant = fetched.find((g: any) => g.id === Number(id));
       if (grant) {
-        setName(grant.name ?? "");
         setLink(grant.link ?? "");
-        setDesc(grant.description ?? "");
+        // setName(grant.name ?? "");
+        // setDesc(grant.description ?? "");
       }
     }
   }, [id, fetched]);
 
   const updateGrant = () => {
     if (!id) return;
-    editGrant({ id: Number(id), name, desc, link });
+    editGrant({ id: Number(id), link });
   };
 
   if (loading) {
@@ -72,7 +72,7 @@ const EditGrants = () => {
         {/* Form */}
         <div className="flex flex-col gap-8 max-w-2xl">
           {/* Name */}
-          <div className="flex flex-col gap-2">
+          {/* <div className="flex flex-col gap-2">
             <label className="text-gray-700 font-medium text-base sm:text-lg">
               Name
             </label>
@@ -84,7 +84,7 @@ const EditGrants = () => {
               className="border border-gray-300 rounded-xl p-4 text-base sm:text-lg font-medium text-gray-800 placeholder-gray-400 
                          focus:outline-none focus:ring-2 focus:ring-primary hover:border-primary transition"
             />
-          </div>
+          </div> */}
 
           {/* Link */}
           <div className="flex flex-col gap-2">
@@ -102,7 +102,7 @@ const EditGrants = () => {
           </div>
 
           {/* Description */}
-          <div className="flex flex-col gap-2">
+          {/* <div className="flex flex-col gap-2">
             <label className="text-gray-700 font-medium text-base sm:text-lg">
               Description
             </label>
@@ -113,7 +113,7 @@ const EditGrants = () => {
               className="border border-gray-300 rounded-xl p-4 h-40 text-base sm:text-lg font-medium text-gray-800 placeholder-gray-400 
                          focus:outline-none focus:ring-2 focus:ring-primary hover:border-primary transition"
             />
-          </div>
+          </div> */}
 
           {/* Submit */}
           <div className="flex justify-end">
@@ -121,7 +121,7 @@ const EditGrants = () => {
               <Button
                 BtnText={editLoad ? "Updating..." : "Update Grant"}
                 BtnFunction={updateGrant}
-                disabled={!name || !link || !desc || editLoad}
+                disabled={ !link || editLoad}
               />
             </div>
           </div>

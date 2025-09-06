@@ -52,9 +52,9 @@ const Grants = () => {
           <table className="table-auto w-full border-collapse">
             <thead>
               <tr className="bg-gray-100 text-left text-gray-600">
-                <th className="font-semibold text-sm sm:text-base py-3 px-4 rounded-tl-lg">
+                {/* <th className="font-semibold text-sm sm:text-base py-3 px-4 rounded-tl-lg">
                   Name
-                </th>
+                </th> */}
                 <th className="font-semibold text-sm sm:text-base py-3 px-4 text-center">
                   Link
                 </th>
@@ -85,9 +85,9 @@ const Grants = () => {
                     key={index}
                     className="border-t hover:bg-gray-50 transition"
                   >
-                    <td className="text-gray-800  font-semibold text-sm sm:text-base py-3 px-4">
+                    {/* <td className="text-gray-800  font-semibold text-sm sm:text-base py-3 px-4">
                       {data.name}
-                    </td>
+                    </td> */}
                     <td className="text-primary underline text-sm text-center sm:text-base py-3 px-4">
                       <a
                         href={data.link}

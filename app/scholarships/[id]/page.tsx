@@ -11,9 +11,9 @@ const EditScholarship = () => {
   const { id } = useParams<{ id: string }>();
   const { editScholar, editLoad, fetched, fetchScholar } = useScholar();
 
-  const [name, setName] = useState("");
+  // const [name, setName] = useState("");
   const [link, setLink] = useState("");
-  const [desc, setDesc] = useState("");
+  // const [desc, setDesc] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,16 +28,17 @@ const EditScholarship = () => {
     if (id && fetched.length > 0) {
       const grant = fetched.find((g: any) => g.id === Number(id));
       if (grant) {
-        setName(grant.name ?? "");
+        // setName(grant.name ?? "");
         setLink(grant.link ?? "");
-        setDesc(grant.description ?? "");
+        // setDesc(grant.description ?? "");
       }
     }
   }, [id, fetched]);
 
   const updateScholar = () => {
     if (!id) return;
-    editScholar({ id: Number(id), name, desc, link });
+    editScholar({ id: Number(id), link });
+    // editScholar({ id: Number(id), name, desc, link });
   };
 
   if (loading) {
@@ -72,7 +73,7 @@ const EditScholarship = () => {
         <div className="bg-white rounded-2xl shadow-md p-6 sm:p-8 max-w-2xl">
           <div className="flex flex-col gap-6">
             {/* Name Field */}
-            <div className="flex flex-col gap-2">
+            {/* <div className="flex flex-col gap-2">
               <label className="text-sm sm:text-base font-medium text-gray-700">
                 Name
               </label>
@@ -83,7 +84,7 @@ const EditScholarship = () => {
                 placeholder="GNCC Scholarship"
                 className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition"
               />
-            </div>
+            </div> */}
 
             {/* Link Field */}
             <div className="flex flex-col gap-2">
@@ -99,7 +100,7 @@ const EditScholarship = () => {
             </div>
 
             {/* Description Field */}
-            <div className="flex flex-col gap-2">
+            {/* <div className="flex flex-col gap-2">
               <label className="text-sm sm:text-base font-medium text-gray-700">
                 Description
               </label>
@@ -109,14 +110,14 @@ const EditScholarship = () => {
                 placeholder="Short description about the grant"
                 className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 h-40 resize-none focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition"
               />
-            </div>
+            </div> */}
 
             {/* Submit Button */}
             <div className="flex justify-end pt-4">
               <div className="w-full md:w-1/2">
                 <Button
                   BtnText={editLoad ? "Updating..." : "Update Scholarship"}
-                  disabled={!name || !link || !desc || editLoad}
+                  disabled={ !link || editLoad}
                   BtnFunction={updateScholar}
                 />
               </div>

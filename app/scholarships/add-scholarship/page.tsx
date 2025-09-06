@@ -17,8 +17,8 @@ const AddScholarship = () => {
   const { createScholar, loading } = useScholar();
 
   const addScholar = () => {
-    if (!name || !desc || !link) return;
-    createScholar({ name, desc, link });
+    if ( !link) return;
+    createScholar({ link });
   };
 
   return (
@@ -31,7 +31,7 @@ const AddScholarship = () => {
         </div>
         <hr className="my-4" />
         <div className="flex flex-col gap-8">
-          <div className="gap-y-3 flex flex-col">
+          {/* <div className="gap-y-3 flex flex-col">
             <label
               className="text-base sm:text-xl font-medium"
               htmlFor="Job Role"
@@ -45,7 +45,7 @@ const AddScholarship = () => {
               className="md:w-1/2 w-full border border-[#5C5F62] font-medium text-black rounded-[8px] text-base sm:text-xl p-5"
               placeholder="Input Scholarship"
             />
-          </div>
+          </div> */}
           <div className="gap-y-3 flex flex-col">
             <label
               className="text-base sm:text-xl font-medium"
@@ -60,7 +60,7 @@ const AddScholarship = () => {
               placeholder="https://scholarship1link.com"
             />
           </div>
-          <div className="gap-y-3 flex flex-col">
+          {/* <div className="gap-y-3 flex flex-col">
             <label className="text-base sm:text-xl font-medium">
               Description
             </label>
@@ -70,13 +70,13 @@ const AddScholarship = () => {
               className="w-full md:w-1/2 border h-[153px] border-[#5C5F62] font-medium text-black rounded-[8px] text-base sm:text-xl p-5"
               placeholder="Job description here..."
             />
-          </div>
+          </div> */}
           <div className="flex justify-end">
             <div className=" w-full md:w-1/3">
               <Button
                 BtnText={loading ? "Adding..." : "Add Scholarship"}
                 BtnFunction={addScholar}
-                disabled={!name || !link || !desc || loading}
+                disabled={ !link|| loading}
               />
             </div>
           </div>

@@ -31,7 +31,7 @@ const refreshToken = async (): Promise<string> => {
   Cookies.set("accessToken", accessToken, {
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
-    path: "/",
+    path: "/login",
   });
 
   return accessToken;
@@ -102,7 +102,7 @@ export const createAxiosInstance = (): AxiosInstance => {
           Cookies.remove("accessToken");
           if (typeof window !== "undefined") {
             toast.error("Session expired. Please log in again.");
-            // window.location.href = "/";
+            // window.location.href = "/login";
           }
           return Promise.reject(refreshErr);
         } finally {

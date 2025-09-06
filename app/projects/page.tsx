@@ -227,7 +227,7 @@ const Project = () => {
                         </p>
                       )}
 
-                      <a
+                      {/* <a
                         href={doc.url}
                         download
                         target="_blank"
@@ -235,7 +235,7 @@ const Project = () => {
                         className="mt-2 px-3 py-1 bg-primary text-white text-xs rounded hover:bg-blue-700 transition"
                       >
                         Download
-                      </a>
+                      </a> */}
 
                       <p className="mt-2 text-sm text-gray-600">{doc.name}</p>
                     </div>
