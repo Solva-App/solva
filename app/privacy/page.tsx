@@ -78,7 +78,7 @@ const Privacy = () => {
             key={idx}
             className="bg-white rounded-xl shadow-md p-6 flex items-start gap-4"
           >
-            <item.icon className="text-primary w-8 h-8" />
+            <item.icon className="text-primary w-8 h-8 flex-none" />
             <div>
               <h2 className="text-xl font-semibold text-gray-800 mb-2">
                 {item.title}

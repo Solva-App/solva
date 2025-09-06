@@ -52,14 +52,14 @@ const Landing = () => {
             <span className="font-semibold text-primary">Solva</span>
           </p>
 
-          <div className="mt-8 flex justify-center gap-4">
+          {/* <div className="mt-8 flex justify-center gap-4">
             <button className="bg-primary text-white px-6 py-3 rounded-2xl shadow-md hover:bg-primary/90 transition">
               Get Started
             </button>
             <button className="border border-primary text-primary px-6 py-3 rounded-2xl hover:bg-primary/10 transition">
               How it works
             </button>
-          </div>
+          </div> */}
         </div>
       </main>
       <section className="bg-primary py-12 px-6">
