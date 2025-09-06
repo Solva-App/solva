@@ -202,7 +202,7 @@ const Landing = () => {
                 name: "Emeka",
                 school: "FUTA",
                 text: "Being Premium means I get rewarded for helping others learn.",
-                pic: pl1,
+                pic: pl4,
               },
               {
                 name: "Aisha",
@@ -220,7 +220,7 @@ const Landing = () => {
                 name: "Chioma",
                 school: "UNN",
                 text: "Ask Kemi AI guided me during exam prep. Amazing feature!",
-                pic: pl4,
+                pic: pl1,
               },
               {
                 name: "Kelechi",
