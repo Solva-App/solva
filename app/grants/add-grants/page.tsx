@@ -15,7 +15,7 @@ const AddGrants = () => {
 
   const addGrant = () => {
     if ( !link) return;
-    createGrant({ name, desc, link });
+    createGrant({ link });
   };
 
   return (
