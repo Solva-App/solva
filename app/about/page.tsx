@@ -5,6 +5,7 @@ import Image from "next/image";
 import aboutImg from "@/public/assets/about.png";
 import logo from "@/public/assets/solvaLogo.png";
 import { useRouter } from "next/navigation";
+import art from "@/public/assets/art.jpeg";
 
 const About = () => {
   const router = useRouter();
@@ -40,14 +41,28 @@ const About = () => {
           </ul>
         </nav>
       </header>
-      <section className="bg-gradient-to-r from-purple-600 to-primary text-white py-20 px-6 text-center">
-        <h1 className="text-4xl md:text-5xl font-extrabold">
-          About <span className="text-yellow-300">Solva</span>
-        </h1>
-        <p className="mt-4 max-w-2xl mx-auto text-lg text-white/90">
-          Helping students learn, earn, and grow — all in one ecosystem.
-        </p>
+      <section
+        style={{
+          backgroundImage: `url(${art.src})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+        className="relative text-white py-20 px-6 text-center"
+      >
+        {/* Dark gradient overlay */}
+        <div className="absolute inset-0 bg-black/50"></div>
+
+        {/* Content */}
+        <div className="relative z-10">
+          <h1 className="text-4xl md:text-5xl font-extrabold">
+            About <span className="text-yellow-300">Solva</span>
+          </h1>
+          <p className="mt-4 max-w-2xl mx-auto text-lg text-white/90">
+            Helping students learn, earn, and grow — all in one ecosystem.
+          </p>
+        </div>
       </section>
+
       <main className="flex-1 max-w-6xl mx-auto py-16 px-6 grid md:grid-cols-2 gap-10 items-center">
         <div className="space-y-6 text-gray-700">
           <p>
