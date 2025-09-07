@@ -10,8 +10,14 @@ import { Loader2, X } from "lucide-react";
 
 const Courses = () => {
   const router = useRouter();
-  const { courses, loading, approveCourse, declineCourse, deleteCourse, approvingId } =
-    useCourses();
+  const {
+    courses,
+    loading,
+    approveCourse,
+    declineCourse,
+    deleteCourse,
+    approvingId,
+  } = useCourses();
 
   const [deleteModalId, setDeleteModalId] = useState<number | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -28,7 +34,7 @@ const Courses = () => {
     }
   };
 
-  console.log(approvingId, "approvong")
+  console.log(approvingId, "approvong");
 
   return (
     <div className="flex relative bg-gray-50">
@@ -36,16 +42,14 @@ const Courses = () => {
       <div className="w-full p-5 sm:p-10 overflow-y-scroll h-screen">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-xl font-semibold">
-            Manage Past Questions
-          </h1>
-          <button
+          <h1 className="text-xl font-semibold">All Past Questions</h1>
+          {/* <button
             onClick={() => router.push("/courses/add-course")}
             className=" text-sm font-medium flex items-center gap-1 p-2  rounded-lg text-white bg-primary  hover:bg-primary/90 transition"
           >
             <IoIosAddCircleOutline className="h-5 w-5" />
             <span className="text-sm">Add New</span>
-          </button>
+          </button> */}
         </div>
 
         {/* Table */}
@@ -102,7 +106,7 @@ const Courses = () => {
                     </td>
                     <td className="py-2 px-2 text-center">
                       {Array.isArray(course.document) &&
-                        course.document.length > 0 ? (
+                      course.document.length > 0 ? (
                         <button
                           onClick={() => setViewDocs(course)}
                           className="mt-2 bg-primary text-white px-2 py-1 rounded-sm hover:bg-primary/80 transition text-xs"
@@ -138,10 +142,20 @@ const Courses = () => {
                         className="bg-red-600 px-3 py-1 rounded-sm text-sm text-white hover:bg-red-700 transition disabled:opacity-50"
                         disabled={deleting}
                       >
-                        {deleting && deleteModalId === course.id ? "Deleting..." : "Delete"}
+                        {deleting && deleteModalId === course.id
+                          ? "Deleting..."
+                          : "Delete"}
+                      </button>
+                      <button
+                        onClick={() =>
+                          router.push(`/courses/manage/${course.question.id}`)
+                        }
+                        disabled={course.question.requiresApproval}
+                        className="bg-primary p-1 rounded-sm text-xs text-white hover:bg-primary/90 transition disabled:hidden disabled:opacity-50"
+                      >
+                        Manage
                       </button>
                     </td>
-
                   </tr>
                 ))}
               </tbody>
@@ -194,7 +208,8 @@ const Courses = () => {
               <div className="flex justify-between items-center mb-3">
                 <h2 className="text-lg font-bold text-gray-800 ">
                   Documents for {viewDocs.question?.title}
-                </h2><button
+                </h2>
+                <button
                   onClick={() => setViewDocs(null)}
                   className="p-2 w-7 h-7 bg-white rounded-full"
                 >
@@ -231,7 +246,6 @@ const Courses = () => {
                   </div>
                 ))}
               </div>
-
             </div>
           </motion.div>
         )}

@@ -13,6 +13,7 @@ export const apis = {
   stats: `${baseURL}/stats`,
 
   past: `${baseURL}/questions`,
+  docs: `${baseURL}/documents`,
 
   project: `${baseURL}/projects`,
   slider: `${baseURL}/slider`,

@@ -1,4 +1,4 @@
-import axios, { AxiosHeaders, AxiosInstance, AxiosRequestConfig } from "axios";
+import axios, { AxiosHeaders, AxiosInstance } from "axios";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 import { baseURL } from "./endpoints";
@@ -18,23 +18,29 @@ const processQueue = (error: unknown, token: string | null = null) => {
 };
 
 const refreshToken = async (): Promise<string> => {
-  const refreshToken = Cookies.get("refreshToken");
-  if (!refreshToken) throw new Error("No refresh token found");
+  const refresh = Cookies.get("refreshToken");
+  if (!refresh) throw new Error("No refresh token found");
 
   const response = await axios.post(`${baseURL}/users/admin/generate/token`, {
-    refreshToken,
+    refreshToken: refresh,
   });
 
-  const { accessToken } = response.data.data;
-  console.log(response, "refresh response");
+  const { accessToken, refreshToken } = response.data.data;
 
+  // ✅ set cookies globally
   Cookies.set("accessToken", accessToken, {
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
-    path: "/login",
+    path: "/", // was /login
   });
 
-  return accessToken;
+  Cookies.set("refreshToken", refreshToken, {
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    path: "/", // was /login
+  });
+
+  return accessToken; // ✅ return only accessToken
 };
 
 export const createAxiosInstance = (): AxiosInstance => {
@@ -45,6 +51,7 @@ export const createAxiosInstance = (): AxiosInstance => {
     },
   });
 
+  // Request interceptor: attach token
   instance.interceptors.request.use(
     (config) => {
       if (typeof window === "undefined") return config;
@@ -60,6 +67,7 @@ export const createAxiosInstance = (): AxiosInstance => {
     (error) => Promise.reject(error)
   );
 
+  // Response interceptor: handle 401
   instance.interceptors.response.use(
     (response) => response,
     async (error) => {
@@ -100,9 +108,10 @@ export const createAxiosInstance = (): AxiosInstance => {
         } catch (refreshErr) {
           processQueue(refreshErr, null);
           Cookies.remove("accessToken");
+          Cookies.remove("refreshToken");
           if (typeof window !== "undefined") {
             toast.error("Session expired. Please log in again.");
-            // window.location.href = "/login";
+            window.location.href = "/login";
           }
           return Promise.reject(refreshErr);
         } finally {

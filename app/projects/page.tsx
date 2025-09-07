@@ -53,14 +53,14 @@ const Project = () => {
       <div className="w-full p-5 sm:p-10 overflow-y-scroll h-screen">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-xl font-semibold">Manage Projects</h1>
-          <button
+          <h1 className="text-xl font-semibold">All Projects</h1>
+          {/* <button
             onClick={() => router.push("/projects/add-project")}
             className=" text-sm font-medium flex items-center gap-1 p-2  rounded-sm text-white bg-primary  hover:bg-primary/90 transition"
           >
             <IoIosAddCircleOutline className="h-5 w-5" />
             Add new
-          </button>
+          </button> */}
         </div>
         {loading ? (
           <p className="text-center text-sm mt-10">Loading projects...</p>
@@ -144,6 +144,15 @@ const Project = () => {
                           {deleting && deleteModalId === project.id
                             ? "Deleting..."
                             : "Delete"}
+                        </button>
+                        <button
+                          onClick={() =>
+                            router.push(`/projects/manage/${project.id}`)
+                          }
+                          disabled={project.requiresApproval}
+                          className="bg-primary disabled:hidden p-1 rounded-sm text-xs text-white hover:bg-primary/90 transition disabled:opacity-50"
+                        >
+                          Manage
                         </button>
                       </td>
                     </tr>
