@@ -10,6 +10,7 @@ export const apis = {
   job: `${baseURL}/jobs`,
   grant: `${baseURL}/grants`,
   scholar: `${baseURL}/scholarships`,
+  inno: `${baseURL}/innovations`,
   stats: `${baseURL}/stats`,
 
   past: `${baseURL}/questions`,
