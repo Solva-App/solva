@@ -8,6 +8,7 @@ import { RiAdvertisementLine } from "react-icons/ri";
 import { usePathname, useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { IoIosNotifications } from "react-icons/io";
+import { GiThink } from "react-icons/gi";
 import { FaHandPointUp } from "react-icons/fa";
 
 type NavItem = {
@@ -169,7 +170,7 @@ const SideNav: React.FC = () => {
       title: "Innovations",
       link: "innovation",
       svg: (isActive) => (
-        <FaHandPointUp
+        <GiThink
           className={`${isActive ? "text-black" : "text-white"} text-2xl`}
         />
       ),

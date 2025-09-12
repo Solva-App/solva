@@ -65,8 +65,8 @@ export function useCourses() {
       }
     } catch (err: any) {
       const error = err as AxiosError<{ message?: string }>;
-      toast.error(error.response?.data?.message || "Failed to fetch courses");
-      setError(error.message);
+      // toast.error(error.response?.data?.message || "Failed to fetch courses");
+      // setError(error.message);
     } finally {
       setLoading(false);
     }

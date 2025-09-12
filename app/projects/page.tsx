@@ -73,7 +73,12 @@ const Project = () => {
                     Project Name
                   </th>
                   <th className="text-center text-sm py-2 px-3">Documents</th>
-                  <th className="text-center text-sm py-2 px-3">Status</th>
+                  <th className="text-center text-sm py-2 px-3">
+                    Approval Status
+                  </th>
+                  <th className="text-center text-sm py-2 px-3">
+                    Upload Status
+                  </th>
                   <th className="text-center text-sm py-2 px-3">Actions</th>
                 </tr>
               </thead>
@@ -115,6 +120,41 @@ const Project = () => {
                             : "Declined"}
                         </span>
                       </td>
+                      <td className="text-center text-sm py-2">
+                        {(() => {
+                          const documents = project.documents || [];
+
+                          const allUploaded = documents.every(
+                            (doc: any) => doc.uploadedToUser === true
+                          );
+                          const anyPending = documents.some(
+                            (doc: any) => doc.uploadedToUser === false
+                          );
+                          const anyDeclined = documents.some(
+                            (doc: any) => doc.uploadedToUser == null
+                          );
+
+                          let status = "Declined";
+                          let color = "bg-red-600";
+
+                          if (allUploaded) {
+                            status = "Uploaded";
+                            color = "bg-green-600";
+                          } else if (anyPending) {
+                            status = "Pending";
+                            color = "bg-yellow-500";
+                          }
+
+                          return (
+                            <span
+                              className={`px-2 py-1 rounded-sm text-sm text-white font-medium ${color}`}
+                            >
+                              {status}
+                            </span>
+                          );
+                        })()}
+                      </td>
+
                       <td className="text-center text-sm flex-col py-2 flex items-center justify-center gap-2">
                         <button
                           disabled={!project.requiresApproval}
