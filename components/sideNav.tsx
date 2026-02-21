@@ -17,7 +17,7 @@ type NavItem = {
   svg: (isActive: boolean) => JSX.Element | null;
 };
 
-const SideNav: React.FC = () => {
+const SideNav: React.FC<React.PropsWithChildren> = ({children}) => {
   const pathname = usePathname();
   const navTexts: NavItem[] = [
     {
@@ -230,6 +230,31 @@ const SideNav: React.FC = () => {
         />
       ),
     },
+    {
+  title: "Tasks",
+  link: "tasks",
+  svg: (isActive) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={isActive ? "black" : "white"}
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M9 6h11" />
+      <path d="M9 12h11" />
+      <path d="M9 18h11" />
+      <path d="M4 6h.01" />
+      <path d="M4 12h.01" />
+      <path d="M4 18h.01" />
+    </svg>
+  ),
+},
+
   ];
 
   const router = useRouter();
@@ -240,6 +265,8 @@ const SideNav: React.FC = () => {
   };
 
   return (
+  <div className="flex w-full min-h-screen">
+    {/* Sidebar */}
     <div className="md:w-1/4 w-[80px] inline-block overflow-hidden bg-primary h-screen py-7">
       <h1 className="text-white text-sm md:text-xl font-bold text-center px-2 sm:px-0 pb-3">
         Solva Admin
@@ -252,12 +279,11 @@ const SideNav: React.FC = () => {
             return (
               <Link href={`/${nav.link}`} key={index} className="">
                 <div
-                  key={index}
                   className={`link ${
                     isActive ? "text-black bg-white" : "text-white"
                   } flex items-center rounded-[4px] sm:rounded-[8px] my-3 md:my-1 md:gap-3 gap-0 md:py-2 py-1 cursor-pointer justify-start mx-1 md:mx-3 px-2`}
                 >
-                  <span className=" flex-none">{nav.svg(isActive)}</span>
+                  <span className="flex-none">{nav.svg(isActive)}</span>
                   <span className="text-sm hidden md:block font-medium">
                     {nav.title}
                   </span>
@@ -266,6 +292,7 @@ const SideNav: React.FC = () => {
             );
           })}
         </div>
+
         <div className="">
           <div
             onClick={logOut}
@@ -281,7 +308,14 @@ const SideNav: React.FC = () => {
         </div>
       </div>
     </div>
-  );
+
+    {/* Page Content */}
+    <div className="flex-1 min-w-0 h-screen overflow-y-auto bg-white">
+      {children}
+    </div>
+  </div>
+);
+
 };
 
 export default SideNav;
