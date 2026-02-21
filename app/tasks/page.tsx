@@ -2,7 +2,11 @@
 
 import React, { useMemo, useRef, useState } from "react";
 import SideNav from "@/components/sideNav";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
+import TaskNavButton from "@/components/TaskNav";
+
+
+
 
 type TaskForm = {
   companyName: string;
@@ -173,10 +177,10 @@ export default function TasksPage() {
           <button className="backBtn" aria-label="Back" onClick={() => router.back()}>
             ←
           </button>
-
+          
           <div className="headerTitles">
-            <div className="hTitle left">Manage Task</div>
-            <div className="hTitle right">Approve Task</div>
+          <TaskNavButton label="Manage Task" path="/tasks" align="left" />
+          <TaskNavButton label="Approve Task" path="/submissions/tasks/[taskId]" align="right" />
           </div>
         </div>
 

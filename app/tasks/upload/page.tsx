@@ -431,7 +431,7 @@ export default function TasksUploadPage() {
           border: none;
           background: transparent;
           cursor: pointer;
-          font-size: 16px;
+          font-size: 24px;
           color: red;
         }
 
