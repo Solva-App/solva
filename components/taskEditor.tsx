@@ -228,7 +228,8 @@ export default function TaskEditor({
     setSaving(key);
 
     try {
-      const id = await createTaskIfNeeded();
+      // Prevent blur-save redirect from interrupting "Upload" navigation.
+      const id = await createTaskIfNeeded({ redirectToUpdate: false });
 
       let payload: any = {};
 
@@ -313,26 +314,23 @@ export default function TaskEditor({
   }
 
   async function onUpload() {
-    setMsg(null);
-    setSaving("upload");
+  setMsg(null);
+  setSaving("upload");
 
-    try {
-      // Don't redirect away before we can finish saving + navigating.
-      const id = await createTaskIfNeeded({ redirectToUpdate: false });
+  try {
+    const id = await createTaskIfNeeded({ redirectToUpdate: false });
 
-      // save latest values even if user didn’t blur inputs
-      await patchAll(id);
+    // save latest values
+    await patchAll(id);
 
-      // Pass the taskId so the upload page can load the correct task.
-      // If your upload route is dynamic instead (e.g. /tasks/upload/[taskId]),
-      // change this to: router.push(`/tasks/upload/${id}`)
-      router.push(`/tasks/upload?taskId=${encodeURIComponent(id)}`);
-    } catch (e: any) {
-      setMsg(e?.message ?? "Upload failed");
-    } finally {
-      setSaving(null);
-    }
+    // ✅ go to the upload list page
+    router.push("/tasks/upload");
+  } catch (e: any) {
+    setMsg(e?.message ?? "Upload failed");
+  } finally {
+    setSaving(null);
   }
+}
 
   return (
     <SideNav>

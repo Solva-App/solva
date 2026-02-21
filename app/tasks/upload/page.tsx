@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import SideNav from "@/components/sideNav";
 import { useRouter } from "next/navigation";
 
@@ -11,26 +11,94 @@ type TaskCard = {
   campaignType: "Video Campaign" | "Image Campaign" | "Text Campaign";
   title: string;
 
-  totalPool: number; // e.g. 1200000
+  totalPool: number;
   creativeImageUrl?: string | null;
 
   // display values
-  timeLeftLabel: string; // "2 days left" | "21 hours left"
+  timeLeftLabel: string;
   timeLeftColor: "green" | "red";
-  spotsLeftLabel: string; // "100+ spot left"
+  spotsLeftLabel: string;
 };
 
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
+// Defensive: helps you see the problem immediately if env isn’t set
+function assertBaseUrl() {
+  if (!BASE_URL) {
+    throw new Error(
+      "NEXT_PUBLIC_API_BASE_URL is missing. Create .env.local and restart the dev server."
+    );
+  }
+}
+
 const ENDPOINTS = {
-  list: "/tasks", 
-  delete: (id: string) => `/tasks/${id}`, 
+  list: () => {
+    assertBaseUrl();
+    return `${BASE_URL}/tasks`;
+  },
+  delete: (id: string) => {
+    assertBaseUrl();
+    return `${BASE_URL}/tasks/${id}`;
+  },
 };
 
 function formatNaira(n: number) {
-  // keeps it like ₦ 1,200,000
-  const s = n.toString();
+  const s = Math.trunc(n || 0).toString();
   const parts: string[] = [];
-  for (let i = s.length; i > 0; i -= 3) parts.unshift(s.substring(Math.max(i - 3, 0), i));
+  for (let i = s.length; i > 0; i -= 3) {
+    parts.unshift(s.substring(Math.max(i - 3, 0), i));
+  }
   return `₦ ${parts.join(",")}`;
+}
+
+/**
+ * Normalize backend responses into TaskCard[]
+ * Supports:
+ *  - [] (array)
+ *  - { data: [] }
+ *  - { tasks: [] }
+ */
+function normalizeTasksToCards(payload: any): TaskCard[] {
+  const arr =
+    Array.isArray(payload) ? payload : Array.isArray(payload?.data) ? payload.data : Array.isArray(payload?.tasks) ? payload.tasks : [];
+
+  return arr.map((t: any): TaskCard => {
+    const id = String(
+      t?.id ??
+        t?.taskId ??
+        t?._id ??
+        t?.task?.id ??
+        t?.task?.taskId ??
+        t?.task?._id ??
+        ""
+    );
+    const companyName = String(t?.companyName ?? t?.brandName ?? t?.company?.name ?? "—");
+
+    // campaign type fallback
+    const rawType = String(t?.campaignType ?? t?.type ?? "Text Campaign");
+    const campaignType: TaskCard["campaignType"] =
+      rawType === "Video Campaign" || rawType === "Image Campaign" || rawType === "Text Campaign"
+        ? rawType
+        : "Text Campaign";
+
+    const title = String(t?.title ?? t?.name ?? "Untitled Task");
+    const totalPool = Number(t?.totalPool ?? t?.rewardPool ?? t?.pool ?? 0);
+
+    return {
+      id,
+      companyName,
+      companyLogoUrl: t?.companyLogoUrl ?? t?.logoUrl ?? t?.company?.logoUrl ?? null,
+      campaignType,
+      title,
+      totalPool,
+      creativeImageUrl: t?.creativeImageUrl ?? t?.creativeUrl ?? t?.imageUrl ?? null,
+
+      // If your backend has these, you can replace these display placeholders
+      timeLeftLabel: t?.timeLeftLabel ?? "—",
+      timeLeftColor: t?.timeLeftColor === "red" ? "red" : "green",
+      spotsLeftLabel: t?.spotsLeftLabel ?? "—",
+    };
+  }).filter((x: TaskCard) => !!x.id); // remove items without ids
 }
 
 export default function TasksUploadPage() {
@@ -38,57 +106,6 @@ export default function TasksUploadPage() {
   const [data, setData] = useState<TaskCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
-
-  // ✅ temporary fallback if endpoint not wired yet
-  const fallback = useMemo<TaskCard[]>(
-    () => [
-      {
-        id: "1",
-        companyName: "Coca- Cola",
-        campaignType: "Video Campaign",
-        title: "summer Vibes instagram Reel",
-        totalPool: 1200000,
-        timeLeftLabel: "2 days left",
-        timeLeftColor: "green",
-        spotsLeftLabel: "100+ spot left",
-        creativeImageUrl: null,
-      },
-      {
-        id: "2",
-        companyName: "Tiny",
-        campaignType: "Video Campaign",
-        title: "Tiny Song Relase",
-        totalPool: 200000,
-        timeLeftLabel: "21 hours left",
-        timeLeftColor: "red",
-        spotsLeftLabel: "4 spot left",
-        creativeImageUrl: null,
-      },
-      {
-        id: "3",
-        companyName: "Solva",
-        campaignType: "Video Campaign",
-        title: "Solva App Launch",
-        totalPool: 500000,
-        timeLeftLabel: "5 hours left",
-        timeLeftColor: "red",
-        spotsLeftLabel: "15 spot left",
-        creativeImageUrl: null,
-      },
-      {
-        id: "4",
-        companyName: "Tiny",
-        campaignType: "Video Campaign",
-        title: "Tiny Song Relase",
-        totalPool: 200000,
-        timeLeftLabel: "21 hours left",
-        timeLeftColor: "red",
-        spotsLeftLabel: "4 spot left",
-        creativeImageUrl: null,
-      },
-    ],
-    []
-  );
 
   useEffect(() => {
     let mounted = true;
@@ -98,17 +115,27 @@ export default function TasksUploadPage() {
       setErr(null);
 
       try {
-        const res = await fetch(ENDPOINTS.list, { credentials: "include" });
-        if (!res.ok) throw new Error(await res.text());
+        const res = await fetch(ENDPOINTS.list(), {
+          credentials: "include",
+          cache: "no-store",
+        });
 
-        const json = (await res.json()) as TaskCard[];
+        if (!res.ok) {
+          const text = await res.text().catch(() => "");
+          throw new Error(text || `Failed to load tasks (${res.status})`);
+        }
+
+        const json = await res.json();
+        const cards = normalizeTasksToCards(json);
 
         if (mounted) {
-          setData(Array.isArray(json) ? json : []);
+          setData(cards);
         }
-      } catch {
-        // show fallback UI if endpoint not ready
-        if (mounted) setData(fallback);
+      } catch (e: any) {
+        if (mounted) {
+          setErr(e?.message ?? "Failed to load tasks");
+          setData([]);
+        }
       } finally {
         if (mounted) setLoading(false);
       }
@@ -118,20 +145,28 @@ export default function TasksUploadPage() {
     return () => {
       mounted = false;
     };
-  }, [fallback]);
+  }, []);
 
   async function onDelete(id: string) {
     try {
-      await fetch(ENDPOINTS.delete(id), { method: "DELETE", credentials: "include" });
+      const res = await fetch(ENDPOINTS.delete(id), {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(text || `Delete failed (${res.status})`);
+      }
+
       setData((prev) => prev.filter((x) => x.id !== id));
-    } catch {
-      // ignore for now or show toast
+    } catch (e: any) {
+      setErr(e?.message ?? "Failed to delete task");
     }
   }
 
-  function onViewTask(taskId: string) {
-    // ✅ edit mode: same as create page
-    router.push(`/tasks/create?taskId=${encodeURIComponent(taskId)}`);
+function onViewTask(taskId: string) {
+    router.push(`/tasks/update/${encodeURIComponent(taskId)}`);
   }
 
   return (
@@ -139,23 +174,23 @@ export default function TasksUploadPage() {
       <div className="page">
         {/* Header */}
         <div>
-        <div className="headerRow">
-          <button className="backBtn" aria-label="Back" onClick={() => router.back()}>
-            ←
-          </button>
+          <div className="headerRow">
+            <button className="backBtn" aria-label="Back" onClick={() => router.back()}>
+              ←
+            </button>
 
-          <div className="headerTitles">
-            <div className="hTitle left">Manage Task</div>
-            <div className="hTitle right">Approve Task</div>
+            <div className="headerTitles">
+              <div className="hTitle left">Manage Task</div>
+              <div className="hTitle right">Approve Task</div>
+            </div>
           </div>
-        </div>
 
-        {/* Line with dots */}
-        <div className="lineWrap">
-          <span className="dot left" />
-          <div className="line" />
-          <span className="dot right" />
-        </div>
+          {/* Line with dots */}
+          <div className="lineWrap">
+            <span className="dot left" />
+            <div className="line" />
+            <span className="dot right" />
+          </div>
         </div>
 
         <div className="grid">
@@ -163,6 +198,8 @@ export default function TasksUploadPage() {
             <div className="loading">Loading…</div>
           ) : err ? (
             <div className="loading">{err}</div>
+          ) : data.length === 0 ? (
+            <div className="loading">No tasks found.</div>
           ) : (
             data.map((t) => (
               <div key={t.id} className="cardWrap">
@@ -205,10 +242,9 @@ export default function TasksUploadPage() {
                     <span className="spots">{t.spotsLeftLabel}</span>
                   </div>
 
-                  <button className="viewBtn" onClick={() => router.push(`/tasks/update/${t.id}`)}>
-  View Task
-</button>
-
+                  <button className="viewBtn" onClick={() => onViewTask(t.id)}>
+                    View Task
+                  </button>
                 </div>
 
                 <button className="trash" aria-label="Delete" onClick={() => onDelete(t.id)}>

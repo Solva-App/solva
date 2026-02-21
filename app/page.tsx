@@ -26,6 +26,15 @@ import pl6 from "@/public/assets/pl6.jpeg";
 
 const Landing = () => {
   const router = useRouter();
+  const webAppBaseUrl = process.env.NEXT_PUBLIC_WEB_APP_URL ?? "";
+
+  const navigateToWebApp = (path: string) => {
+    if (!webAppBaseUrl) return;
+    const normalizedBase = webAppBaseUrl.replace(/\/$/, "");
+    const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+    window.location.href = `${normalizedBase}${normalizedPath}`;
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <header className="bg-primary flex justify-between items-center py-3 px-6 shadow-md">
@@ -77,6 +86,22 @@ const Landing = () => {
             Study Smarter. Earn More. Grow with{" "}
             <span className="font-semibold text-primary">Solva</span>
           </p>
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button
+              onClick={() => navigateToWebApp("(auth)/create-account")}
+              disabled={!webAppBaseUrl}
+              className="w-full sm:w-auto rounded-lg bg-primary px-8 py-3 font-semibold text-white shadow-md transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Get Started
+            </button>
+            <button
+              onClick={() => navigateToWebApp("(auth)/login")}
+              disabled={!webAppBaseUrl}
+              className="w-full sm:w-auto rounded-lg border border-white/80 bg-white/10 px-8 py-3 font-semibold text-white backdrop-blur-sm transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Log In
+            </button>
+          </div>
         </div>
       </main>
 
