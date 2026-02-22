@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "serve out",
-    "lint": "next lint"
+    "lint": "next lint",
+    "main": "index.js"
   },
   "dependencies": {
     "@react-pdf-viewer/core": "^3.12.0",
