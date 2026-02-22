@@ -88,14 +88,14 @@ const Landing = () => {
           </p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
-              onClick={() => navigateToWebApp("(auth)/create-account")}
+              onClick={() => navigateToWebApp("/create-account")}
               disabled={!webAppBaseUrl}
               className="w-full sm:w-auto rounded-lg bg-primary px-8 py-3 font-semibold text-white shadow-md transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
             >
               Get Started
             </button>
             <button
-              onClick={() => navigateToWebApp("(auth)/login")}
+              onClick={() => navigateToWebApp("/login")}
               disabled={!webAppBaseUrl}
               className="w-full sm:w-auto rounded-lg border border-white/80 bg-white/10 px-8 py-3 font-semibold text-white backdrop-blur-sm transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-60"
             >
