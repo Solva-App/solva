@@ -88,7 +88,7 @@ const Landing = () => {
           </p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
-              onClick={() => navigateToWebApp("/create-account")}
+              onClick={() => navigateToWebApp("/")}
               disabled={!webAppBaseUrl}
               className="w-full sm:w-auto rounded-lg bg-primary px-8 py-3 font-semibold text-white shadow-md transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
             >
