@@ -2,7 +2,8 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import SideNav from "@/components/sideNav";
-import { useRouter } from "next/navigation";
+import TaskNavButton from "@/components/TaskNav";
+import { usePathname, useRouter } from "next/navigation";
 
 type CreateTaskState = {
   overviewTitle: string;
@@ -93,6 +94,7 @@ export default function TaskEditor({
   taskId?: string;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
 
   const [data, setData] = useState<CreateTaskState>(DEFAULT);
   const [editing, setEditing] = useState<EditKey | null>(null);
@@ -105,6 +107,9 @@ export default function TaskEditor({
   // When in create mode, we will create once, then redirect to update route and continue patching.
   const [createdId, setCreatedId] = useState<string | null>(null);
   const taskId = mode === "update" ? taskIdProp ?? null : createdId;
+  const approveTaskPath = taskId
+    ? `/submissions/tasks/${encodeURIComponent(taskId)}`
+    : "";
 
   const [creativePreview, setCreativePreview] = useState<string | null>(null);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
@@ -323,8 +328,13 @@ export default function TaskEditor({
     // save latest values
     await patchAll(id);
 
-    // ✅ go to the upload list page
-    router.push("/tasks/upload");
+    if (mode === "create") {
+      router.push("/tasks/task");
+    } else if (pathname !== `/tasks/update/${id}`) {
+      router.push(`/tasks/update/${encodeURIComponent(id)}`);
+    } else {
+      setMsg("Task updated successfully");
+    }
   } catch (e: any) {
     setMsg(e?.message ?? "Upload failed");
   } finally {
@@ -340,8 +350,13 @@ export default function TaskEditor({
             ←
           </button>
           <div className="headerTitles">
-            <div className="hTitle left">Manage Task</div>
-            <div className="hTitle right">Approve Task</div>
+            <TaskNavButton label="Manage Task" path="/tasks" align="left" />
+            <TaskNavButton
+              label="Approve Task"
+              path={approveTaskPath}
+              align="right"
+              disabled={!taskId}
+            />
           </div>
         </div>
 
@@ -580,11 +595,25 @@ export default function TaskEditor({
           color: #111;
         }
 
+        .headerTitles :global(.hTitle) {
+          font-size: 26px;
+          font-weight: 800;
+          color: #111;
+        }
+
         .hTitle.left {
           text-align: left;
         }
 
         .hTitle.right {
+          text-align: center;
+        }
+
+        .headerTitles :global(.hTitle.left) {
+          text-align: left;
+        }
+
+        .headerTitles :global(.hTitle.right) {
           text-align: center;
         }
 

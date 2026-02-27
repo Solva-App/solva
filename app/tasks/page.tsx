@@ -2,11 +2,9 @@
 
 import React, { useMemo, useRef, useState } from "react";
 import SideNav from "@/components/sideNav";
-import { useRouter, useParams } from "next/navigation";
 import TaskNavButton from "@/components/TaskNav";
-
-
-
+import { useRouter } from "next/navigation";
+import { FiArrowLeft, FiEdit2 } from "react-icons/fi";
 
 type TaskForm = {
   companyName: string;
@@ -19,6 +17,13 @@ type TaskForm = {
 
 type EditableFieldKey = keyof TaskForm;
 
+type UploadState = {
+  logoFile: File | null;
+  logoPreview: string | null;
+  imageFile: File | null;
+  imagePreview: string | null;
+};
+
 const DEFAULT_FORM: TaskForm = {
   companyName: "",
   campaign: "",
@@ -28,20 +33,9 @@ const DEFAULT_FORM: TaskForm = {
   amount: "",
 };
 
-type UploadState = {
-  logoFile: File | null;
-  logoPreview: string | null;
-  imageFile: File | null;
-  imagePreview: string | null;
-};
-
-// ✅ Update these to match your working backend endpoints
 const ENDPOINTS = {
-  // Save a single text field (recommended)
-  patchField: "/api/v1/admin/tasks", // e.g. PATCH /api/v1/admin/tasks  body: { companyName: "..." }
-
-  // Upload logo/image (recommended)
-  uploadAssets: "/api/v1/admin/tasks/assets", // e.g. POST multipart FormData
+  patchField: "/api/v1/admin/tasks",
+  uploadAssets: "/api/v1/admin/tasks/assets",
 };
 
 export default function TasksPage() {
@@ -49,16 +43,16 @@ export default function TasksPage() {
 
   const [form, setForm] = useState<TaskForm>(DEFAULT_FORM);
   const [editing, setEditing] = useState<EditableFieldKey | null>(null);
-
+  const [savingKey, setSavingKey] = useState<
+    EditableFieldKey | "logo" | "image" | null
+  >(null);
+  const [statusMsg, setStatusMsg] = useState<string | null>(null);
   const [uploads, setUploads] = useState<UploadState>({
     logoFile: null,
     logoPreview: null,
     imageFile: null,
     imagePreview: null,
   });
-
-  const [savingKey, setSavingKey] = useState<EditableFieldKey | "logo" | "image" | null>(null);
-  const [statusMsg, setStatusMsg] = useState<string | null>(null);
 
   const logoInputRef = useRef<HTMLInputElement | null>(null);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
@@ -90,19 +84,15 @@ export default function TasksPage() {
     setSavingKey(key);
 
     try {
-      // ✅ If your backend expects a different payload shape, adjust here.
-      const body = { [key]: form[key] };
-
       const res = await fetch(ENDPOINTS.patchField, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(body),
+        body: JSON.stringify({ [key]: form[key] }),
       });
 
       if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || "Failed to save");
+        throw new Error((await res.text()) || "Failed to save");
       }
 
       setStatusMsg("Saved");
@@ -121,7 +111,6 @@ export default function TasksPage() {
 
   function handleFileChange(kind: "logo" | "image", file: File | null) {
     if (!file) return;
-
     if (!file.type.startsWith("image/")) {
       setStatusMsg("Please select an image file.");
       return;
@@ -138,7 +127,6 @@ export default function TasksPage() {
         : { ...prev, imageFile: file, imagePreview: previewUrl };
     });
 
-    // Auto upload immediately (matches admin behavior)
     void uploadAsset(kind, file);
   }
 
@@ -152,13 +140,12 @@ export default function TasksPage() {
 
       const res = await fetch(ENDPOINTS.uploadAssets, {
         method: "POST",
-        body: fd,
         credentials: "include",
+        body: fd,
       });
 
       if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || "Upload failed");
+        throw new Error((await res.text()) || "Upload failed");
       }
 
       setStatusMsg("Uploaded");
@@ -172,64 +159,59 @@ export default function TasksPage() {
   return (
     <SideNav>
       <div className="page">
-        {/* Header */}
         <div className="headerRow">
           <button className="backBtn" aria-label="Back" onClick={() => router.back()}>
-            ←
+            <FiArrowLeft />
           </button>
-          
+
           <div className="headerTitles">
-          <TaskNavButton label="Manage Task" path="/tasks" align="left" />
-          <TaskNavButton label="Approve Task" path="/submissions/tasks/[taskId]" align="right" />
+            <TaskNavButton label="Manage Task" path="/tasks" align="left" />
+            <TaskNavButton label="Approve Task" path="" align="right" disabled />
           </div>
         </div>
 
-        {/* Line with dots */}
-        <div className="lineWrap">
-          <span className="dot left" />
+        <div className="lineWrap" aria-hidden>
+          <span className="dot" />
           <div className="line" />
-          <span className="dot right" />
+          <span className="dot" />
         </div>
 
-        {/* Subtle status (no big banners; keep UI clean) */}
         {statusMsg ? <div className="status">{statusMsg}</div> : <div className="status spacer" />}
 
-        {/* Body */}
-        <div className="grid">
-          {/* LEFT FORM */}
-          <div className="left">
-            {fields.map((f) => {
-              const isEditing = editing === f.key;
-              const isSaving = savingKey === f.key;
+        <div className="layout">
+          <div className="leftCol">
+            {fields.map((field) => {
+              const isEditing = editing === field.key;
+              const isSaving = savingKey === field.key;
 
               return (
-                <div key={f.key} className="fieldBlock">
-                  <div className="label">{f.label}</div>
+                <div key={field.key} className="fieldBlock">
+                  <label className="fieldLabel">{field.label}</label>
 
                   <div className="inputShell">
                     <input
-                      className="input"
-                      value={form[f.key]}
-                      onChange={(e) => onChange(f.key, e.target.value)}
+                      className={`fieldInput ${isEditing ? "editable" : ""}`}
+                      value={form[field.key]}
+                      onChange={(e) => onChange(field.key, e.target.value)}
                       readOnly={!isEditing}
                       onBlur={() => {
-                        if (isEditing) void saveField(f.key);
+                        if (isEditing) void saveField(field.key);
                       }}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && isEditing) {
                           (e.currentTarget as HTMLInputElement).blur();
                         }
                       }}
+                      placeholder={isEditing ? `Enter ${field.label.toLowerCase()}` : ""}
                     />
 
                     <button
                       type="button"
-                      className="pencilBtn"
-                      onClick={() => toggleEdit(f.key)}
-                      aria-label={isEditing ? "Stop editing" : "Edit"}
-                      title={isEditing ? "Stop editing" : "Edit"}
+                      className="iconBtn"
+                      onClick={() => toggleEdit(field.key)}
+                      aria-label={isEditing ? `Stop editing ${field.label}` : `Edit ${field.label}`}
                     >
-                      {isSaving ? "…" : "✎"}
+                      {isSaving ? "..." : <FiEdit2 />}
                     </button>
                   </div>
                 </div>
@@ -237,253 +219,331 @@ export default function TasksPage() {
             })}
           </div>
 
-          {/* RIGHT APPROVE */}
-          <div className="right">
-            {/* hidden file inputs */}
+          <div className="rightCol">
             <input
               ref={logoInputRef}
               type="file"
               accept="image/*"
-              style={{ display: "none" }}
+              className="hiddenInput"
               onChange={(e) => handleFileChange("logo", e.target.files?.[0] ?? null)}
             />
+
             <input
               ref={imageInputRef}
               type="file"
               accept="image/*"
-              style={{ display: "none" }}
+              className="hiddenInput"
               onChange={(e) => handleFileChange("image", e.target.files?.[0] ?? null)}
             />
 
-            {/* Logo (circle) */}
-            <div className="assetBlock">
+            <div className="assetCard assetLogoCard">
               <div className="assetTitle">Logo</div>
-
               <div className="assetRow">
                 <div className="logoCircle">
                   {uploads.logoPreview ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={uploads.logoPreview} alt="Logo preview" className="imgFill" />
-                  ) : null}
+                  ) : (
+                    <div className="logoPlaceholder">Logo</div>
+                  )}
                 </div>
 
                 <button
-                  className="assetPencil"
                   type="button"
+                  className="assetEditBtn"
                   onClick={() => onPickFile("logo")}
                   aria-label="Upload logo"
-                  title="Upload logo"
                 >
-                  {savingKey === "logo" ? "…" : "✎"}
+                  {savingKey === "logo" ? "..." : <FiEdit2 />}
                 </button>
               </div>
             </div>
 
-            {/* Campaign image (square) */}
-            <div className="assetBlock">
+            <div className="assetCard assetImageCard">
               <div className="assetTitle">Logo</div>
-
               <div className="assetRow">
-                <div className="logoSquare">
+                <div className="imageSquare">
                   {uploads.imagePreview ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={uploads.imagePreview} alt="Image preview" className="imgFill" />
-                  ) : null}
+                    <img src={uploads.imagePreview} alt="Campaign preview" className="imgFill" />
+                  ) : (
+                    <div className="imagePlaceholder">Campaign image</div>
+                  )}
                 </div>
 
                 <button
-                  className="assetPencil"
                   type="button"
+                  className="assetEditBtn"
                   onClick={() => onPickFile("image")}
-                  aria-label="Upload image"
-                  title="Upload image"
+                  aria-label="Upload campaign image"
                 >
-                  {savingKey === "image" ? "…" : "✎"}
+                  {savingKey === "image" ? "..." : <FiEdit2 />}
                 </button>
               </div>
             </div>
 
-           <button className="viewBtn" onClick={() => router.push(`/tasks/create`)}>
-            View Task
-          </button>
-
+            <button className="viewTaskBtn" type="button" onClick={() => router.push("/tasks/upload")}>
+              View Task
+            </button>
           </div>
         </div>
       </div>
 
       <style jsx>{`
         .page {
-          padding: 22px 34px;
+          padding: 22px 38px 28px;
+          background: #ededed;
+          min-height: 100%;
         }
 
         .headerRow {
           display: flex;
           align-items: center;
-          gap: 14px;
+          gap: 18px;
         }
 
         .backBtn {
+          width: 54px;
+          height: 54px;
           border: none;
           background: transparent;
-          font-size: 34px;
+          color: #202020;
+          font-size: 2rem;
+          display: grid;
+          place-items: center;
           cursor: pointer;
-          line-height: 1;
-          padding: 0 4px;
+          padding: 0;
         }
 
         .headerTitles {
+          width: 100%;
           display: grid;
           grid-template-columns: 1fr 1fr;
-          width: 100%;
           align-items: center;
+          column-gap: 12px;
         }
 
-        .hTitle {
-          font-size: 26px;
-          font-weight: 800;
+        .headerTitles :global(.hTitle) {
+          font-size: 2rem;
+          font-weight: 900;
           color: #111;
+          line-height: 1.1;
         }
 
-        .hTitle.left {
+        .headerTitles :global(.hTitle.left) {
           text-align: left;
         }
 
-        .hTitle.right {
+        .headerTitles :global(.hTitle.right) {
           text-align: center;
         }
 
         .lineWrap {
-          position: relative;
-          margin-top: 10px;
-          margin-bottom: 18px;
+          margin: 8px 4px 12px;
           display: flex;
           align-items: center;
-          justify-content: space-between;
+          gap: 10px;
         }
 
         .line {
           flex: 1;
           height: 2px;
-          background: rgba(0, 0, 0, 0.35);
-          margin: 0 14px;
+          background: rgba(0, 0, 0, 0.34);
         }
 
         .dot {
-          width: 6px;
-          height: 6px;
-          background: rgba(0, 0, 0, 0.55);
+          width: 5px;
+          height: 5px;
           border-radius: 999px;
-          display: inline-block;
+          background: rgba(0, 0, 0, 0.52);
+          flex: none;
         }
 
         .status {
           height: 18px;
           font-size: 12px;
-          color: rgba(0, 0, 0, 0.55);
-          margin-bottom: 8px;
+          color: rgba(0, 0, 0, 0.6);
+          margin: 0 4px 6px;
         }
+
         .status.spacer {
           visibility: hidden;
         }
 
-        .grid {
+        .layout {
           display: grid;
-          grid-template-columns: 1.12fr 0.88fr;
-          gap: 28px;
+          grid-template-columns: minmax(0, 1.35fr) minmax(220px, 0.65fr);
+          gap: 34px;
           align-items: start;
         }
 
-        /* LEFT */
-        .fieldBlock {
-          margin-bottom: 22px;
+        .leftCol {
+          padding: 0 8px;
         }
 
-        .label {
+        .fieldBlock {
+          margin-bottom: 18px;
+        }
+
+        .fieldLabel {
+          display: block;
           font-size: 18px;
-          font-weight: 700;
-          margin-bottom: 10px;
-          color: #111;
+          font-weight: 500;
+          color: #171717;
+          margin-bottom: 8px;
         }
 
         .inputShell {
-          position: relative;
-          height: 56px;
+          height: 38px;
           border-radius: 18px;
-          background: #fff;
-          box-shadow: 0 7px 16px rgba(0, 0, 0, 0.18);
+          background: #f7f7f7;
+          box-shadow: 0 3px 8px rgba(0, 0, 0, 0.14);
+          position: relative;
           display: flex;
           align-items: center;
         }
 
-        .input {
+        .fieldInput {
           width: 100%;
           height: 100%;
           border: none;
-          outline: none;
           background: transparent;
-          padding: 0 56px 0 18px;
-          font-size: 16px;
+          outline: none;
           border-radius: 18px;
+          padding: 0 52px 0 14px;
+          font-size: 15px;
           color: #111;
+          cursor: default;
         }
 
-        .pencilBtn {
+        .fieldInput.editable {
+          cursor: text;
+          background: #fff;
+        }
+
+        .fieldInput::placeholder {
+          color: rgba(0, 0, 0, 0.3);
+        }
+
+        .iconBtn {
           position: absolute;
-          right: 10px;
-          width: 42px;
-          height: 42px;
+          right: 8px;
+          width: 30px;
+          height: 30px;
           border: none;
           background: transparent;
+          color: #111;
           cursor: pointer;
-          font-size: 18px;
-          border-radius: 999px;
           display: grid;
           place-items: center;
-          color: #111;
+          font-size: 14px;
+          border-radius: 999px;
         }
 
-        /* RIGHT */
-        .right {
-          padding-top: 36px;
+        .rightCol {
+          padding-top: 52px;
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 28px;
+          gap: 26px;
         }
 
-        .assetBlock {
+        .hiddenInput {
+          display: none;
+        }
+
+        .assetCard {
           width: 100%;
-          max-width: 360px;
+          max-width: 250px;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+        }
+
+        .assetLogoCard {
+          margin-top: 2px;
         }
 
         .assetTitle {
           font-size: 18px;
-          font-weight: 700;
-          text-align: right; /* matches screenshot */
-          margin-bottom: 12px;
+          font-weight: 500;
+          color: #111;
+          margin-bottom: 10px;
+          text-align: right;
+          width: 100%;
         }
 
         .assetRow {
           display: flex;
           align-items: center;
           justify-content: flex-end;
-          gap: 14px;
+          gap: 8px;
+          width: 100%;
         }
 
         .logoCircle {
-          width: 54px;
-          height: 54px;
+          width: 42px;
+          height: 42px;
           border-radius: 999px;
-          background: #e9e9e9;
           overflow: hidden;
+          background: #d91e2b;
+          box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+          display: grid;
+          place-items: center;
         }
 
-        .logoSquare {
-          width: 92px;
-          height: 92px;
-          border-radius: 14px;
-          background: #e9e9e9;
+        .logoPlaceholder {
+          color: #fff;
+          font-size: 8px;
+          font-weight: 700;
+          letter-spacing: 0.2px;
+        }
+
+        .imageSquare {
+          width: 78px;
+          height: 78px;
+          border-radius: 10px;
           overflow: hidden;
+          background: linear-gradient(145deg, #7a0a0f, #dc1e2c 45%, #5e0508);
+          display: grid;
+          place-items: center;
+        }
+
+        .imagePlaceholder {
+          color: #fff;
+          text-align: center;
+          font-size: 10px;
+          font-weight: 700;
+          line-height: 1.1;
+          padding: 6px;
+        }
+
+        .assetEditBtn {
+          width: 30px;
+          height: 30px;
+          border: none;
+          background: transparent;
+          color: #111;
+          cursor: pointer;
+          display: grid;
+          place-items: center;
+          font-size: 14px;
+          border-radius: 999px;
+          flex: none;
+        }
+
+        .viewTaskBtn {
+          margin-top: 8px;
+          min-width: 152px;
+          height: 46px;
+          border: none;
+          border-radius: 10px;
+          background: #6f14a8;
+          color: #fff;
+          font-size: 16px;
+          font-weight: 800;
+          cursor: pointer;
+          box-shadow: 0 6px 12px rgba(111, 20, 168, 0.25);
         }
 
         .imgFill {
@@ -493,29 +553,26 @@ export default function TasksPage() {
           display: block;
         }
 
-        .assetPencil {
-          border: none;
-          background: transparent;
-          cursor: pointer;
-          font-size: 18px;
-          width: 40px;
-          height: 40px;
-          border-radius: 999px;
-          display: grid;
-          place-items: center;
-          color: #111;
-        }
+        @media (max-width: 1100px) {
+          .layout {
+            grid-template-columns: 1fr;
+            gap: 20px;
+          }
 
-        .viewBtn {
-          margin-top: 8px;
-          width: 180px;
-          padding: 14px 22px;
-          border: none;
-          border-radius: 10px;
-          background: #5a189a; /* matches UI purple */
-          color: #fff;
-          font-weight: 700;
-          cursor: pointer;
+          .rightCol {
+            padding-top: 4px;
+            align-items: flex-start;
+          }
+
+          .assetCard {
+            align-items: flex-start;
+          }
+
+          .assetTitle,
+          .assetRow {
+            justify-content: flex-start;
+            text-align: left;
+          }
         }
       `}</style>
     </SideNav>
