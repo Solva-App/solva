@@ -12,6 +12,7 @@ export const apis = {
   scholar: `${baseURL}/scholarships`,
   inno: `${baseURL}/innovations`,
   stats: `${baseURL}/stats`,
+  task: `${baseURL}/tasks`,
 
   past: `${baseURL}/questions`,
   docs: `${baseURL}/documents`,
