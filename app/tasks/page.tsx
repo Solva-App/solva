@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import SideNav from "@/components/sideNav";
 import TaskNavButton from "@/components/TaskNav";
 import { useRouter } from "next/navigation";
 import { FiArrowLeft, FiEdit2 } from "react-icons/fi";
+import { createAxiosInstance } from "@/lib/axios";
+import { apis } from "@/lib/endpoints";
 
 type TaskForm = {
   companyName: string;
@@ -33,15 +35,31 @@ const DEFAULT_FORM: TaskForm = {
   amount: "",
 };
 
-const ENDPOINTS = {
-  patchField: "/api/v1/admin/tasks",
-  uploadAssets: "/api/v1/admin/tasks/assets",
+const axiosInstance = createAxiosInstance();
+const TASK_CREATE_DRAFT_KEY = "task-create-draft";
+
+const API = {
+  create: `${apis.task}/create`,
+  byId: (id: string) => `${apis.task}/${id}`,
 };
+
+function extractId(payload: any): string | null {
+  return (
+    payload?.id ??
+    payload?.taskId ??
+    payload?._id ??
+    payload?.data?.id ??
+    payload?.data?.taskId ??
+    payload?.data?._id ??
+    null
+  );
+}
 
 export default function TasksPage() {
   const router = useRouter();
 
   const [form, setForm] = useState<TaskForm>(DEFAULT_FORM);
+  const [taskId, setTaskId] = useState<string | null>(null);
   const [editing, setEditing] = useState<EditableFieldKey | null>(null);
   const [savingKey, setSavingKey] = useState<
     EditableFieldKey | "logo" | "image" | null
@@ -70,6 +88,18 @@ export default function TasksPage() {
     []
   );
 
+  useEffect(() => {
+    return () => {
+      if (uploads.logoPreview) URL.revokeObjectURL(uploads.logoPreview);
+      if (uploads.imagePreview) URL.revokeObjectURL(uploads.imagePreview);
+    };
+  }, [uploads.imagePreview, uploads.logoPreview]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.sessionStorage.setItem(TASK_CREATE_DRAFT_KEY, JSON.stringify(form));
+  }, [form]);
+
   function onChange(key: EditableFieldKey, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
@@ -79,25 +109,30 @@ export default function TasksPage() {
     setEditing((prev) => (prev === key ? null : key));
   }
 
+  async function ensureTaskId() {
+    if (taskId) return taskId;
+
+    const response = await axiosInstance.post(API.create, form);
+    const id = extractId(response.data);
+
+    if (!id) {
+      throw new Error("Task created but no id was returned");
+    }
+
+    setTaskId(id);
+    return id;
+  }
+
   async function saveField(key: EditableFieldKey) {
     setStatusMsg(null);
     setSavingKey(key);
 
     try {
-      const res = await fetch(ENDPOINTS.patchField, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ [key]: form[key] }),
-      });
-
-      if (!res.ok) {
-        throw new Error((await res.text()) || "Failed to save");
-      }
-
+      const id = await ensureTaskId();
+      await axiosInstance.patch(API.byId(id), { [key]: form[key] });
       setStatusMsg("Saved");
     } catch (e: any) {
-      setStatusMsg(e?.message ?? "Save failed");
+      setStatusMsg(e?.response?.data?.message ?? e?.message ?? "Save failed");
     } finally {
       setSavingKey(null);
     }
@@ -134,23 +169,25 @@ export default function TasksPage() {
     setSavingKey(kind);
 
     try {
+      const id = await ensureTaskId();
       const fd = new FormData();
-      if (kind === "logo") fd.append("logo", file);
-      if (kind === "image") fd.append("campaignImage", file);
 
-      const res = await fetch(ENDPOINTS.uploadAssets, {
-        method: "POST",
-        credentials: "include",
-        body: fd,
-      });
-
-      if (!res.ok) {
-        throw new Error((await res.text()) || "Upload failed");
+      if (kind === "logo") {
+        fd.append("logo", file);
       }
+
+      if (kind === "image") {
+        fd.append("campaignImage", file);
+        fd.append("creativeImage", file);
+      }
+
+      await axiosInstance.patch(API.byId(id), fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
       setStatusMsg("Uploaded");
     } catch (e: any) {
-      setStatusMsg(e?.message ?? "Upload failed");
+      setStatusMsg(e?.response?.data?.message ?? e?.message ?? "Upload failed");
     } finally {
       setSavingKey(null);
     }
@@ -166,7 +203,12 @@ export default function TasksPage() {
 
           <div className="headerTitles">
             <TaskNavButton label="Manage Task" path="/tasks" align="left" />
-            <TaskNavButton label="Approve Task" path="" align="right" disabled />
+            <TaskNavButton
+              label="Approve Task"
+              path={taskId ? `/submissions/tasks/${encodeURIComponent(taskId)}` : ""}
+              align="right"
+              disabled={!taskId}
+            />
           </div>
         </div>
 
@@ -241,7 +283,6 @@ export default function TasksPage() {
               <div className="assetRow">
                 <div className="logoCircle">
                   {uploads.logoPreview ? (
-                    // eslint-disable-next-line @next/next/no-img-element
                     <img src={uploads.logoPreview} alt="Logo preview" className="imgFill" />
                   ) : (
                     <div className="logoPlaceholder">Logo</div>
@@ -264,7 +305,6 @@ export default function TasksPage() {
               <div className="assetRow">
                 <div className="imageSquare">
                   {uploads.imagePreview ? (
-                    // eslint-disable-next-line @next/next/no-img-element
                     <img src={uploads.imagePreview} alt="Campaign preview" className="imgFill" />
                   ) : (
                     <div className="imagePlaceholder">Campaign image</div>
@@ -282,7 +322,17 @@ export default function TasksPage() {
               </div>
             </div>
 
-            <button className="viewTaskBtn" type="button" onClick={() => router.push("/tasks/upload")}>
+            <button
+              className="viewTaskBtn"
+              type="button"
+              onClick={() =>
+                router.push(
+                  taskId
+                    ? `/tasks/task-details?taskId=${encodeURIComponent(taskId)}`
+                    : "/tasks/task-details"
+                )
+              }
+            >
               View Task
             </button>
           </div>
@@ -292,7 +342,7 @@ export default function TasksPage() {
       <style jsx>{`
         .page {
           padding: 22px 38px 28px;
-          background: #ededed;
+          background: #ececec;
           min-height: 100%;
         }
 
@@ -324,7 +374,7 @@ export default function TasksPage() {
         }
 
         .headerTitles :global(.hTitle) {
-          font-size: 2rem;
+          font-size: 1.95rem;
           font-weight: 900;
           color: #111;
           line-height: 1.1;
@@ -387,17 +437,17 @@ export default function TasksPage() {
 
         .fieldLabel {
           display: block;
-          font-size: 18px;
+          font-size: 17px;
           font-weight: 500;
           color: #171717;
-          margin-bottom: 8px;
+          margin-bottom: 10px;
         }
 
         .inputShell {
-          height: 38px;
+          height: 36px;
           border-radius: 18px;
-          background: #f7f7f7;
-          box-shadow: 0 3px 8px rgba(0, 0, 0, 0.14);
+          background: #f8f8f8;
+          box-shadow: 0 4px 9px rgba(0, 0, 0, 0.16);
           position: relative;
           display: flex;
           align-items: center;
@@ -441,11 +491,11 @@ export default function TasksPage() {
         }
 
         .rightCol {
-          padding-top: 52px;
+          padding-top: 58px;
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 26px;
+          gap: 28px;
         }
 
         .hiddenInput {
@@ -454,7 +504,7 @@ export default function TasksPage() {
 
         .assetCard {
           width: 100%;
-          max-width: 250px;
+          max-width: 220px;
           display: flex;
           flex-direction: column;
           align-items: flex-end;
@@ -465,10 +515,10 @@ export default function TasksPage() {
         }
 
         .assetTitle {
-          font-size: 18px;
+          font-size: 17px;
           font-weight: 500;
           color: #111;
-          margin-bottom: 10px;
+          margin-bottom: 12px;
           text-align: right;
           width: 100%;
         }
@@ -533,9 +583,9 @@ export default function TasksPage() {
         }
 
         .viewTaskBtn {
-          margin-top: 8px;
-          min-width: 152px;
-          height: 46px;
+          margin-top: 10px;
+          min-width: 154px;
+          height: 48px;
           border: none;
           border-radius: 10px;
           background: #6f14a8;
@@ -578,3 +628,5 @@ export default function TasksPage() {
     </SideNav>
   );
 }
+
+

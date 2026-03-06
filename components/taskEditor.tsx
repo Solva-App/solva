@@ -4,6 +4,8 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import SideNav from "@/components/sideNav";
 import TaskNavButton from "@/components/TaskNav";
 import { usePathname, useRouter } from "next/navigation";
+import { createAxiosInstance } from "@/lib/axios";
+import { apis } from "@/lib/endpoints";
 
 type CreateTaskState = {
   overviewTitle: string;
@@ -20,7 +22,6 @@ type CreateTaskState = {
   howToSubmitTitle: string;
   howToSubmitBody: string;
 
-  // optional if your backend returns it
   creativeImageUrl?: string | null;
 };
 
@@ -32,6 +33,20 @@ type EditKey =
   | "guidelines"
   | "selection"
   | "submit";
+
+type TaskCreateDraft = {
+  campaignTitle?: string;
+  numberOfDays?: string;
+  numberOfPersons?: string;
+  amount?: string;
+};
+
+type TaskMeta = {
+  startDate: string | null;
+  endDate: string | null;
+  totalPool: number | null;
+  totalSpots: number | null;
+};
 
 const DEFAULT: CreateTaskState = {
   overviewTitle: "Task Overview",
@@ -57,33 +72,224 @@ const DEFAULT: CreateTaskState = {
   creativeImageUrl: null,
 };
 
-// ✅ Your endpoints
 const API = {
-  create: "/tasks/create", // POST
-  // IMPORTANT: keep the leading slash so calls don't become relative URLs like
-  // /tasks/create/tasks/:id (which breaks PATCH/GET and makes clicks look like "nothing happens").
-  byId: (id: string) => `/tasks/${id}`, // GET + PATCH + DELETE
+  create: `${apis.task}/create`, // POST
+  byId: (id: string) => `${apis.task}/${id}`, // GET + PATCH + DELETE
 };
 
-function mapApiToState(api: any): CreateTaskState {
-  // Adjust these mappings ONLY if your backend field names differ.
+const axiosInstance = createAxiosInstance();
+const MUST_INCLUDE_HEADING = "What Your Content Must Include";
+const TASK_CREATE_DRAFT_KEY = "task-create-draft";
+
+function parseIntegerValue(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return Math.trunc(value);
+  }
+
+  if (typeof value !== "string") return null;
+
+  const cleaned = value.replace(/[^\d-]/g, "").trim();
+  if (!cleaned) return null;
+
+  const parsed = Number.parseInt(cleaned, 10);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function toIsoDate(date: Date) {
+  return date.toISOString();
+}
+
+function deriveTaskMetaFromDraft(draft: TaskCreateDraft | null): TaskMeta {
+  const now = new Date();
+  const numberOfDays = parseIntegerValue(draft?.numberOfDays) ?? 0;
+  const endDate = new Date(now);
+  endDate.setDate(endDate.getDate() + Math.max(numberOfDays, 0));
+
   return {
-    overviewTitle: api?.overviewTitle ?? DEFAULT.overviewTitle,
-    overviewBody: api?.overviewBody ?? DEFAULT.overviewBody,
-    mustInclude: Array.isArray(api?.mustInclude) ? api.mustInclude : DEFAULT.mustInclude,
+    startDate: toIsoDate(now),
+    endDate: toIsoDate(endDate),
+    totalPool: parseIntegerValue(draft?.amount),
+    totalSpots: parseIntegerValue(draft?.numberOfPersons),
+  };
+}
+
+function mergeTaskMeta(base: TaskMeta, incoming: TaskMeta): TaskMeta {
+  return {
+    startDate: base.startDate ?? incoming.startDate,
+    endDate: base.endDate ?? incoming.endDate,
+    totalPool: base.totalPool ?? incoming.totalPool,
+    totalSpots: base.totalSpots ?? incoming.totalSpots,
+  };
+}
+
+function readTaskDraft(): TaskCreateDraft | null {
+  if (typeof window === "undefined") return null;
+
+  const raw = window.sessionStorage.getItem(TASK_CREATE_DRAFT_KEY);
+  if (!raw) return null;
+
+  try {
+    return JSON.parse(raw) as TaskCreateDraft;
+  } catch {
+    return null;
+  }
+}
+
+function mapApiToTaskMeta(api: any): TaskMeta {
+  return {
+    startDate: typeof api?.startDate === "string" ? api.startDate : null,
+    endDate: typeof api?.endDate === "string" ? api.endDate : null,
+    totalPool:
+      parseIntegerValue(api?.totalPool) ??
+      parseIntegerValue(api?.amount) ??
+      parseIntegerValue(api?.rewardPool),
+    totalSpots:
+      parseIntegerValue(api?.totalSpots) ??
+      parseIntegerValue(api?.numberOfPersons) ??
+      parseIntegerValue(api?.spots),
+  };
+}
+
+function resolveCreateTaskMeta(meta: TaskMeta): TaskMeta {
+  return mergeTaskMeta(meta, deriveTaskMetaFromDraft(readTaskDraft()));
+}
+
+function serializeOverview(state: CreateTaskState) {
+  const sections = [
+    state.overviewBody.trim(),
+    `## ${MUST_INCLUDE_HEADING}\n${state.mustInclude.map((item) => `- ${item}`).join("\n")}`.trim(),
+    `## ${state.contentGuidelinesTitle}\n${state.contentGuidelines
+      .map((item) => `- ${item}`)
+      .join("\n")}`.trim(),
+    `## ${state.selectionCriteriaTitle}\n${state.selectionCriteriaBody.trim()}`.trim(),
+    `## ${state.howToSubmitTitle}\n${state.howToSubmitBody.trim()}`.trim(),
+  ];
+
+  return sections.filter(Boolean).join("\n\n");
+}
+
+function parseOverview(raw: unknown): Partial<CreateTaskState> {
+  if (typeof raw !== "string" || !raw.trim()) return {};
+
+  const normalized = raw.replace(/\r\n/g, "\n");
+  const [overviewBody, ...rest] = normalized.split(/\n\n(?=## )/);
+  const sections = rest.map((block) => {
+    const lines = block.split("\n");
+    const title = lines[0]?.replace(/^##\s*/, "").trim() ?? "";
+    const body = lines.slice(1).join("\n").trim();
+    return { title, body };
+  });
+
+  const mustIncludeSection = sections[0];
+  const guidelinesSection = sections[1];
+  const selectionSection = sections[2];
+  const submitSection = sections[3];
+
+  return {
+    overviewBody: overviewBody?.trim() || DEFAULT.overviewBody,
+    mustInclude:
+      mustIncludeSection?.body
+        ?.split("\n")
+        .map((line) => line.replace(/^- /, "").trim())
+        .filter(Boolean) || DEFAULT.mustInclude,
+    contentGuidelinesTitle: guidelinesSection?.title || DEFAULT.contentGuidelinesTitle,
+    contentGuidelines:
+      guidelinesSection?.body
+        ?.split("\n")
+        .map((line) => line.replace(/^- /, "").trim())
+        .filter(Boolean) || DEFAULT.contentGuidelines,
+    selectionCriteriaTitle: selectionSection?.title || DEFAULT.selectionCriteriaTitle,
+    selectionCriteriaBody: selectionSection?.body || DEFAULT.selectionCriteriaBody,
+    howToSubmitTitle: submitSection?.title || DEFAULT.howToSubmitTitle,
+    howToSubmitBody: submitSection?.body || DEFAULT.howToSubmitBody,
+  };
+}
+
+function mapStateToTaskPayload(state: CreateTaskState, meta: TaskMeta) {
+  const payload: Record<string, unknown> = {
+    title: state.overviewTitle.trim() || DEFAULT.overviewTitle,
+    overview: serializeOverview(state),
+  };
+
+  if (meta.startDate) payload.startDate = meta.startDate;
+  if (meta.endDate) payload.endDate = meta.endDate;
+  if (meta.totalPool !== null) payload.totalPool = String(Math.trunc(meta.totalPool));
+  if (meta.totalSpots !== null) payload.totalSpots = String(Math.trunc(meta.totalSpots));
+
+  return payload;
+}
+
+function mapApiToState(api: any): CreateTaskState {
+  const parsedOverview = parseOverview(api?.overview);
+
+  return {
+    overviewTitle: api?.overviewTitle ?? api?.title ?? DEFAULT.overviewTitle,
+    overviewBody: api?.overviewBody ?? parsedOverview.overviewBody ?? DEFAULT.overviewBody,
+    mustInclude: Array.isArray(api?.mustInclude)
+      ? api.mustInclude
+      : parsedOverview.mustInclude ?? DEFAULT.mustInclude,
     contentGuidelinesTitle:
-      api?.contentGuidelinesTitle ?? DEFAULT.contentGuidelinesTitle,
+      api?.contentGuidelinesTitle ??
+      parsedOverview.contentGuidelinesTitle ??
+      DEFAULT.contentGuidelinesTitle,
     contentGuidelines: Array.isArray(api?.contentGuidelines)
       ? api.contentGuidelines
-      : DEFAULT.contentGuidelines,
+      : parsedOverview.contentGuidelines ?? DEFAULT.contentGuidelines,
     selectionCriteriaTitle:
-      api?.selectionCriteriaTitle ?? DEFAULT.selectionCriteriaTitle,
+      api?.selectionCriteriaTitle ??
+      parsedOverview.selectionCriteriaTitle ??
+      DEFAULT.selectionCriteriaTitle,
     selectionCriteriaBody:
-      api?.selectionCriteriaBody ?? DEFAULT.selectionCriteriaBody,
-    howToSubmitTitle: api?.howToSubmitTitle ?? DEFAULT.howToSubmitTitle,
-    howToSubmitBody: api?.howToSubmitBody ?? DEFAULT.howToSubmitBody,
+      api?.selectionCriteriaBody ??
+      parsedOverview.selectionCriteriaBody ??
+      DEFAULT.selectionCriteriaBody,
+    howToSubmitTitle:
+      api?.howToSubmitTitle ?? parsedOverview.howToSubmitTitle ?? DEFAULT.howToSubmitTitle,
+    howToSubmitBody:
+      api?.howToSubmitBody ?? parsedOverview.howToSubmitBody ?? DEFAULT.howToSubmitBody,
     creativeImageUrl: api?.creativeImageUrl ?? null,
   };
+}
+
+function extractId(created: any): string | null {
+  return (
+    created?.id ??
+    created?.taskId ??
+    created?._id ??
+    created?.data?.id ??
+    created?.data?.taskId ??
+    created?.data?._id ??
+    null
+  );
+}
+
+async function apiJson(
+  url: string,
+  method: "GET" | "POST" | "PATCH",
+  body?: Record<string, unknown>,
+  signal?: AbortSignal
+) {
+  const res = await axiosInstance.request({
+    url,
+    method,
+    data: body,
+    signal,
+  });
+
+  return res.data ?? null;
+}
+
+async function apiForm(url: string, form: FormData, method: "POST" | "PATCH" = "PATCH") {
+  const res = await axiosInstance.request({
+    url,
+    method,
+    data: form,
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
+  return res.data ?? null;
 }
 
 export default function TaskEditor({
@@ -98,15 +304,19 @@ export default function TaskEditor({
 
   const [data, setData] = useState<CreateTaskState>(DEFAULT);
   const [editing, setEditing] = useState<EditKey | null>(null);
-  const [saving, setSaving] = useState<
-    EditKey | "image" | "create" | "upload" | null
-  >(null);
+  const [saving, setSaving] = useState<EditKey | "image" | "create" | "upload" | null>(
+    null
+  );
   const [msg, setMsg] = useState<string | null>(null);
-  const [loading, setLoading] = useState(mode === "update");
+  const [loading, setLoading] = useState(Boolean(taskIdProp));
+  const [taskMeta, setTaskMeta] = useState<TaskMeta>(() => deriveTaskMetaFromDraft(readTaskDraft()));
 
-  // When in create mode, we will create once, then redirect to update route and continue patching.
-  const [createdId, setCreatedId] = useState<string | null>(null);
+  // In create mode, create once then reuse id for patches
+  const [createdId, setCreatedId] = useState<string | null>(
+    mode === "create" ? taskIdProp ?? null : null
+  );
   const taskId = mode === "update" ? taskIdProp ?? null : createdId;
+
   const approveTaskPath = taskId
     ? `/submissions/tasks/${encodeURIComponent(taskId)}`
     : "";
@@ -119,155 +329,109 @@ export default function TaskEditor({
     [data.mustInclude]
   );
 
-  // ✅ Load task in update mode
   useEffect(() => {
-    if (mode !== "update") return;
-    if (!taskIdProp) return;
+    if (taskId) return;
+    setTaskMeta(deriveTaskMetaFromDraft(readTaskDraft()));
+  }, [taskId]);
 
-    let alive = true;
+  // -----------------------------
+  // Load task data
+  // -----------------------------
+  useEffect(() => {
+    if (!taskId) return;
+
+    const ac = new AbortController();
 
     (async () => {
       try {
         setLoading(true);
         setMsg(null);
 
-        const res = await fetch(API.byId(taskIdProp), {
-          method: "GET",
-          credentials: "include",
-        });
-        if (!res.ok) throw new Error(await res.text());
-        const json = await res.json();
+        const json = await apiJson(API.byId(taskId), "GET", undefined, ac.signal);
 
-        if (!alive) return;
         setData(mapApiToState(json));
+        setTaskMeta((prev) => ({ ...prev, ...mapApiToTaskMeta(json) }));
       } catch (e: any) {
-        if (!alive) return;
+        if (e?.name === "AbortError") return;
         setMsg(e?.message ?? "Failed to load task");
       } finally {
-        if (alive) setLoading(false);
+        setLoading(false);
       }
     })();
 
-    return () => {
-      alive = false;
-    };
-  }, [mode, taskIdProp]);
+    return () => ac.abort();
+  }, [taskId]);
 
+  // -----------------------------
+  // Small helpers
+  // -----------------------------
   function toggle(key: EditKey) {
     setMsg(null);
     setEditing((prev) => (prev === key ? null : key));
   }
 
-  async function createTaskIfNeeded(opts?: { redirectToUpdate?: boolean }): Promise<string> {
+  function payloadFor(key: EditKey, state: CreateTaskState) {
+    switch (key) {
+      case "overview":
+        return mapStateToTaskPayload(state, taskMeta);
+
+      case "guidelines":
+      case "selection":
+      case "submit":
+        return { overview: serializeOverview(state) };
+
+      default:
+        // include_0 / include_1 / include_2
+        if (key.startsWith("include_")) return { overview: serializeOverview(state) };
+        return {};
+    }
+  }
+
+  function allPayload(state: CreateTaskState) {
+    return mapStateToTaskPayload(state, resolveCreateTaskMeta(taskMeta));
+  }
+
+  async function ensureTaskId(): Promise<string> {
     if (taskId) return taskId;
+
+    const createMeta = resolveCreateTaskMeta(taskMeta);
+    if (
+      !createMeta.startDate ||
+      !createMeta.endDate ||
+      createMeta.totalPool === null ||
+      createMeta.totalSpots === null
+    ) {
+      throw new Error("Complete amount and number of persons on the first task step.");
+    }
 
     setSaving("create");
     setMsg(null);
 
-    const res = await fetch(API.create, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(data),
-    });
+    const created = await apiJson(API.create, "POST", mapStateToTaskPayload(data, createMeta));
 
-    if (!res.ok) {
-      setSaving(null);
-      throw new Error((await res.text()) || "Failed to create task");
-    }
-
-    const created = await res.json();
-    const id =
-      created?.id ??
-      created?.taskId ??
-      created?._id ??
-      created?.data?.id ??
-      created?.data?.taskId ??
-      created?.data?._id;
-
-    if (!id) {
-      setSaving(null);
-      throw new Error("Task created but no id returned from backend");
-    }
+    const id = extractId(created);
+    if (!id) throw new Error("Task created but no id returned from backend");
 
     setCreatedId(id);
     setSaving(null);
-
-    // Default: move to update route so everything is now “updating that task”.
-    // But when the user clicks Upload (or uploads creative), we MUST NOT redirect
-    // away before we finish saving + navigating.
-    if (opts?.redirectToUpdate !== false) {
-      router.replace(`/tasks/update/${id}`);
-    }
 
     return id;
   }
 
   async function patchTask(id: string, payload: any) {
-    const res = await fetch(API.byId(id), {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(payload),
-    });
-
-    if (!res.ok) throw new Error((await res.text()) || "Failed to update task");
+    await apiJson(API.byId(id), "PATCH", payload);
   }
 
-  async function patchAll(id: string) {
-    await patchTask(id, {
-      overviewTitle: data.overviewTitle,
-      overviewBody: data.overviewBody,
-      mustInclude: data.mustInclude,
-      contentGuidelinesTitle: data.contentGuidelinesTitle,
-      contentGuidelines: data.contentGuidelines,
-      selectionCriteriaTitle: data.selectionCriteriaTitle,
-      selectionCriteriaBody: data.selectionCriteriaBody,
-      howToSubmitTitle: data.howToSubmitTitle,
-      howToSubmitBody: data.howToSubmitBody,
-    });
-  }
-
+  // -----------------------------
+  // Saves
+  // -----------------------------
   async function saveSection(key: EditKey) {
     setMsg(null);
     setSaving(key);
 
     try {
-      // Prevent blur-save redirect from interrupting "Upload" navigation.
-      const id = await createTaskIfNeeded({ redirectToUpdate: false });
-
-      let payload: any = {};
-
-      if (key === "overview") {
-        payload = { overviewTitle: data.overviewTitle, overviewBody: data.overviewBody };
-      }
-
-      if (key.startsWith("include_")) {
-        payload = { mustInclude: data.mustInclude };
-      }
-
-      if (key === "guidelines") {
-        payload = {
-          contentGuidelinesTitle: data.contentGuidelinesTitle,
-          contentGuidelines: data.contentGuidelines,
-        };
-      }
-
-      if (key === "selection") {
-        payload = {
-          selectionCriteriaTitle: data.selectionCriteriaTitle,
-          selectionCriteriaBody: data.selectionCriteriaBody,
-        };
-      }
-
-      if (key === "submit") {
-        payload = {
-          howToSubmitTitle: data.howToSubmitTitle,
-          howToSubmitBody: data.howToSubmitBody,
-        };
-      }
-
-      await patchTask(id, payload);
+      const id = await ensureTaskId();
+      await patchTask(id, payloadFor(key, data));
       setMsg("Saved");
     } catch (e: any) {
       setMsg(e?.message ?? "Save failed");
@@ -296,20 +460,12 @@ export default function TaskEditor({
     setMsg(null);
 
     try {
-      // Don't redirect away while the user is uploading a creative.
-      const id = await createTaskIfNeeded({ redirectToUpdate: false });
+      const id = await ensureTaskId();
 
       const fd = new FormData();
       fd.append("creativeImage", file); // change key if backend expects another
 
-      const res = await fetch(API.byId(id), {
-        method: "PATCH",
-        body: fd,
-        credentials: "include",
-      });
-
-      if (!res.ok) throw new Error((await res.text()) || "Upload failed");
-
+      await apiForm(API.byId(id), fd, "PATCH");
       setMsg("Uploaded");
     } catch (e: any) {
       setMsg(e?.message ?? "Upload failed");
@@ -319,28 +475,29 @@ export default function TaskEditor({
   }
 
   async function onUpload() {
-  setMsg(null);
-  setSaving("upload");
+    setMsg(null);
+    setSaving("upload");
 
-  try {
-    const id = await createTaskIfNeeded({ redirectToUpdate: false });
+    try {
+      const id = await ensureTaskId();
 
-    // save latest values
-    await patchAll(id);
+      // save latest values
+      await patchTask(id, allPayload(data));
 
-    if (mode === "create") {
-      router.push("/tasks/task");
-    } else if (pathname !== `/tasks/update/${id}`) {
-      router.push(`/tasks/update/${encodeURIComponent(id)}`);
-    } else {
-      setMsg("Task updated successfully");
+      // navigation logic (kept close to what you had)
+      if (mode === "create") {
+        router.push("/tasks/task");
+      } else if (pathname !== `/tasks/update/${id}`) {
+        router.push(`/tasks/update/${encodeURIComponent(id)}`);
+      } else {
+        setMsg("Task updated successfully");
+      }
+    } catch (e: any) {
+      setMsg(e?.message ?? "Upload failed");
+    } finally {
+      setSaving(null);
     }
-  } catch (e: any) {
-    setMsg(e?.message ?? "Upload failed");
-  } finally {
-    setSaving(null);
   }
-}
 
   return (
     <SideNav>
@@ -561,7 +718,7 @@ export default function TaskEditor({
         </div>
       </div>
 
-      {/* ✅ This is your create page styles only (no upload-list css mixed in) */}
+      {/* ✅ UI untouched */}
       <style jsx>{`
         .page {
           padding: 22px 34px;
@@ -858,3 +1015,18 @@ export default function TaskEditor({
     </SideNav>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
