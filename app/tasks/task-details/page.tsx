@@ -1,12 +1,14 @@
-"use client";
-
-import { useSearchParams } from "next/navigation";
 import TaskEditor from "@/components/taskEditor";
 
-export default function TasksUploadPage() {
-  const searchParams = useSearchParams();
-  const taskId = searchParams.get("taskId") ?? undefined;
+type TaskDetailsPageProps = {
+  searchParams?: {
+    taskId?: string | string[];
+  };
+};
+
+export default function TasksUploadPage({ searchParams }: TaskDetailsPageProps) {
+  const taskIdParam = searchParams?.taskId;
+  const taskId = Array.isArray(taskIdParam) ? taskIdParam[0] : taskIdParam;
 
   return <TaskEditor mode="create" taskId={taskId} />;
 }
-
