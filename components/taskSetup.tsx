@@ -5,8 +5,7 @@ import SideNav from "@/components/sideNav";
 import TaskNavButton from "@/components/TaskNav";
 import { useRouter } from "next/navigation";
 import { FiArrowLeft, FiEdit2 } from "react-icons/fi";
-import { createAxiosInstance } from "@/lib/axios";
-import { apis } from "@/lib/endpoints";
+import { getTaskDraftAssets, setTaskDraftAsset, type TaskDraftAssets } from "@/lib/taskDraft";
 
 type TaskForm = {
   companyName: string;
@@ -19,13 +18,6 @@ type TaskForm = {
 
 type EditableFieldKey = keyof TaskForm;
 
-type UploadState = {
-  logoFile: File | null;
-  logoPreview: string | null;
-  imageFile: File | null;
-  imagePreview: string | null;
-};
-
 const DEFAULT_FORM: TaskForm = {
   companyName: "",
   campaign: "",
@@ -35,25 +27,7 @@ const DEFAULT_FORM: TaskForm = {
   amount: "",
 };
 
-const axiosInstance = createAxiosInstance();
 const TASK_CREATE_DRAFT_KEY = "task-create-draft";
-
-const API = {
-  create: `${apis.task}/create`,
-  byId: (id: string) => `${apis.task}/${id}`,
-};
-
-function extractId(payload: any): string | null {
-  return (
-    payload?.id ??
-    payload?.taskId ??
-    payload?._id ??
-    payload?.data?.id ??
-    payload?.data?.taskId ??
-    payload?.data?._id ??
-    null
-  );
-}
 
 function readDraft(): TaskForm {
   if (typeof window === "undefined") return DEFAULT_FORM;
@@ -72,18 +46,9 @@ export default function TaskSetup() {
   const router = useRouter();
 
   const [form, setForm] = useState<TaskForm>(DEFAULT_FORM);
-  const [taskId, setTaskId] = useState<string | null>(null);
   const [editing, setEditing] = useState<EditableFieldKey | null>(null);
-  const [savingKey, setSavingKey] = useState<
-    EditableFieldKey | "logo" | "image" | null
-  >(null);
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
-  const [uploads, setUploads] = useState<UploadState>({
-    logoFile: null,
-    logoPreview: null,
-    imageFile: null,
-    imagePreview: null,
-  });
+  const [uploads, setUploads] = useState<TaskDraftAssets>(() => getTaskDraftAssets());
 
   const logoInputRef = useRef<HTMLInputElement | null>(null);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
@@ -103,14 +68,8 @@ export default function TaskSetup() {
 
   useEffect(() => {
     setForm(readDraft());
+    setUploads(getTaskDraftAssets());
   }, []);
-
-  useEffect(() => {
-    return () => {
-      if (uploads.logoPreview) URL.revokeObjectURL(uploads.logoPreview);
-      if (uploads.imagePreview) URL.revokeObjectURL(uploads.imagePreview);
-    };
-  }, [uploads.imagePreview, uploads.logoPreview]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -126,35 +85,6 @@ export default function TaskSetup() {
     setEditing((prev) => (prev === key ? null : key));
   }
 
-  async function ensureTaskId() {
-    if (taskId) return taskId;
-
-    const response = await axiosInstance.post(API.create, form);
-    const id = extractId(response.data);
-
-    if (!id) {
-      throw new Error("Task created but no id was returned");
-    }
-
-    setTaskId(id);
-    return id;
-  }
-
-  async function saveField(key: EditableFieldKey) {
-    setStatusMsg(null);
-    setSavingKey(key);
-
-    try {
-      const id = await ensureTaskId();
-      await axiosInstance.patch(API.byId(id), { [key]: form[key] });
-      setStatusMsg("Saved");
-    } catch (e: any) {
-      setStatusMsg(e?.response?.data?.message ?? e?.message ?? "Save failed");
-    } finally {
-      setSavingKey(null);
-    }
-  }
-
   function onPickFile(kind: "logo" | "image") {
     setStatusMsg(null);
     if (kind === "logo") logoInputRef.current?.click();
@@ -168,46 +98,13 @@ export default function TaskSetup() {
       return;
     }
 
-    const previewUrl = URL.createObjectURL(file);
-
-    setUploads((prev) => {
-      if (kind === "logo" && prev.logoPreview) URL.revokeObjectURL(prev.logoPreview);
-      if (kind === "image" && prev.imagePreview) URL.revokeObjectURL(prev.imagePreview);
-
-      return kind === "logo"
-        ? { ...prev, logoFile: file, logoPreview: previewUrl }
-        : { ...prev, imageFile: file, imagePreview: previewUrl };
-    });
-
-    void uploadAsset(kind, file);
+    setUploads(setTaskDraftAsset(kind, file));
+    setStatusMsg(kind === "logo" ? "Logo selected" : "Banner selected");
   }
 
-  async function uploadAsset(kind: "logo" | "image", file: File) {
-    setSavingKey(kind);
-
-    try {
-      const id = await ensureTaskId();
-      const fd = new FormData();
-
-      if (kind === "logo") {
-        fd.append("logo", file);
-      }
-
-      if (kind === "image") {
-        fd.append("campaignImage", file);
-        fd.append("creativeImage", file);
-      }
-
-      await axiosInstance.patch(API.byId(id), fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      setStatusMsg("Uploaded");
-    } catch (e: any) {
-      setStatusMsg(e?.response?.data?.message ?? e?.message ?? "Upload failed");
-    } finally {
-      setSavingKey(null);
-    }
+  function goToTaskDetails() {
+    setStatusMsg(null);
+    router.push("/tasks/task-details");
   }
 
   return (
@@ -220,12 +117,7 @@ export default function TaskSetup() {
 
           <div className="headerTitles">
             <TaskNavButton label="Manage Task" path="/tasks" align="left" />
-            <TaskNavButton
-              label="Approve Task"
-              path={taskId ? `/submissions/tasks/${encodeURIComponent(taskId)}` : ""}
-              align="right"
-              disabled={!taskId}
-            />
+            <TaskNavButton label="Approve Task" path="" align="right" disabled />
           </div>
         </div>
 
@@ -241,7 +133,6 @@ export default function TaskSetup() {
           <div className="leftCol">
             {fields.map((field) => {
               const isEditing = editing === field.key;
-              const isSaving = savingKey === field.key;
 
               return (
                 <div key={field.key} className="fieldBlock">
@@ -253,9 +144,6 @@ export default function TaskSetup() {
                       value={form[field.key]}
                       onChange={(e) => onChange(field.key, e.target.value)}
                       readOnly={!isEditing}
-                      onBlur={() => {
-                        if (isEditing) void saveField(field.key);
-                      }}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && isEditing) {
                           (e.currentTarget as HTMLInputElement).blur();
@@ -270,7 +158,7 @@ export default function TaskSetup() {
                       onClick={() => toggleEdit(field.key)}
                       aria-label={isEditing ? `Stop editing ${field.label}` : `Edit ${field.label}`}
                     >
-                      {isSaving ? "..." : <FiEdit2 />}
+                      <FiEdit2 />
                     </button>
                   </div>
                 </div>
@@ -313,18 +201,18 @@ export default function TaskSetup() {
                   onClick={() => onPickFile("logo")}
                   aria-label="Upload logo"
                 >
-                  {savingKey === "logo" ? "..." : <FiEdit2 />}
+                  <FiEdit2 />
                 </button>
               </div>
             </div>
 
             <div className="assetCard assetImageCard">
-              <div className="assetTitle">Image</div>
+              <div className="assetTitle">Banner image</div>
               <div className="assetRow">
                 <div className="imageSquare">
                   {uploads.imagePreview ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={uploads.imagePreview} alt="Campaign preview" className="imgFill" />
+                    <img src={uploads.imagePreview} alt="Banner preview" className="imgFill" />
                   ) : (
                     <div className="imagePlaceholder">Campaign image</div>
                   )}
@@ -334,24 +222,14 @@ export default function TaskSetup() {
                   type="button"
                   className="assetEditBtn"
                   onClick={() => onPickFile("image")}
-                  aria-label="Upload campaign image"
+                  aria-label="Upload banner image"
                 >
-                  {savingKey === "image" ? "..." : <FiEdit2 />}
+                  <FiEdit2 />
                 </button>
               </div>
             </div>
 
-            <button
-              className="viewTaskBtn"
-              type="button"
-              onClick={() =>
-                router.push(
-                  taskId
-                    ? `/tasks/task-details?taskId=${encodeURIComponent(taskId)}`
-                    : "/tasks/task-details"
-                )
-              }
-            >
+            <button className="viewTaskBtn" type="button" onClick={goToTaskDetails}>
               View Task
             </button>
           </div>
