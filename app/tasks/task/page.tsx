@@ -39,6 +39,42 @@ function formatNaira(amount: number) {
   return `NGN ${Math.trunc(amount || 0).toLocaleString("en-NG")}`;
 }
 
+function getDaysLeftLabel(task: any) {
+  if (typeof task?.timeLeftLabel === "string" && task.timeLeftLabel.trim()) {
+    return task.timeLeftLabel;
+  }
+
+  if (typeof task?.endDate === "string") {
+    const endDate = new Date(task.endDate);
+    if (!Number.isNaN(endDate.getTime())) {
+      const diffMs = endDate.getTime() - Date.now();
+      const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+      if (diffDays > 0) {
+        return `${diffDays} ${diffDays === 1 ? "day" : "days"} left`;
+      }
+    }
+  }
+
+  const numberOfDays = Number(task?.numberOfDays ?? task?.days ?? task?.durationDays ?? 0);
+  if (numberOfDays > 0) {
+    return `${numberOfDays} ${numberOfDays === 1 ? "day" : "days"} left`;
+  }
+
+  return "-";
+}
+
+function getSpotsLeftLabel(task: any) {
+  if (typeof task?.spotsLeftLabel === "string" && task.spotsLeftLabel.trim()) {
+    return task.spotsLeftLabel;
+  }
+
+  const totalSpots = Number(task?.totalSpots ?? task?.numberOfPersons ?? task?.spots ?? 0);
+  const usedSpots = Number(task?.usedSpots ?? 0);
+  const spotsLeft = totalSpots - usedSpots;
+
+  return spotsLeft > 0 ? `${spotsLeft} spot${spotsLeft === 1 ? "" : "s"} left` : "-";
+}
+
 function normalizeTasks(payload: any): TaskCard[] {
   const list = Array.isArray(payload)
     ? payload
@@ -51,100 +87,30 @@ function normalizeTasks(payload: any): TaskCard[] {
     : [];
 
   return list
-    .map((t: any) => {
-      const id = String(
-        t?.id ??
-          t?._id ??
-          t?.taskId ??
-          t?.task?.id ??
-          t?.task?._id ??
-          t?.task?.taskId ??
-          ""
-      );
+    .map((task: any) => {
+      const id = String(task?.id ?? task?._id ?? task?.taskId ?? "");
       if (!id) return null;
 
-      const numberOfDays = Number(
-        t?.numberOfDays ?? t?.days ?? t?.durationDays ?? t?.task?.numberOfDays ?? 0
-      );
-      const numberOfPersons = Number(
-        t?.numberOfPersons ?? t?.spots ?? t?.slots ?? t?.task?.numberOfPersons ?? 0
-      );
-
-      const timeLeftLabel =
-        t?.timeLeftLabel ??
-        (numberOfDays > 0
-          ? `${numberOfDays} ${numberOfDays === 1 ? "day" : "days"} left`
-          : "-");
-
-      const spotsLeftLabel =
-        t?.spotsLeftLabel ??
-        (numberOfPersons > 0 ? `${numberOfPersons}+ spot left` : "-");
-
-      const campaignType =
-        t?.campaignType ??
-        t?.campaign ??
-        t?.type ??
-        t?.task?.campaignType ??
-        t?.task?.campaign ??
-        "Campaign";
-
-      const title =
-        t?.title ??
-        t?.campaignTitle ??
-        t?.overviewTitle ??
-        t?.task?.title ??
-        t?.task?.campaignTitle ??
-        "Untitled Task";
-
       const companyName =
-        t?.companyName ??
-        t?.brandName ??
-        t?.company?.name ??
-        t?.task?.companyName ??
-        "Company";
-
-      const totalPool = parseAmount(
-        t?.totalPool ??
-          t?.rewardPool ??
-          t?.pool ??
-          t?.amount ??
-          t?.task?.amount ??
-          t?.task?.totalPool
-      );
-
+        task?.sponsorName ?? task?.companyName ?? task?.brandName ?? task?.company?.name ?? "Company";
       const companyLogoUrl =
-        t?.companyLogoUrl ??
-        t?.logoUrl ??
-        t?.logo ??
-        t?.company?.logoUrl ??
-        t?.task?.companyLogoUrl ??
-        null;
-
+        task?.sponsorLogo ?? task?.companyLogoUrl ?? task?.logoUrl ?? task?.logo ?? task?.company?.logoUrl ?? null;
+      const campaignType = task?.type ?? task?.campaignType ?? task?.campaign ?? "Campaign";
       const creativeImageUrl =
-        t?.creativeImageUrl ??
-        t?.campaignImageUrl ??
-        t?.imageUrl ??
-        t?.creativeUrl ??
-        t?.task?.creativeImageUrl ??
-        null;
-
-      const timeLeftColor: "green" | "red" =
-        t?.timeLeftColor === "green" ||
-        (typeof timeLeftLabel === "string" && /\bdays?\b/i.test(timeLeftLabel))
-          ? "green"
-          : "red";
+        task?.bannerImage ?? task?.creativeImageUrl ?? task?.campaignImageUrl ?? task?.imageUrl ?? null;
+      const timeLeftLabel = getDaysLeftLabel(task);
 
       return {
         id,
         companyName: String(companyName),
         companyLogoUrl: companyLogoUrl ? String(companyLogoUrl) : null,
         campaignType: String(campaignType),
-        title: String(title),
-        totalPool,
+        title: String(task?.title ?? task?.campaignTitle ?? "Untitled Task"),
+        totalPool: parseAmount(task?.totalPool ?? task?.rewardPool ?? task?.pool ?? task?.amount),
         creativeImageUrl: creativeImageUrl ? String(creativeImageUrl) : null,
-        timeLeftLabel: String(timeLeftLabel),
-        timeLeftColor,
-        spotsLeftLabel: String(spotsLeftLabel),
+        timeLeftLabel,
+        timeLeftColor: /\bdays?\b/i.test(timeLeftLabel) ? "green" : "red",
+        spotsLeftLabel: getSpotsLeftLabel(task),
       } satisfies TaskCard;
     })
     .filter(Boolean) as TaskCard[];

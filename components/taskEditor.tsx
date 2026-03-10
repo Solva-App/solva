@@ -4,24 +4,22 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import SideNav from "@/components/sideNav";
 import TaskNavButton from "@/components/TaskNav";
 import { usePathname, useRouter } from "next/navigation";
+import { FiArrowLeft, FiEdit2 } from "react-icons/fi";
 import { createAxiosInstance } from "@/lib/axios";
 import { apis } from "@/lib/endpoints";
+import { clearTaskDraftAssets, getTaskDraftAssets } from "@/lib/taskDraft";
 
 type CreateTaskState = {
+  taskTitle: string;
   overviewTitle: string;
   overviewBody: string;
-
   mustInclude: string[];
-
   contentGuidelinesTitle: string;
   contentGuidelines: string[];
-
   selectionCriteriaTitle: string;
   selectionCriteriaBody: string;
-
   howToSubmitTitle: string;
   howToSubmitBody: string;
-
   creativeImageUrl?: string | null;
 };
 
@@ -35,6 +33,8 @@ type EditKey =
   | "submit";
 
 type TaskCreateDraft = {
+  companyName?: string;
+  campaign?: string;
   campaignTitle?: string;
   numberOfDays?: string;
   numberOfPersons?: string;
@@ -49,6 +49,7 @@ type TaskMeta = {
 };
 
 const DEFAULT: CreateTaskState = {
+  taskTitle: "",
   overviewTitle: "Task Overview",
   overviewBody:
     "Create engaging and original content that promotes Product Name, clearly explaining what it does, its benefits, and encouraging people to take action.",
@@ -60,7 +61,7 @@ const DEFAULT: CreateTaskState = {
   contentGuidelinesTitle: "Content Guidelines",
   contentGuidelines: [
     "Content Type: Video / Image / Text (as specified)",
-    "Length: 30–60 seconds (video) OR 150–300 words (text)",
+    "Length: 30-60 seconds (video) OR 150-300 words (text)",
     "Language: English (Pidgin allowed if specified)",
     "Original Content Only (No reposts or plagiarism)",
     "Content must be clear, creative, and well-presented",
@@ -73,8 +74,8 @@ const DEFAULT: CreateTaskState = {
 };
 
 const API = {
-  create: `${apis.task}/create`, // POST
-  byId: (id: string) => `${apis.task}/${id}`, // GET + PATCH + DELETE
+  create: `${apis.task}/create`,
+  byId: (id: string) => `${apis.task}/${id}`,
 };
 
 const axiosInstance = createAxiosInstance();
@@ -93,6 +94,19 @@ function parseIntegerValue(value: unknown): number | null {
 
   const parsed = Number.parseInt(cleaned, 10);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+function toStringArray(value: unknown): string[] | null {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item).trim()).filter(Boolean);
+  }
+
+  if (typeof value !== "string") return null;
+
+  return value
+    .split(/[\n,]+/)
+    .map((item) => item.replace(/^[-*]\s*/, "").trim())
+    .filter(Boolean);
 }
 
 function toIsoDate(date: Date) {
@@ -155,17 +169,7 @@ function resolveCreateTaskMeta(meta: TaskMeta): TaskMeta {
 }
 
 function serializeOverview(state: CreateTaskState) {
-  const sections = [
-    state.overviewBody.trim(),
-    `## ${MUST_INCLUDE_HEADING}\n${state.mustInclude.map((item) => `- ${item}`).join("\n")}`.trim(),
-    `## ${state.contentGuidelinesTitle}\n${state.contentGuidelines
-      .map((item) => `- ${item}`)
-      .join("\n")}`.trim(),
-    `## ${state.selectionCriteriaTitle}\n${state.selectionCriteriaBody.trim()}`.trim(),
-    `## ${state.howToSubmitTitle}\n${state.howToSubmitBody.trim()}`.trim(),
-  ];
-
-  return sections.filter(Boolean).join("\n\n");
+  return state.overviewBody.trim();
 }
 
 function parseOverview(raw: unknown): Partial<CreateTaskState> {
@@ -205,10 +209,38 @@ function parseOverview(raw: unknown): Partial<CreateTaskState> {
   };
 }
 
+function unwrapTask(payload: any) {
+  if (payload?.data && !Array.isArray(payload.data)) return payload.data;
+  return payload;
+}
+
+function resolveTaskIdentity(state: CreateTaskState) {
+  const draft = readTaskDraft();
+
+  return {
+    title: state.taskTitle.trim() || draft?.campaignTitle?.trim() || "Untitled Task",
+    sponsorName: draft?.companyName?.trim() || "",
+    type: draft?.campaign?.trim() || "",
+  };
+}
+
 function mapStateToTaskPayload(state: CreateTaskState, meta: TaskMeta) {
+  const identity = resolveTaskIdentity(state);
+  const requirements = state.mustInclude.map((item) => item.trim()).filter(Boolean).join(", ");
+  const guidelines = state.contentGuidelines
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .join(", ");
+  const overview = serializeOverview(state);
   const payload: Record<string, unknown> = {
-    title: state.overviewTitle.trim() || DEFAULT.overviewTitle,
-    overview: serializeOverview(state),
+    title: identity.title,
+    sponsorName: identity.sponsorName || undefined,
+    type: identity.type || undefined,
+    overview,
+    requirements,
+    guidelines,
+    selectionCriteria: state.selectionCriteriaBody.trim(),
+    howToSubmit: state.howToSubmitBody.trim(),
   };
 
   if (meta.startDate) payload.startDate = meta.startDate;
@@ -219,35 +251,40 @@ function mapStateToTaskPayload(state: CreateTaskState, meta: TaskMeta) {
   return payload;
 }
 
-function mapApiToState(api: any): CreateTaskState {
+function mapApiToState(apiPayload: any): CreateTaskState {
+  const api = unwrapTask(apiPayload);
   const parsedOverview = parseOverview(api?.overview);
+  const requirements = toStringArray(api?.requirements);
+  const guidelines = toStringArray(api?.guidelines);
+  const draft = readTaskDraft();
 
   return {
-    overviewTitle: api?.overviewTitle ?? api?.title ?? DEFAULT.overviewTitle,
+    taskTitle: api?.title ?? draft?.campaignTitle ?? DEFAULT.taskTitle,
+    overviewTitle: api?.overviewTitle ?? DEFAULT.overviewTitle,
     overviewBody: api?.overviewBody ?? parsedOverview.overviewBody ?? DEFAULT.overviewBody,
-    mustInclude: Array.isArray(api?.mustInclude)
-      ? api.mustInclude
-      : parsedOverview.mustInclude ?? DEFAULT.mustInclude,
+    mustInclude: requirements ?? parsedOverview.mustInclude ?? DEFAULT.mustInclude,
     contentGuidelinesTitle:
       api?.contentGuidelinesTitle ??
       parsedOverview.contentGuidelinesTitle ??
       DEFAULT.contentGuidelinesTitle,
-    contentGuidelines: Array.isArray(api?.contentGuidelines)
-      ? api.contentGuidelines
-      : parsedOverview.contentGuidelines ?? DEFAULT.contentGuidelines,
+    contentGuidelines: guidelines ?? parsedOverview.contentGuidelines ?? DEFAULT.contentGuidelines,
     selectionCriteriaTitle:
       api?.selectionCriteriaTitle ??
       parsedOverview.selectionCriteriaTitle ??
       DEFAULT.selectionCriteriaTitle,
     selectionCriteriaBody:
+      api?.selectionCriteria ??
       api?.selectionCriteriaBody ??
       parsedOverview.selectionCriteriaBody ??
       DEFAULT.selectionCriteriaBody,
     howToSubmitTitle:
       api?.howToSubmitTitle ?? parsedOverview.howToSubmitTitle ?? DEFAULT.howToSubmitTitle,
     howToSubmitBody:
-      api?.howToSubmitBody ?? parsedOverview.howToSubmitBody ?? DEFAULT.howToSubmitBody,
-    creativeImageUrl: api?.creativeImageUrl ?? null,
+      api?.howToSubmit ??
+      api?.howToSubmitBody ??
+      parsedOverview.howToSubmitBody ??
+      DEFAULT.howToSubmitBody,
+    creativeImageUrl: api?.bannerImage ?? api?.creativeImageUrl ?? null,
   };
 }
 
@@ -292,6 +329,23 @@ async function apiForm(url: string, form: FormData, method: "POST" | "PATCH" = "
   return res.data ?? null;
 }
 
+async function syncCreateAssets(taskId: string) {
+  const assets = getTaskDraftAssets();
+  if (!assets.logoFile && !assets.imageFile) return;
+
+  const fd = new FormData();
+
+  if (assets.logoFile) {
+    fd.append("sponsorLogo", assets.logoFile);
+  }
+
+  if (assets.imageFile) {
+    fd.append("bannerImage", assets.imageFile);
+  }
+
+  await apiForm(API.byId(taskId), fd, "PATCH");
+}
+
 export default function TaskEditor({
   mode,
   taskId: taskIdProp,
@@ -310,13 +364,11 @@ export default function TaskEditor({
   const [msg, setMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(Boolean(taskIdProp));
   const [taskMeta, setTaskMeta] = useState<TaskMeta>(() => deriveTaskMetaFromDraft(readTaskDraft()));
-
-  // In create mode, create once then reuse id for patches
   const [createdId, setCreatedId] = useState<string | null>(
     mode === "create" ? taskIdProp ?? null : null
   );
-  const taskId = mode === "update" ? taskIdProp ?? null : createdId;
 
+  const taskId = mode === "update" ? taskIdProp ?? null : createdId;
   const approveTaskPath = taskId
     ? `/submissions/tasks/${encodeURIComponent(taskId)}`
     : "";
@@ -332,11 +384,12 @@ export default function TaskEditor({
   useEffect(() => {
     if (taskId) return;
     setTaskMeta(deriveTaskMetaFromDraft(readTaskDraft()));
+    setData((prev) => ({
+      ...prev,
+      taskTitle: prev.taskTitle || readTaskDraft()?.campaignTitle || "",
+    }));
   }, [taskId]);
 
-  // -----------------------------
-  // Load task data
-  // -----------------------------
   useEffect(() => {
     if (!taskId) return;
 
@@ -348,9 +401,10 @@ export default function TaskEditor({
         setMsg(null);
 
         const json = await apiJson(API.byId(taskId), "GET", undefined, ac.signal);
+        const task = unwrapTask(json);
 
-        setData(mapApiToState(json));
-        setTaskMeta((prev) => ({ ...prev, ...mapApiToTaskMeta(json) }));
+        setData(mapApiToState(task));
+        setTaskMeta((prev) => ({ ...prev, ...mapApiToTaskMeta(task) }));
       } catch (e: any) {
         if (e?.name === "AbortError") return;
         setMsg(e?.message ?? "Failed to load task");
@@ -362,32 +416,12 @@ export default function TaskEditor({
     return () => ac.abort();
   }, [taskId]);
 
-  // -----------------------------
-  // Small helpers
-  // -----------------------------
   function toggle(key: EditKey) {
     setMsg(null);
     setEditing((prev) => (prev === key ? null : key));
   }
 
-  function payloadFor(key: EditKey, state: CreateTaskState) {
-    switch (key) {
-      case "overview":
-        return mapStateToTaskPayload(state, taskMeta);
-
-      case "guidelines":
-      case "selection":
-      case "submit":
-        return { overview: serializeOverview(state) };
-
-      default:
-        // include_0 / include_1 / include_2
-        if (key.startsWith("include_")) return { overview: serializeOverview(state) };
-        return {};
-    }
-  }
-
-  function allPayload(state: CreateTaskState) {
+  function payloadFor(state: CreateTaskState) {
     return mapStateToTaskPayload(state, resolveCreateTaskMeta(taskMeta));
   }
 
@@ -404,34 +438,39 @@ export default function TaskEditor({
       throw new Error("Complete amount and number of persons on the first task step.");
     }
 
+    const payload = mapStateToTaskPayload(data, createMeta);
+    if (!payload.overview || typeof payload.overview !== "string" || !payload.overview.trim()) {
+      throw new Error("Overview is required before creating the task.");
+    }
+
     setSaving("create");
     setMsg(null);
 
-    const created = await apiJson(API.create, "POST", mapStateToTaskPayload(data, createMeta));
+    try {
+      const created = await apiJson(API.create, "POST", payload);
+      const id = extractId(created);
 
-    const id = extractId(created);
-    if (!id) throw new Error("Task created but no id returned from backend");
+      if (!id) throw new Error("Task created but no id returned from backend");
 
-    setCreatedId(id);
-    setSaving(null);
-
-    return id;
+      await syncCreateAssets(id);
+      setCreatedId(id);
+      return id;
+    } finally {
+      setSaving(null);
+    }
   }
 
-  async function patchTask(id: string, payload: any) {
+  async function patchTask(id: string, payload: Record<string, unknown>) {
     await apiJson(API.byId(id), "PATCH", payload);
   }
 
-  // -----------------------------
-  // Saves
-  // -----------------------------
   async function saveSection(key: EditKey) {
     setMsg(null);
     setSaving(key);
 
     try {
       const id = await ensureTaskId();
-      await patchTask(id, payloadFor(key, data));
+      await patchTask(id, payloadFor(data));
       setMsg("Saved");
     } catch (e: any) {
       setMsg(e?.message ?? "Save failed");
@@ -451,7 +490,6 @@ export default function TaskEditor({
       return;
     }
 
-    // preview
     const preview = URL.createObjectURL(file);
     if (creativePreview) URL.revokeObjectURL(creativePreview);
     setCreativePreview(preview);
@@ -461,9 +499,8 @@ export default function TaskEditor({
 
     try {
       const id = await ensureTaskId();
-
       const fd = new FormData();
-      fd.append("creativeImage", file); // change key if backend expects another
+      fd.append("bannerImage", file);
 
       await apiForm(API.byId(id), fd, "PATCH");
       setMsg("Uploaded");
@@ -480,12 +517,13 @@ export default function TaskEditor({
 
     try {
       const id = await ensureTaskId();
+      await patchTask(id, payloadFor(data));
 
-      // save latest values
-      await patchTask(id, allPayload(data));
-
-      // navigation logic (kept close to what you had)
       if (mode === "create") {
+        if (typeof window !== "undefined") {
+          window.sessionStorage.removeItem(TASK_CREATE_DRAFT_KEY);
+        }
+        clearTaskDraftAssets();
         router.push("/tasks");
       } else if (pathname !== `/tasks/update/${id}`) {
         router.push(`/tasks/update/${encodeURIComponent(id)}`);
@@ -504,7 +542,7 @@ export default function TaskEditor({
       <div className="page">
         <div className="headerRow">
           <button className="backBtn" aria-label="Back" onClick={() => router.back()}>
-            ←
+            <FiArrowLeft />
           </button>
           <div className="headerTitles">
             <TaskNavButton label="Manage Task" path="/tasks" align="left" />
@@ -526,9 +564,7 @@ export default function TaskEditor({
         {msg ? <div className="status">{msg}</div> : <div className="status spacer" />}
 
         <div className="grid">
-          {/* LEFT COLUMN */}
           <div className="colLeft">
-            {/* Task Overview card */}
             <div className="card big">
               <div className="cardHead">
                 {editing === "overview" ? (
@@ -543,7 +579,7 @@ export default function TaskEditor({
                 )}
 
                 <button className="pencil" onClick={() => toggle("overview")}>
-                  {saving === "overview" ? "…" : "✎"}
+                  {saving === "overview" ? "..." : <FiEdit2 />}
                 </button>
               </div>
 
@@ -559,7 +595,6 @@ export default function TaskEditor({
               )}
             </div>
 
-            {/* What must include */}
             <div className="card block">
               <div className="blockTitle">What Your Content Must Include</div>
 
@@ -586,7 +621,7 @@ export default function TaskEditor({
                       )}
 
                       <button className="miniPencil" onClick={() => toggle(key)}>
-                        {saving === key ? "…" : "✎"}
+                        {saving === key ? "..." : <FiEdit2 />}
                       </button>
                     </div>
                   );
@@ -594,7 +629,6 @@ export default function TaskEditor({
               </div>
             </div>
 
-            {/* Creative image + pencil */}
             <div className="creativeRow">
               <input
                 ref={imageInputRef}
@@ -618,14 +652,12 @@ export default function TaskEditor({
               </div>
 
               <button className="miniPencil" onClick={pickCreative} aria-label="Upload creative">
-                {saving === "image" ? "…" : "✎"}
+                {saving === "image" ? "..." : <FiEdit2 />}
               </button>
             </div>
           </div>
 
-          {/* RIGHT COLUMN */}
           <div className="colRight">
-            {/* Content Guidelines */}
             <div className="card big">
               <div className="cardHead">
                 {editing === "guidelines" ? (
@@ -642,7 +674,7 @@ export default function TaskEditor({
                 )}
 
                 <button className="pencil" onClick={() => toggle("guidelines")}>
-                  {saving === "guidelines" ? "…" : "✎"}
+                  {saving === "guidelines" ? "..." : <FiEdit2 />}
                 </button>
               </div>
 
@@ -668,12 +700,11 @@ export default function TaskEditor({
               </ul>
             </div>
 
-            {/* Selection Criteria */}
             <div className="card small">
               <div className="cardHead">
                 <div className="cardTitle">{data.selectionCriteriaTitle}</div>
                 <button className="pencil" onClick={() => toggle("selection")}>
-                  {saving === "selection" ? "…" : "✎"}
+                  {saving === "selection" ? "..." : <FiEdit2 />}
                 </button>
               </div>
 
@@ -687,12 +718,11 @@ export default function TaskEditor({
               ) : null}
             </div>
 
-            {/* How to submit */}
             <div className="card small">
               <div className="cardHead">
                 <div className="cardTitle">{data.howToSubmitTitle}</div>
                 <button className="pencil" onClick={() => toggle("submit")}>
-                  {saving === "submit" ? "…" : "✎"}
+                  {saving === "submit" ? "..." : <FiEdit2 />}
                 </button>
               </div>
 
@@ -710,15 +740,14 @@ export default function TaskEditor({
               className="uploadBtn"
               onClick={onUpload}
               type="button"
-              disabled={saving === "upload"}
+              disabled={saving === "upload" || loading}
             >
-              {saving === "upload" ? "Uploading..." : "Upload"}
+              {saving === "upload" ? "Uploading..." : loading ? "Loading..." : "Upload"}
             </button>
           </div>
         </div>
       </div>
 
-      {/* ✅ UI untouched */}
       <style jsx>{`
         .page {
           padding: 22px 34px;
@@ -798,7 +827,7 @@ export default function TaskEditor({
 
         .status {
           height: 18px;
-          font-size: 12px;
+          font-size: 18px;
           color: rgba(0, 0, 0, 0.55);
           margin-bottom: 8px;
         }
@@ -941,7 +970,7 @@ export default function TaskEditor({
           border: none;
           background: transparent;
           cursor: pointer;
-          font-size: 16px;
+          font-size: 18px;
           width: 34px;
           height: 34px;
           border-radius: 999px;
@@ -1015,12 +1044,6 @@ export default function TaskEditor({
     </SideNav>
   );
 }
-
-
-
-
-
-
 
 
 
