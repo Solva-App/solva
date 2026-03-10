@@ -486,7 +486,7 @@ export default function TaskEditor({
 
       // navigation logic (kept close to what you had)
       if (mode === "create") {
-        router.push("/tasks/task");
+        router.push("/tasks");
       } else if (pathname !== `/tasks/update/${id}`) {
         router.push(`/tasks/update/${encodeURIComponent(id)}`);
       } else {
@@ -1015,6 +1015,7 @@ export default function TaskEditor({
     </SideNav>
   );
 }
+
 
 
 

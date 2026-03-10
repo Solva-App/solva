@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import SideNav from "@/components/sideNav";
 import TaskNavButton from "@/components/TaskNav";
 import { useRouter } from "next/navigation";
 import { FiArrowLeft, FiTrash2 } from "react-icons/fi";
+import { createAxiosInstance } from "@/lib/axios";
+import { apis } from "@/lib/endpoints";
 
 type TaskCard = {
   id: string;
@@ -19,18 +21,11 @@ type TaskCard = {
   spotsLeftLabel: string;
 };
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ||
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ||
-  "";
-
-function getTasksEndpoint() {
-  return API_BASE ? `${API_BASE}/tasks` : "/tasks";
-}
-
-function getDeleteEndpoint(id: string) {
-  return API_BASE ? `${API_BASE}/tasks/${id}` : `/tasks/${id}`;
-}
+const axiosInstance = createAxiosInstance();
+const API = {
+  list: apis.task,
+  byId: (id: string) => `${apis.task}/${id}`,
+};
 
 function parseAmount(value: unknown): number {
   if (typeof value === "number") return Number.isFinite(value) ? value : 0;
@@ -41,7 +36,7 @@ function parseAmount(value: unknown): number {
 }
 
 function formatNaira(amount: number) {
-  return `₦ ${Math.trunc(amount || 0).toLocaleString("en-NG")}`;
+  return `NGN ${Math.trunc(amount || 0).toLocaleString("en-NG")}`;
 }
 
 function normalizeTasks(payload: any): TaskCard[] {
@@ -79,11 +74,11 @@ function normalizeTasks(payload: any): TaskCard[] {
         t?.timeLeftLabel ??
         (numberOfDays > 0
           ? `${numberOfDays} ${numberOfDays === 1 ? "day" : "days"} left`
-          : "—");
+          : "-");
 
       const spotsLeftLabel =
         t?.spotsLeftLabel ??
-        (numberOfPersons > 0 ? `${numberOfPersons}+ spot left` : "—");
+        (numberOfPersons > 0 ? `${numberOfPersons}+ spot left` : "-");
 
       const campaignType =
         t?.campaignType ??
@@ -155,6 +150,10 @@ function normalizeTasks(payload: any): TaskCard[] {
     .filter(Boolean) as TaskCard[];
 }
 
+function getErrorMessage(error: any, fallback: string) {
+  return error?.response?.data?.message ?? error?.message ?? fallback;
+}
+
 export default function TaskCardsPage() {
   const router = useRouter();
   const [cards, setCards] = useState<TaskCard[]>([]);
@@ -162,56 +161,50 @@ export default function TaskCardsPage() {
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const endpoint = useMemo(() => getTasksEndpoint(), []);
   const approveTaskPath = cards[0]
     ? `/submissions/tasks/${encodeURIComponent(cards[0].id)}`
     : "";
 
-  async function loadTasks() {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const res = await fetch(endpoint, {
-        method: "GET",
-        credentials: "include",
-        cache: "no-store",
-      });
-
-      if (!res.ok) {
-        throw new Error((await res.text()) || `Failed to load tasks (${res.status})`);
-      }
-
-      const json = await res.json();
-      setCards(normalizeTasks(json));
-    } catch (e: any) {
-      setError(e?.message ?? "Failed to load tasks");
-      setCards([]);
-    } finally {
-      setLoading(false);
-    }
-  }
-
   useEffect(() => {
+    let cancelled = false;
+
+    async function loadTasks() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await axiosInstance.get(API.list);
+        if (!cancelled) {
+          setCards(normalizeTasks(response.data));
+        }
+      } catch (e: any) {
+        if (!cancelled) {
+          setError(getErrorMessage(e, "Failed to load tasks"));
+          setCards([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
     void loadTasks();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   async function onDelete(id: string) {
     setDeletingId(id);
     setError(null);
+
     try {
-      const res = await fetch(getDeleteEndpoint(id), {
-        method: "DELETE",
-        credentials: "include",
-      });
-
-      if (!res.ok) {
-        throw new Error((await res.text()) || `Delete failed (${res.status})`);
-      }
-
+      await axiosInstance.delete(API.byId(id));
       setCards((prev) => prev.filter((card) => card.id !== id));
     } catch (e: any) {
-      setError(e?.message ?? "Failed to delete task");
+      setError(getErrorMessage(e, "Failed to delete task"));
     } finally {
       setDeletingId(null);
     }
@@ -219,6 +212,10 @@ export default function TaskCardsPage() {
 
   function onViewTask(taskId: string) {
     router.push(`/tasks/update/${encodeURIComponent(taskId)}`);
+  }
+
+  function onCreateTask() {
+    router.push("/tasks/create");
   }
 
   return (
@@ -246,13 +243,19 @@ export default function TaskCardsPage() {
           <span className="dot" />
         </div>
 
+        <div className="actionsRow">
+          <button className="createBtn" type="button" onClick={onCreateTask}>
+            Create Task
+          </button>
+        </div>
+
         {error ? <div className="errorMsg">{error}</div> : <div className="spacer" />}
 
         <div className="grid">
           {loading ? (
             <div className="state">Loading tasks...</div>
           ) : cards.length === 0 ? (
-            <div className="state">No tasks found. Create a task and upload it first.</div>
+            <div className="state">No tasks found. Use Create Task to start a new one.</div>
           ) : (
             cards.map((card) => (
               <div key={card.id} className="cardWrap">
@@ -387,6 +390,25 @@ export default function TaskCardsPage() {
           height: 5px;
           border-radius: 999px;
           background: rgba(0, 0, 0, 0.52);
+        }
+
+        .actionsRow {
+          display: flex;
+          justify-content: flex-end;
+          margin-bottom: 10px;
+        }
+
+        .createBtn {
+          border: none;
+          background: #6911b0;
+          color: #fff;
+          font-weight: 800;
+          font-size: 14px;
+          border-radius: 10px;
+          min-width: 148px;
+          height: 42px;
+          padding: 0 18px;
+          cursor: pointer;
         }
 
         .errorMsg {
@@ -623,6 +645,10 @@ export default function TaskCardsPage() {
         @media (max-width: 1100px) {
           .grid {
             grid-template-columns: 1fr;
+          }
+
+          .actionsRow {
+            justify-content: flex-start;
           }
         }
       `}</style>
