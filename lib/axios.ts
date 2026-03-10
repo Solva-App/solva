@@ -51,14 +51,33 @@ export const createAxiosInstance = (): AxiosInstance => {
     },
   });
 
-  // Request interceptor: attach token
+  // Request interceptor: attach token and allow multipart uploads
   instance.interceptors.request.use(
     (config) => {
+      config.headers = config.headers ?? {};
+
+      if (config.data instanceof FormData) {
+        if (config.headers instanceof AxiosHeaders) {
+          config.headers.delete("Content-Type");
+        } else {
+          delete (config.headers as Record<string, unknown>)["Content-Type"];
+          delete (config.headers as Record<string, unknown>)["content-type"];
+        }
+      } else if (config.headers instanceof AxiosHeaders) {
+        if (!config.headers.has("Content-Type")) {
+          config.headers.set("Content-Type", "application/json");
+        }
+      } else if (
+        !("Content-Type" in (config.headers as Record<string, unknown>)) &&
+        !("content-type" in (config.headers as Record<string, unknown>))
+      ) {
+        (config.headers as Record<string, unknown>)["Content-Type"] = "application/json";
+      }
+
       if (typeof window === "undefined") return config;
 
       const token = Cookies.get("accessToken");
       if (token) {
-        config.headers = config.headers ?? {};
         (config.headers as any).Authorization = `Bearer ${token}`;
       }
 

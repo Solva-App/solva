@@ -1,7 +1,5 @@
-"use client";
-
-import TaskEditor from "../../../components/taskEditor";
+import TaskSetup from "@/components/taskSetup";
 
 export default function Page() {
-  return <TaskEditor mode="create"/>;
+  return <TaskSetup />;
 }
