@@ -149,10 +149,6 @@ export default function TaskCardsPage() {
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const approveTaskPath = cards[0]
-    ? `/submissions/tasks/${encodeURIComponent(cards[0].id)}`
-    : "";
-
   useEffect(() => {
     let cancelled = false;
 
@@ -202,6 +198,10 @@ export default function TaskCardsPage() {
     router.push(`/tasks/update/${encodeURIComponent(taskId)}`);
   }
 
+  function onOpenSubmissions(taskId: string) {
+    router.push(`/submissions/tasks/${encodeURIComponent(taskId)}`);
+  }
+
   function onCreateTask() {
     router.push("/tasks/create");
   }
@@ -220,12 +220,7 @@ export default function TaskCardsPage() {
 
           <div className="headerTitles">
             <TaskNavButton label="Manage Task" path="/tasks" align="left" />
-            <TaskNavButton
-              label="Approve Task"
-              path={approveTaskPath}
-              align="right"
-              disabled={!cards[0]}
-            />
+            <div className="headerSpacer" aria-hidden />
           </div>
         </div>
 
@@ -300,13 +295,22 @@ export default function TaskCardsPage() {
                         <span className="spots">{card.spotsLeftLabel}</span>
                       </div>
 
-                      <button
-                        className="viewBtn"
-                        type="button"
-                        onClick={() => onViewTask(card.id)}
-                      >
-                        View Task
-                      </button>
+                      <div className="buttonRow">
+                        <button
+                          className="viewBtn"
+                          type="button"
+                          onClick={() => onViewTask(card.id)}
+                        >
+                          View Task
+                        </button>
+                        <button
+                          className="submissionBtn"
+                          type="button"
+                          onClick={() => onOpenSubmissions(card.id)}
+                        >
+                          Submissions
+                        </button>
+                      </div>
                     </div>
 
                     <div className="creativeWrap">
@@ -383,8 +387,8 @@ export default function TaskCardsPage() {
           text-align: left;
         }
 
-        .headerTitles :global(.hTitle.right) {
-          text-align: center;
+        .headerSpacer {
+          width: 100%;
         }
 
         .lineWrap {
@@ -595,17 +599,34 @@ export default function TaskCardsPage() {
           font-size: 14px;
         }
 
-        .viewBtn {
-          border: none;
-          background: #6911b0;
-          color: #fff;
-          font-weight: 800;
-          font-size: 15px;
+        .buttonRow {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          flex-wrap: wrap;
+        }
+
+        .viewBtn,
+        .submissionBtn {
           border-radius: 10px;
           min-width: 154px;
           height: 44px;
           padding: 0 18px;
+          font-weight: 800;
+          font-size: 15px;
           cursor: pointer;
+        }
+
+        .viewBtn {
+          border: none;
+          background: #6911b0;
+          color: #fff;
+        }
+
+        .submissionBtn {
+          border: 1px solid rgba(0, 0, 0, 0.16);
+          background: #fff;
+          color: #111;
         }
 
         .creativeWrap {
