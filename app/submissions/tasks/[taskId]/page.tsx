@@ -1,123 +1,113 @@
-"use client";
+﻿"use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import SideNav from "@/components/sideNav";
+import { createAxiosInstance } from "@/lib/axios";
+import { apis } from "@/lib/endpoints";
 import { useParams, useRouter } from "next/navigation";
+import { FiArrowLeft } from "react-icons/fi";
+import { toast } from "react-toastify";
 
 type Submission = {
-  id?: string;
-  _id?: string;
-  link?: string;
-  url?: string;
-  createdAt?: string;
-  submittedAt?: string;
+  id: string;
+  link: string;
+  createdAt: string | null;
 };
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ||
-  "https://solva-backend-prod.onrender.com/api/v1";
-
+const axiosInstance = createAxiosInstance();
 const API = {
-  listByTask: (taskId: string) => `${API_BASE}/submissions/task/${taskId}`,
-  approve: (id: string) => `${API_BASE}/submissions/approve/${id}`,
-  reject: (id: string) => `${API_BASE}/submissions/reject/${id}`,
+  listByTask: (taskId: string) => `${apis.submission}/task/${taskId}`,
+  byId: (id: string) => `${apis.submission}/${id}`,
+  approve: (id: string) => `${apis.submission}/approve/${id}`,
+  reject: (id: string) => `${apis.submission}/reject/${id}`,
 };
 
-// If your backend expects POST instead of PATCH, change this to "POST"
-const MUTATION_METHOD: "PATCH" | "POST" = "PATCH";
-
-function getId(s: Submission) {
-  return (s.id ?? s._id ?? "") as string;
+function asRecord(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return value as Record<string, unknown>;
 }
 
-function getLink(s: Submission) {
-  return s.link ?? s.url ?? "";
+function readText(value: unknown): string {
+  if (typeof value === "string") return value.trim();
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  return "";
 }
 
-function formatDate(raw?: string) {
-  if (!raw) return "";
-  const d = new Date(raw);
-  if (Number.isNaN(d.getTime())) return raw;
-  return d.toLocaleDateString(undefined, {
+function pickText(record: Record<string, unknown>, keys: string[]) {
+  for (const key of keys) {
+    const value = readText(record[key]);
+    if (value) return value;
+  }
+  return "";
+}
+
+function extractList(payload: unknown): unknown[] {
+  if (Array.isArray(payload)) return payload;
+
+  const root = asRecord(payload);
+  const data = asRecord(root.data);
+
+  if (Array.isArray(root.data)) return root.data as unknown[];
+  if (Array.isArray(root.submissions)) return root.submissions as unknown[];
+  if (Array.isArray(data.submissions)) return data.submissions as unknown[];
+  if (Array.isArray(data.data)) return data.data as unknown[];
+
+  return [];
+}
+
+function normalizeSubmission(item: unknown): Submission | null {
+  const record = asRecord(item);
+  const nestedSubmission = asRecord(record.submission);
+  const source = Object.keys(nestedSubmission).length ? nestedSubmission : record;
+
+  const id = pickText(source, ["id", "_id", "submissionId"]);
+  if (!id) return null;
+
+  const link =
+    pickText(source, ["link", "url", "submissionLink", "proofUrl", "referenceUrl", "attachmentUrl"]) ||
+    pickText(asRecord(source.proof), ["url", "link"]) ||
+    pickText(asRecord(source.attachment), ["url", "link"]);
+
+  return {
+    id,
+    link,
+    createdAt:
+      pickText(source, ["submittedAt", "createdAt", "dateSubmitted", "updatedAt"]) || null,
+  };
+}
+
+function formatDate(raw: string | null) {
+  if (!raw) return "-";
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) return raw;
+
+  return date.toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
   });
 }
 
-/**
- * Tries to read token from common keys. Adjust to match your app.
- */
-function getToken() {
-  if (typeof window === "undefined") return null;
-  return (
-    localStorage.getItem("token") ||
-    localStorage.getItem("accessToken") ||
-    localStorage.getItem("authToken") ||
-    null
-  );
-}
-
-async function safeReadText(res: Response) {
-  try {
-    return await res.text();
-  } catch {
-    return "";
-  }
-}
-
-function normalizeList(json: any): Submission[] {
-  if (Array.isArray(json)) return json;
-
-  // common API shapes
-  if (Array.isArray(json?.data)) return json.data;
-  if (Array.isArray(json?.data?.submissions)) return json.data.submissions;
-  if (Array.isArray(json?.submissions)) return json.submissions;
-
-  return [];
-}
-
-/**
- * ✅ FIX: always normalize headers into a real Headers object
- * so TypeScript accepts it as HeadersInit.
- */
-function buildHeaders(initHeaders?: HeadersInit) {
-  const headers = new Headers(initHeaders);
-
-  const token = getToken();
-  if (token) headers.set("Authorization", `Bearer ${token}`);
-
-  return headers;
+function getErrorMessage(error: any, fallback: string) {
+  return error?.response?.data?.message ?? error?.message ?? fallback;
 }
 
 export default function ApproveTaskPage() {
   const router = useRouter();
   const params = useParams<{ taskId: string }>();
-  const taskId = params?.taskId;
-  console.log("ApproveTaskPage mounted. taskId =", taskId);
+  const taskIdParam = params?.taskId;
+  const taskId = Array.isArray(taskIdParam) ? taskIdParam[0] : taskIdParam;
 
   const [rows, setRows] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  /**
-   * ✅ FIX: apiFetch now uses buildHeaders()
-   */
-  async function apiFetch(url: string, init: RequestInit = {}) {
-  return fetch(url, {
-    ...init,
-    headers: buildHeaders(init.headers),
-    // ✅ remove credentials to avoid CORS credential rules
-    // credentials: "include",
-  });
-}
-  async function load() {
-  console.log("load() called. taskId =", taskId);
+  const loadSubmissions = useCallback(async () => {
     if (!taskId) {
-      setLoading(false);
       setRows([]);
-      setError("Missing taskId in route. Navigate here with a taskId.");
+      setLoading(false);
+      setError("Missing task id.");
       return;
     }
 
@@ -125,67 +115,40 @@ export default function ApproveTaskPage() {
     setError(null);
 
     try {
-      console.log("Fetching submissions from:", API.listByTask(taskId));
-      const res = await apiFetch(API.listByTask(taskId), { method: "GET" });
-      console.log("Fetch done:", res.status, res.url);
-      const text = await safeReadText(res);
+      const response = await axiosInstance.get(API.listByTask(taskId));
+      const normalized = extractList(response.data)
+        .map((item) => normalizeSubmission(item))
+        .filter(Boolean) as Submission[];
 
-      console.log("Fetching submissions from:", API.listByTask(taskId));
-
-      if (!res.ok) {
-        throw new Error(text || `Failed to load submissions (${res.status})`);
-      }
-
-      let json: any = null;
-      try {
-        json = text ? JSON.parse(text) : [];
-      } catch {
-        json = [];
-      }
-
-      setRows(normalizeList(json));
-    } catch (e: any) {
-      setError(e?.message ?? "Failed to load submissions");
+      setRows(normalized);
+    } catch (requestError: any) {
       setRows([]);
+      setError(getErrorMessage(requestError, "Failed to load submissions"));
     } finally {
       setLoading(false);
     }
-  }
-
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [taskId]);
 
-  async function approve(id: string) {
-    if (!id) return;
-    setBusyId(id);
+  useEffect(() => {
+    void loadSubmissions();
+  }, [loadSubmissions]);
+
+  async function onAction(type: "approve" | "reject", submissionId: string) {
+    setBusyId(submissionId);
     setError(null);
 
     try {
-      const res = await apiFetch(API.approve(id), { method: MUTATION_METHOD });
-      const text = await safeReadText(res);
-      if (!res.ok) throw new Error(text || "Approve failed");
-      await load();
-    } catch (e: any) {
-      setError(e?.message ?? "Approve failed");
-    } finally {
-      setBusyId(null);
-    }
-  }
-
-  async function reject(id: string) {
-    if (!id) return;
-    setBusyId(id);
-    setError(null);
-
-    try {
-      const res = await apiFetch(API.reject(id), { method: MUTATION_METHOD });
-      const text = await safeReadText(res);
-      if (!res.ok) throw new Error(text || "Reject failed");
-      await load();
-    } catch (e: any) {
-      setError(e?.message ?? "Reject failed");
+      await axiosInstance.get(API.byId(submissionId));
+      await axiosInstance.patch(type === "approve" ? API.approve(submissionId) : API.reject(submissionId), {});
+      toast.success(type === "approve" ? "Submission approved" : "Submission rejected");
+      await loadSubmissions();
+    } catch (requestError: any) {
+      const message = getErrorMessage(
+        requestError,
+        type === "approve" ? "Approve failed" : "Reject failed"
+      );
+      setError(message);
+      toast.error(message);
     } finally {
       setBusyId(null);
     }
@@ -195,72 +158,59 @@ export default function ApproveTaskPage() {
     <SideNav>
       <div className="page">
         <div className="headerRow">
-          <button
-            className="backBtn"
-            aria-label="Back"
-            onClick={() => router.back()}
-          >
-            ←
+          <button className="backBtn" aria-label="Back" onClick={() => router.back()}>
+            <FiArrowLeft />
           </button>
           <div className="title">Approve Task</div>
         </div>
 
-        <div className="lineWrap">
+        <div className="lineWrap" aria-hidden>
           <span className="dot" />
           <div className="line" />
           <span className="dot" />
         </div>
 
-        {error ? (
-          <div className="error">{error}</div>
-        ) : (
-          <div className="spacer" />
-        )}
+        {error ? <div className="error">{error}</div> : <div className="spacer" />}
 
         <div className="table">
           {loading ? (
-            <div className="loading">Loading…</div>
+            <div className="loading">Loading...</div>
           ) : rows.length === 0 ? (
             <div className="empty">No submissions yet.</div>
           ) : (
-            rows.map((s, idx) => {
-              const id = getId(s) || `${idx}`;
-              const link = getLink(s);
-              const date = formatDate(s.submittedAt ?? s.createdAt);
+            rows.map((submission) => {
+              const isBusy = busyId === submission.id;
 
               return (
-                <div className="row" key={id}>
+                <div className="row" key={submission.id}>
                   <div className="cell link">
-                    {link ? (
-                      <a
-                        className="linkText"
-                        href={link}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {link}
+                    {submission.link ? (
+                      <a className="linkText" href={submission.link} target="_blank" rel="noreferrer">
+                        {submission.link}
                       </a>
                     ) : (
                       <span className="linkText muted">No link</span>
                     )}
                   </div>
 
-                  <div className="cell date">{date || "-"}</div>
+                  <div className="cell date">{formatDate(submission.createdAt)}</div>
 
                   <div className="cell actions">
                     <button
                       className="reject"
-                      disabled={busyId === id}
-                      onClick={() => reject(id)}
+                      type="button"
+                      disabled={isBusy}
+                      onClick={() => onAction("reject", submission.id)}
                     >
-                      {busyId === id ? "..." : "Reject"}
+                      {isBusy ? "..." : "Reject"}
                     </button>
                     <button
                       className="approve"
-                      disabled={busyId === id}
-                      onClick={() => approve(id)}
+                      type="button"
+                      disabled={isBusy}
+                      onClick={() => onAction("approve", submission.id)}
                     >
-                      {busyId === id ? "..." : "Approve"}
+                      {isBusy ? "..." : "Approve"}
                     </button>
                   </div>
                 </div>
@@ -271,29 +221,178 @@ export default function ApproveTaskPage() {
       </div>
 
       <style jsx>{`
-        .page { padding: 22px 34px; }
-        .headerRow { display: flex; align-items: center; gap: 14px; }
-        .backBtn { border: none; background: transparent; font-size: 34px; cursor: pointer; line-height: 1; padding: 0 4px; }
-        .title { font-size: 26px; font-weight: 800; color: #111; }
-        .lineWrap { margin-top: 10px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
-        .line { flex: 1; height: 2px; background: rgba(0,0,0,.35); margin: 0 14px; }
-        .dot { width: 6px; height: 6px; background: rgba(0,0,0,.55); border-radius: 999px; }
-        .error { color: #b00020; font-size: 13px; margin-bottom: 10px; white-space: pre-wrap; }
-        .spacer { height: 18px; }
-        .table { width: 100%; margin-top: 10px; }
-        .row { display: grid; grid-template-columns: 1.2fr 0.5fr 0.6fr; align-items: center; padding: 18px 8px; }
-        .cell { display: flex; align-items: center; justify-content: center; }
-        .cell.link { justify-content: flex-start; padding-left: 12px; }
-        .linkText { color: #111; font-size: 12px; max-width: 240px; text-decoration: none; word-break: break-word; }
-        .linkText.muted { color: rgba(0,0,0,.4); }
-        .linkText:hover { text-decoration: underline; }
-        .date { font-size: 12px; color: #111; }
-        .actions { justify-content: flex-end; gap: 28px; padding-right: 18px; }
-        .reject, .approve { border: none; background: transparent; cursor: pointer; font-weight: 500; font-size: 26px; }
-        .reject { color: #d39a4a; }
-        .approve { color: #0c8a2a; }
-        .reject:disabled, .approve:disabled { opacity: .5; cursor: not-allowed; }
-        .loading, .empty { padding: 30px 12px; color: rgba(0,0,0,.55); }
+        .page {
+          min-height: 100%;
+          background: #ededed;
+          padding: 22px 34px;
+        }
+
+        .headerRow {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+        }
+
+        .backBtn {
+          border: none;
+          background: transparent;
+          color: #1c1c1c;
+          width: 52px;
+          height: 52px;
+          display: grid;
+          place-items: center;
+          font-size: 2rem;
+          cursor: pointer;
+          padding: 0;
+        }
+
+        .title {
+          font-size: 2rem;
+          font-weight: 900;
+          color: #111;
+          line-height: 1.1;
+        }
+
+        .lineWrap {
+          margin-top: 8px;
+          margin-bottom: 16px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .line {
+          flex: 1;
+          height: 2px;
+          background: rgba(0, 0, 0, 0.34);
+        }
+
+        .dot {
+          width: 5px;
+          height: 5px;
+          border-radius: 999px;
+          background: rgba(0, 0, 0, 0.52);
+        }
+
+        .error {
+          color: #b00020;
+          font-size: 13px;
+          margin-bottom: 10px;
+        }
+
+        .spacer {
+          height: 18px;
+        }
+
+        .table {
+          width: 100%;
+          margin-top: 10px;
+        }
+
+        .row {
+          display: grid;
+          grid-template-columns: 1.2fr 0.5fr 0.6fr;
+          align-items: center;
+          padding: 18px 8px;
+        }
+
+        .cell {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .cell.link {
+          justify-content: flex-start;
+          padding-left: 12px;
+        }
+
+        .linkText {
+          color: #111;
+          font-size: 12px;
+          max-width: 240px;
+          text-decoration: none;
+          word-break: break-word;
+          line-height: 1.15;
+        }
+
+        .linkText.muted {
+          color: rgba(0, 0, 0, 0.4);
+        }
+
+        .date {
+          font-size: 12px;
+          color: #111;
+        }
+
+        .actions {
+          justify-content: flex-end;
+          gap: 28px;
+          padding-right: 18px;
+        }
+
+        .reject,
+        .approve {
+          border: none;
+          background: transparent;
+          cursor: pointer;
+          font-weight: 500;
+          font-size: 26px;
+        }
+
+        .reject {
+          color: #d39a4a;
+        }
+
+        .approve {
+          color: #0c8a2a;
+        }
+
+        .reject:disabled,
+        .approve:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .loading,
+        .empty {
+          padding: 30px 12px;
+          color: rgba(0, 0, 0, 0.55);
+        }
+
+        @media (max-width: 780px) {
+          .page {
+            padding: 18px 18px 24px;
+          }
+
+          .title {
+            font-size: 1.55rem;
+          }
+
+          .row {
+            grid-template-columns: 1fr;
+            gap: 10px;
+            justify-items: flex-start;
+            padding: 18px 0;
+          }
+
+          .cell,
+          .cell.link,
+          .actions {
+            justify-content: flex-start;
+            padding-left: 0;
+            padding-right: 0;
+          }
+
+          .actions {
+            gap: 18px;
+          }
+
+          .reject,
+          .approve {
+            font-size: 22px;
+          }
+        }
       `}</style>
     </SideNav>
   );
