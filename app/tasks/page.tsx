@@ -85,7 +85,7 @@ export default function TasksPage() {
         { label: "Number of persons", key: "numberOfPersons" },
         { label: "Amount", key: "amount" },
       ] as const,
-    []
+    [],
   );
 
   useEffect(() => {
@@ -154,8 +154,10 @@ export default function TasksPage() {
     const previewUrl = URL.createObjectURL(file);
 
     setUploads((prev) => {
-      if (kind === "logo" && prev.logoPreview) URL.revokeObjectURL(prev.logoPreview);
-      if (kind === "image" && prev.imagePreview) URL.revokeObjectURL(prev.imagePreview);
+      if (kind === "logo" && prev.logoPreview)
+        URL.revokeObjectURL(prev.logoPreview);
+      if (kind === "image" && prev.imagePreview)
+        URL.revokeObjectURL(prev.imagePreview);
 
       return kind === "logo"
         ? { ...prev, logoFile: file, logoPreview: previewUrl }
@@ -194,10 +196,14 @@ export default function TasksPage() {
   }
 
   return (
-    <SideNav>
+    <>
       <div className="page">
         <div className="headerRow">
-          <button className="backBtn" aria-label="Back" onClick={() => router.back()}>
+          <button
+            className="backBtn"
+            aria-label="Back"
+            onClick={() => router.back()}
+          >
             <FiArrowLeft />
           </button>
 
@@ -205,7 +211,9 @@ export default function TasksPage() {
             <TaskNavButton label="Manage Task" path="/tasks" align="left" />
             <TaskNavButton
               label="Approve Task"
-              path={taskId ? `/submissions/tasks/${encodeURIComponent(taskId)}` : ""}
+              path={
+                taskId ? `/submissions/tasks/${encodeURIComponent(taskId)}` : ""
+              }
               align="right"
               disabled={!taskId}
             />
@@ -218,7 +226,11 @@ export default function TasksPage() {
           <span className="dot" />
         </div>
 
-        {statusMsg ? <div className="status">{statusMsg}</div> : <div className="status spacer" />}
+        {statusMsg ? (
+          <div className="status">{statusMsg}</div>
+        ) : (
+          <div className="status spacer" />
+        )}
 
         <div className="layout">
           <div className="leftCol">
@@ -244,14 +256,20 @@ export default function TasksPage() {
                           (e.currentTarget as HTMLInputElement).blur();
                         }
                       }}
-                      placeholder={isEditing ? `Enter ${field.label.toLowerCase()}` : ""}
+                      placeholder={
+                        isEditing ? `Enter ${field.label.toLowerCase()}` : ""
+                      }
                     />
 
                     <button
                       type="button"
                       className="iconBtn"
                       onClick={() => toggleEdit(field.key)}
-                      aria-label={isEditing ? `Stop editing ${field.label}` : `Edit ${field.label}`}
+                      aria-label={
+                        isEditing
+                          ? `Stop editing ${field.label}`
+                          : `Edit ${field.label}`
+                      }
                     >
                       {isSaving ? "..." : <FiEdit2 />}
                     </button>
@@ -267,7 +285,9 @@ export default function TasksPage() {
               type="file"
               accept="image/*"
               className="hiddenInput"
-              onChange={(e) => handleFileChange("logo", e.target.files?.[0] ?? null)}
+              onChange={(e) =>
+                handleFileChange("logo", e.target.files?.[0] ?? null)
+              }
             />
 
             <input
@@ -275,7 +295,9 @@ export default function TasksPage() {
               type="file"
               accept="image/*"
               className="hiddenInput"
-              onChange={(e) => handleFileChange("image", e.target.files?.[0] ?? null)}
+              onChange={(e) =>
+                handleFileChange("image", e.target.files?.[0] ?? null)
+              }
             />
 
             <div className="assetCard assetLogoCard">
@@ -283,7 +305,11 @@ export default function TasksPage() {
               <div className="assetRow">
                 <div className="logoCircle">
                   {uploads.logoPreview ? (
-                    <img src={uploads.logoPreview} alt="Logo preview" className="imgFill" />
+                    <img
+                      src={uploads.logoPreview}
+                      alt="Logo preview"
+                      className="imgFill"
+                    />
                   ) : (
                     <div className="logoPlaceholder">Logo</div>
                   )}
@@ -305,7 +331,11 @@ export default function TasksPage() {
               <div className="assetRow">
                 <div className="imageSquare">
                   {uploads.imagePreview ? (
-                    <img src={uploads.imagePreview} alt="Campaign preview" className="imgFill" />
+                    <img
+                      src={uploads.imagePreview}
+                      alt="Campaign preview"
+                      className="imgFill"
+                    />
                   ) : (
                     <div className="imagePlaceholder">Campaign image</div>
                   )}
@@ -329,7 +359,7 @@ export default function TasksPage() {
                 router.push(
                   taskId
                     ? `/tasks/task-details?taskId=${encodeURIComponent(taskId)}`
-                    : "/tasks/task-details"
+                    : "/tasks/task-details",
                 )
               }
             >
@@ -625,8 +655,6 @@ export default function TasksPage() {
           }
         }
       `}</style>
-    </SideNav>
+    </>
   );
 }
-
-

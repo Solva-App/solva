@@ -48,12 +48,12 @@ function normalizeTasks(payload: any): TaskCard[] {
   const list = Array.isArray(payload)
     ? payload
     : Array.isArray(payload?.data)
-    ? payload.data
-    : Array.isArray(payload?.tasks)
-    ? payload.tasks
-    : Array.isArray(payload?.data?.tasks)
-    ? payload.data.tasks
-    : [];
+      ? payload.data
+      : Array.isArray(payload?.tasks)
+        ? payload.tasks
+        : Array.isArray(payload?.data?.tasks)
+          ? payload.data.tasks
+          : [];
 
   return list
     .map((t: any) => {
@@ -64,15 +64,23 @@ function normalizeTasks(payload: any): TaskCard[] {
           t?.task?.id ??
           t?.task?._id ??
           t?.task?.taskId ??
-          ""
+          "",
       );
       if (!id) return null;
 
       const numberOfDays = Number(
-        t?.numberOfDays ?? t?.days ?? t?.durationDays ?? t?.task?.numberOfDays ?? 0
+        t?.numberOfDays ??
+          t?.days ??
+          t?.durationDays ??
+          t?.task?.numberOfDays ??
+          0,
       );
       const numberOfPersons = Number(
-        t?.numberOfPersons ?? t?.spots ?? t?.slots ?? t?.task?.numberOfPersons ?? 0
+        t?.numberOfPersons ??
+          t?.spots ??
+          t?.slots ??
+          t?.task?.numberOfPersons ??
+          0,
       );
 
       const timeLeftLabel =
@@ -114,7 +122,7 @@ function normalizeTasks(payload: any): TaskCard[] {
           t?.pool ??
           t?.amount ??
           t?.task?.amount ??
-          t?.task?.totalPool
+          t?.task?.totalPool,
       );
 
       const companyLogoUrl =
@@ -179,7 +187,9 @@ export default function TaskCardsPage() {
       });
 
       if (!res.ok) {
-        throw new Error((await res.text()) || `Failed to load tasks (${res.status})`);
+        throw new Error(
+          (await res.text()) || `Failed to load tasks (${res.status})`,
+        );
       }
 
       const json = await res.json();
@@ -222,10 +232,14 @@ export default function TaskCardsPage() {
   }
 
   return (
-    <SideNav>
+    <>
       <div className="page">
         <div className="headerRow">
-          <button className="backBtn" aria-label="Back" onClick={() => router.back()}>
+          <button
+            className="backBtn"
+            aria-label="Back"
+            onClick={() => router.back()}
+          >
             <FiArrowLeft />
           </button>
 
@@ -246,13 +260,19 @@ export default function TaskCardsPage() {
           <span className="dot" />
         </div>
 
-        {error ? <div className="errorMsg">{error}</div> : <div className="spacer" />}
+        {error ? (
+          <div className="errorMsg">{error}</div>
+        ) : (
+          <div className="spacer" />
+        )}
 
         <div className="grid">
           {loading ? (
             <div className="state">Loading tasks...</div>
           ) : cards.length === 0 ? (
-            <div className="state">No tasks found. Create a task and upload it first.</div>
+            <div className="state">
+              No tasks found. Create a task and upload it first.
+            </div>
           ) : (
             cards.map((card) => (
               <div key={card.id} className="cardWrap">
@@ -262,10 +282,15 @@ export default function TaskCardsPage() {
                       <div className="brandLogo">
                         {card.companyLogoUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={card.companyLogoUrl} alt={`${card.companyName} logo`} className="imgFill" />
+                          <img
+                            src={card.companyLogoUrl}
+                            alt={`${card.companyName} logo`}
+                            className="imgFill"
+                          />
                         ) : (
                           <span className="brandInitial">
-                            {card.companyName.trim().charAt(0).toUpperCase() || "C"}
+                            {card.companyName.trim().charAt(0).toUpperCase() ||
+                              "C"}
                           </span>
                         )}
                       </div>
@@ -278,7 +303,9 @@ export default function TaskCardsPage() {
 
                     <div className="poolBlock">
                       <div className="poolLabel">Total pool</div>
-                      <div className="poolValue">{formatNaira(card.totalPool)}</div>
+                      <div className="poolValue">
+                        {formatNaira(card.totalPool)}
+                      </div>
                     </div>
                   </div>
 
@@ -286,11 +313,17 @@ export default function TaskCardsPage() {
                     <div className="leftInfo">
                       <div className="taskTitle">{card.title}</div>
                       <div className="metaRow">
-                        <span className={`time ${card.timeLeftColor}`}>{card.timeLeftLabel}</span>
+                        <span className={`time ${card.timeLeftColor}`}>
+                          {card.timeLeftLabel}
+                        </span>
                         <span className="spots">{card.spotsLeftLabel}</span>
                       </div>
 
-                      <button className="viewBtn" type="button" onClick={() => onViewTask(card.id)}>
+                      <button
+                        className="viewBtn"
+                        type="button"
+                        onClick={() => onViewTask(card.id)}
+                      >
                         View Task
                       </button>
                     </div>
@@ -298,7 +331,11 @@ export default function TaskCardsPage() {
                     <div className="creativeWrap">
                       {card.creativeImageUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={card.creativeImageUrl} alt="Task creative" className="imgFill" />
+                        <img
+                          src={card.creativeImageUrl}
+                          alt="Task creative"
+                          className="imgFill"
+                        />
                       ) : (
                         <div className="creativePlaceholder">Image</div>
                       )}
@@ -626,6 +663,6 @@ export default function TaskCardsPage() {
           }
         }
       `}</style>
-    </SideNav>
+    </>
   );
 }
