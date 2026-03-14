@@ -10,7 +10,11 @@ export default function LayoutWrapper({
 }) {
   const pathname = usePathname();
 
+<<<<<<< HEAD
   const hideSidebar = pathname === "/login" || pathname === "/";
+=======
+  const hideSidebar = pathname === "/login";
+>>>>>>> 2d8b0a9 (layout fixed)
 
   return (
     <div className="flex w-full h-full">
