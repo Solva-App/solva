@@ -105,15 +105,15 @@ export default function ApproveTaskPage() {
    * ✅ FIX: apiFetch now uses buildHeaders()
    */
   async function apiFetch(url: string, init: RequestInit = {}) {
-  return fetch(url, {
-    ...init,
-    headers: buildHeaders(init.headers),
-    // ✅ remove credentials to avoid CORS credential rules
-    // credentials: "include",
-  });
-}
+    return fetch(url, {
+      ...init,
+      headers: buildHeaders(init.headers),
+      // ✅ remove credentials to avoid CORS credential rules
+      // credentials: "include",
+    });
+  }
   async function load() {
-  console.log("load() called. taskId =", taskId);
+    console.log("load() called. taskId =", taskId);
     if (!taskId) {
       setLoading(false);
       setRows([]);
@@ -192,7 +192,7 @@ export default function ApproveTaskPage() {
   }
 
   return (
-    <SideNav>
+    <>
       <div className="page">
         <div className="headerRow">
           <button
@@ -271,30 +271,121 @@ export default function ApproveTaskPage() {
       </div>
 
       <style jsx>{`
-        .page { padding: 22px 34px; }
-        .headerRow { display: flex; align-items: center; gap: 14px; }
-        .backBtn { border: none; background: transparent; font-size: 34px; cursor: pointer; line-height: 1; padding: 0 4px; }
-        .title { font-size: 26px; font-weight: 800; color: #111; }
-        .lineWrap { margin-top: 10px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
-        .line { flex: 1; height: 2px; background: rgba(0,0,0,.35); margin: 0 14px; }
-        .dot { width: 6px; height: 6px; background: rgba(0,0,0,.55); border-radius: 999px; }
-        .error { color: #b00020; font-size: 13px; margin-bottom: 10px; white-space: pre-wrap; }
-        .spacer { height: 18px; }
-        .table { width: 100%; margin-top: 10px; }
-        .row { display: grid; grid-template-columns: 1.2fr 0.5fr 0.6fr; align-items: center; padding: 18px 8px; }
-        .cell { display: flex; align-items: center; justify-content: center; }
-        .cell.link { justify-content: flex-start; padding-left: 12px; }
-        .linkText { color: #111; font-size: 12px; max-width: 240px; text-decoration: none; word-break: break-word; }
-        .linkText.muted { color: rgba(0,0,0,.4); }
-        .linkText:hover { text-decoration: underline; }
-        .date { font-size: 12px; color: #111; }
-        .actions { justify-content: flex-end; gap: 28px; padding-right: 18px; }
-        .reject, .approve { border: none; background: transparent; cursor: pointer; font-weight: 500; font-size: 26px; }
-        .reject { color: #d39a4a; }
-        .approve { color: #0c8a2a; }
-        .reject:disabled, .approve:disabled { opacity: .5; cursor: not-allowed; }
-        .loading, .empty { padding: 30px 12px; color: rgba(0,0,0,.55); }
+        .page {
+          padding: 22px 34px;
+        }
+        .headerRow {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+        }
+        .backBtn {
+          border: none;
+          background: transparent;
+          font-size: 34px;
+          cursor: pointer;
+          line-height: 1;
+          padding: 0 4px;
+        }
+        .title {
+          font-size: 26px;
+          font-weight: 800;
+          color: #111;
+        }
+        .lineWrap {
+          margin-top: 10px;
+          margin-bottom: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .line {
+          flex: 1;
+          height: 2px;
+          background: rgba(0, 0, 0, 0.35);
+          margin: 0 14px;
+        }
+        .dot {
+          width: 6px;
+          height: 6px;
+          background: rgba(0, 0, 0, 0.55);
+          border-radius: 999px;
+        }
+        .error {
+          color: #b00020;
+          font-size: 13px;
+          margin-bottom: 10px;
+          white-space: pre-wrap;
+        }
+        .spacer {
+          height: 18px;
+        }
+        .table {
+          width: 100%;
+          margin-top: 10px;
+        }
+        .row {
+          display: grid;
+          grid-template-columns: 1.2fr 0.5fr 0.6fr;
+          align-items: center;
+          padding: 18px 8px;
+        }
+        .cell {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .cell.link {
+          justify-content: flex-start;
+          padding-left: 12px;
+        }
+        .linkText {
+          color: #111;
+          font-size: 12px;
+          max-width: 240px;
+          text-decoration: none;
+          word-break: break-word;
+        }
+        .linkText.muted {
+          color: rgba(0, 0, 0, 0.4);
+        }
+        .linkText:hover {
+          text-decoration: underline;
+        }
+        .date {
+          font-size: 12px;
+          color: #111;
+        }
+        .actions {
+          justify-content: flex-end;
+          gap: 28px;
+          padding-right: 18px;
+        }
+        .reject,
+        .approve {
+          border: none;
+          background: transparent;
+          cursor: pointer;
+          font-weight: 500;
+          font-size: 26px;
+        }
+        .reject {
+          color: #d39a4a;
+        }
+        .approve {
+          color: #0c8a2a;
+        }
+        .reject:disabled,
+        .approve:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+        .loading,
+        .empty {
+          padding: 30px 12px;
+          color: rgba(0, 0, 0, 0.55);
+        }
       `}</style>
-    </SideNav>
+    </>
   );
 }
