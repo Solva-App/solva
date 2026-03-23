@@ -196,11 +196,7 @@ export default function ApproveTaskPage() {
           <span className="dot" />
         </div>
 
-        {error ? (
-          <div className="error">{error}</div>
-        ) : (
-          <div className="spacer" />
-        )}
+        {error ? <div className="error">{error}</div> : <div className="spacer" />}
 
         <div className="table">
           {loading ? (
