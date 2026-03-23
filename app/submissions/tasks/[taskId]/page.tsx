@@ -29,7 +29,8 @@ function asRecord(value: unknown): Record<string, unknown> {
 
 function readText(value: unknown): string {
   if (typeof value === "string") return value.trim();
-  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  if (typeof value === "number" || typeof value === "boolean")
+    return String(value);
   return "";
 }
 
@@ -58,13 +59,22 @@ function extractList(payload: unknown): unknown[] {
 function normalizeSubmission(item: unknown): Submission | null {
   const record = asRecord(item);
   const nestedSubmission = asRecord(record.submission);
-  const source = Object.keys(nestedSubmission).length ? nestedSubmission : record;
+  const source = Object.keys(nestedSubmission).length
+    ? nestedSubmission
+    : record;
 
   const id = pickText(source, ["id", "_id", "submissionId"]);
   if (!id) return null;
 
   const link =
-    pickText(source, ["link", "url", "submissionLink", "proofUrl", "referenceUrl", "attachmentUrl"]) ||
+    pickText(source, [
+      "link",
+      "url",
+      "submissionLink",
+      "proofUrl",
+      "referenceUrl",
+      "attachmentUrl",
+    ]) ||
     pickText(asRecord(source.proof), ["url", "link"]) ||
     pickText(asRecord(source.attachment), ["url", "link"]);
 
@@ -72,7 +82,12 @@ function normalizeSubmission(item: unknown): Submission | null {
     id,
     link,
     createdAt:
-      pickText(source, ["submittedAt", "createdAt", "dateSubmitted", "updatedAt"]) || null,
+      pickText(source, [
+        "submittedAt",
+        "createdAt",
+        "dateSubmitted",
+        "updatedAt",
+      ]) || null,
   };
 }
 
@@ -139,13 +154,20 @@ export default function ApproveTaskPage() {
 
     try {
       await axiosInstance.get(API.byId(submissionId));
-      await axiosInstance.patch(type === "approve" ? API.approve(submissionId) : API.reject(submissionId), {});
-      toast.success(type === "approve" ? "Submission approved" : "Submission rejected");
+      await axiosInstance.patch(
+        type === "approve"
+          ? API.approve(submissionId)
+          : API.reject(submissionId),
+        {},
+      );
+      toast.success(
+        type === "approve" ? "Submission approved" : "Submission rejected",
+      );
       await loadSubmissions();
     } catch (requestError: any) {
       const message = getErrorMessage(
         requestError,
-        type === "approve" ? "Approve failed" : "Reject failed"
+        type === "approve" ? "Approve failed" : "Reject failed",
       );
       setError(message);
       toast.error(message);
@@ -155,10 +177,14 @@ export default function ApproveTaskPage() {
   }
 
   return (
-    <SideNav>
+    <>
       <div className="page">
         <div className="headerRow">
-          <button className="backBtn" aria-label="Back" onClick={() => router.back()}>
+          <button
+            className="backBtn"
+            aria-label="Back"
+            onClick={() => router.back()}
+          >
             <FiArrowLeft />
           </button>
           <div className="title">Approve Task</div>
@@ -185,7 +211,12 @@ export default function ApproveTaskPage() {
                 <div className="row" key={submission.id}>
                   <div className="cell link">
                     {submission.link ? (
-                      <a className="linkText" href={submission.link} target="_blank" rel="noreferrer">
+                      <a
+                        className="linkText"
+                        href={submission.link}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
                         {submission.link}
                       </a>
                     ) : (
@@ -193,7 +224,9 @@ export default function ApproveTaskPage() {
                     )}
                   </div>
 
-                  <div className="cell date">{formatDate(submission.createdAt)}</div>
+                  <div className="cell date">
+                    {formatDate(submission.createdAt)}
+                  </div>
 
                   <div className="cell actions">
                     <button
@@ -288,25 +321,21 @@ export default function ApproveTaskPage() {
           width: 100%;
           margin-top: 10px;
         }
-
         .row {
           display: grid;
           grid-template-columns: 1.2fr 0.5fr 0.6fr;
           align-items: center;
           padding: 18px 8px;
         }
-
         .cell {
           display: flex;
           align-items: center;
           justify-content: center;
         }
-
         .cell.link {
           justify-content: flex-start;
           padding-left: 12px;
         }
-
         .linkText {
           color: #111;
           font-size: 12px;
@@ -324,13 +353,11 @@ export default function ApproveTaskPage() {
           font-size: 12px;
           color: #111;
         }
-
         .actions {
           justify-content: flex-end;
           gap: 28px;
           padding-right: 18px;
         }
-
         .reject,
         .approve {
           border: none;
@@ -353,7 +380,6 @@ export default function ApproveTaskPage() {
           opacity: 0.5;
           cursor: not-allowed;
         }
-
         .loading,
         .empty {
           padding: 30px 12px;
@@ -394,6 +420,6 @@ export default function ApproveTaskPage() {
           }
         }
       `}</style>
-    </SideNav>
+    </>
   );
 }

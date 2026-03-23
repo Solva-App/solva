@@ -41,7 +41,7 @@ const Notifications = () => {
     } catch (error: any) {
       const err = error as AxiosError<{ message?: string }>;
       toast.error(
-        err.response?.data?.message || "Failed to fetch notifications"
+        err.response?.data?.message || "Failed to fetch notifications",
       );
     } finally {
       setLoading(false);
@@ -86,7 +86,9 @@ const Notifications = () => {
       fetchNotifications();
     } catch (error: any) {
       const err = error as AxiosError<{ message?: string }>;
-      toast.error(err.response?.data?.message || "Failed to update notification");
+      toast.error(
+        err.response?.data?.message || "Failed to update notification",
+      );
     } finally {
       setEditLoading(false);
     }
@@ -103,138 +105,137 @@ const Notifications = () => {
       fetchNotifications();
     } catch (error: any) {
       const err = error as AxiosError<{ message?: string }>;
-      toast.error(err.response?.data?.message || "Failed to delete notification");
+      toast.error(
+        err.response?.data?.message || "Failed to delete notification",
+      );
     } finally {
       setDeleteLoading(false);
     }
   };
 
   return (
-    <div className="flex">
-      <SideNav />
-      <div className="w-full p-4 sm:p-8 bg-gray-50 h-screen overflow-y-scroll">
-        <h1 className="text-3xl font-bold mb-6 text-gray-800">
-          Notifications
-        </h1>
+    <div className="w-full p-4 sm:p-8 bg-gray-50 h-screen overflow-y-scroll">
+      <h1 className="text-3xl font-bold mb-6 text-gray-800">Notifications</h1>
 
-        {/* Add Notification Form */}
-        <div className="bg-white p-6 rounded-2xl shadow-md mb-8">
-          <h2 className="text-xl font-semibold text-gray-700 mb-4">
-            Add Notification
-          </h2>
-          <input
-            type="text"
-            placeholder="Title"
-            className="w-full mb-3 p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary transition"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <textarea
-            placeholder="Message"
-            className="w-full mb-3 p-3 border border-gray-300 rounded-xl h-24 focus:outline-none focus:ring-2 focus:ring-primary transition"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-          />
-          <Button
-            BtnText={addLoading ? "Adding..." : "Add Notification"}
-            BtnFunction={handleAdd}
-            disabled={addLoading}
-          />
-        </div>
-
-        {/* Notifications List */}
-        {loading ? (
-          <div className="text-center py-10 text-gray-500 animate-pulse">
-            Loading notifications...
-          </div>
-        ) : notifications.length === 0 ? (
-          <div className="text-center py-10 text-gray-400">
-            No notifications yet.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {notifications.map((notif) => (
-              <motion.div
-                key={notif.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white p-5 rounded-xl shadow hover:shadow-lg transition relative"
-              >
-                <h3 className="font-semibold text-lg text-gray-800">
-                  {notif.title}
-                </h3>
-                <p className="text-gray-600 mt-2">{notif.message}</p>
-                <p className="text-gray-400 text-sm mt-3">
-                  {new Date(notif.createdAt).toLocaleString()}
-                </p>
-
-                <div className="absolute top-3 right-3 flex gap-3">
-                  <RiEdit2Line
-                    className="text-primary cursor-pointer hover:scale-110 transition"
-                    onClick={() => {
-                      setSelectedNotification(notif);
-                      setTitle(notif.title);
-                      setMessage(notif.message);
-                      setEditModal(true);
-                    }}
-                  />
-                  <RiDeleteBin6Line
-                    className="text-red-500 cursor-pointer hover:scale-110 transition"
-                    onClick={() => {
-                      setSelectedNotification(notif);
-                      setDeleteModal(true);
-                    }}
-                  />
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        )}
-
-        {/* Edit Modal */}
-        <AnimatePresence>
-          {openEditModal && (
-            <Modal
-              title="Edit Notification"
-              confirmText={editLoading ? "Updating..." : "Update"}
-              onClose={() => setEditModal(false)}
-              onConfirm={handleEdit}
-              disabled={editLoading}
-            >
-              <input
-                type="text"
-                className="w-full mb-3 p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary transition"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-              />
-              <textarea
-                className="w-full mb-3 p-3 border border-gray-300 rounded-xl h-24 focus:outline-none focus:ring-2 focus:ring-primary transition"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-              />
-            </Modal>
-          )}
-        </AnimatePresence>
-
-        {/* Delete Modal */}
-        <AnimatePresence>
-          {openDeleteModal && (
-            <Modal
-              title="Confirm Delete"
-              confirmText={deleteLoading ? "Deleting..." : "Delete"}
-              onClose={() => setDeleteModal(false)}
-              onConfirm={handleDelete}
-              danger
-              disabled={deleteLoading}
-            >
-              <p className="text-gray-600 text-center">
-                Are you sure you want to delete this notification? <br />
-                <span className="font-semibold">This action is irreversible.</span>
-              </p>
-            </Modal>
-          )}
-        </AnimatePresence>
+      {/* Add Notification Form */}
+      <div className="bg-white p-6 rounded-2xl shadow-md mb-8">
+        <h2 className="text-xl font-semibold text-gray-700 mb-4">
+          Add Notification
+        </h2>
+        <input
+          type="text"
+          placeholder="Title"
+          className="w-full mb-3 p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary transition"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        <textarea
+          placeholder="Message"
+          className="w-full mb-3 p-3 border border-gray-300 rounded-xl h-24 focus:outline-none focus:ring-2 focus:ring-primary transition"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+        />
+        <Button
+          BtnText={addLoading ? "Adding..." : "Add Notification"}
+          BtnFunction={handleAdd}
+          disabled={addLoading}
+        />
       </div>
+
+      {/* Notifications List */}
+      {loading ? (
+        <div className="text-center py-10 text-gray-500 animate-pulse">
+          Loading notifications...
+        </div>
+      ) : notifications.length === 0 ? (
+        <div className="text-center py-10 text-gray-400">
+          No notifications yet.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {notifications.map((notif) => (
+            <motion.div
+              key={notif.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white p-5 rounded-xl shadow hover:shadow-lg transition relative"
+            >
+              <h3 className="font-semibold text-lg text-gray-800">
+                {notif.title}
+              </h3>
+              <p className="text-gray-600 mt-2">{notif.message}</p>
+              <p className="text-gray-400 text-sm mt-3">
+                {new Date(notif.createdAt).toLocaleString()}
+              </p>
+
+              <div className="absolute top-3 right-3 flex gap-3">
+                <RiEdit2Line
+                  className="text-primary cursor-pointer hover:scale-110 transition"
+                  onClick={() => {
+                    setSelectedNotification(notif);
+                    setTitle(notif.title);
+                    setMessage(notif.message);
+                    setEditModal(true);
+                  }}
+                />
+                <RiDeleteBin6Line
+                  className="text-red-500 cursor-pointer hover:scale-110 transition"
+                  onClick={() => {
+                    setSelectedNotification(notif);
+                    setDeleteModal(true);
+                  }}
+                />
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      <AnimatePresence>
+        {openEditModal && (
+          <Modal
+            title="Edit Notification"
+            confirmText={editLoading ? "Updating..." : "Update"}
+            onClose={() => setEditModal(false)}
+            onConfirm={handleEdit}
+            disabled={editLoading}
+          >
+            <input
+              type="text"
+              className="w-full mb-3 p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary transition"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+            <textarea
+              className="w-full mb-3 p-3 border border-gray-300 rounded-xl h-24 focus:outline-none focus:ring-2 focus:ring-primary transition"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+            />
+          </Modal>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Modal */}
+      <AnimatePresence>
+        {openDeleteModal && (
+          <Modal
+            title="Confirm Delete"
+            confirmText={deleteLoading ? "Deleting..." : "Delete"}
+            onClose={() => setDeleteModal(false)}
+            onConfirm={handleDelete}
+            danger
+            disabled={deleteLoading}
+          >
+            <p className="text-gray-600 text-center">
+              Are you sure you want to delete this notification? <br />
+              <span className="font-semibold">
+                This action is irreversible.
+              </span>
+            </p>
+          </Modal>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

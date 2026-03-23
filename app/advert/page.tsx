@@ -19,7 +19,11 @@ interface Slide {
 
 const Advert = () => {
   const [images, setImages] = useState<(File | null)[]>([null, null, null]);
-  const [previews, setPreviews] = useState<(string | null)[]>([null, null, null]);
+  const [previews, setPreviews] = useState<(string | null)[]>([
+    null,
+    null,
+    null,
+  ]);
   const [slides, setSlides] = useState<Slide[]>([]);
   const [loading, setLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -85,7 +89,10 @@ const Advert = () => {
     }
   };
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
+  const handleImageChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    index: number,
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -99,10 +106,11 @@ const Advert = () => {
   };
 
   return (
-    <div className="flex">
-      <SideNav />
+    <>
       <div className="w-full p-5 sm:p-10 overflow-y-scroll h-screen bg-gray-50">
-        <h1 className="sm:text-3xl text-2xl font-bold text-gray-800">Advert Dashboard</h1>
+        <h1 className="sm:text-3xl text-2xl font-bold text-gray-800">
+          Advert Dashboard
+        </h1>
         <p className="text-gray-500 mt-1 mb-4 text-sm">
           Manage and upload advertisement slides here
         </p>
@@ -144,7 +152,10 @@ const Advert = () => {
           </div>
 
           <div className="flex justify-end mt-6">
-            <Button BtnText={loading ? "Uploading..." : "Upload"} BtnFunction={handleUpload} />
+            <Button
+              BtnText={loading ? "Uploading..." : "Upload"}
+              BtnFunction={handleUpload}
+            />
           </div>
         </div>
 
@@ -215,7 +226,8 @@ const Advert = () => {
                 Confirm Delete
               </h1>
               <p className="text-sm sm:text-base text-gray-600 py-4 text-center">
-                This action cannot be undone. Are you sure you want to delete this slide?
+                This action cannot be undone. Are you sure you want to delete
+                this slide?
               </p>
               <div className="flex items-center gap-4">
                 <button
@@ -235,7 +247,7 @@ const Advert = () => {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </>
   );
 };
 

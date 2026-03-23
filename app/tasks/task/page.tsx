@@ -55,7 +55,9 @@ function getDaysLeftLabel(task: any) {
     }
   }
 
-  const numberOfDays = Number(task?.numberOfDays ?? task?.days ?? task?.durationDays ?? 0);
+  const numberOfDays = Number(
+    task?.numberOfDays ?? task?.days ?? task?.durationDays ?? 0,
+  );
   if (numberOfDays > 0) {
     return `${numberOfDays} ${numberOfDays === 1 ? "day" : "days"} left`;
   }
@@ -68,23 +70,27 @@ function getSpotsLeftLabel(task: any) {
     return task.spotsLeftLabel;
   }
 
-  const totalSpots = Number(task?.totalSpots ?? task?.numberOfPersons ?? task?.spots ?? 0);
+  const totalSpots = Number(
+    task?.totalSpots ?? task?.numberOfPersons ?? task?.spots ?? 0,
+  );
   const usedSpots = Number(task?.usedSpots ?? 0);
   const spotsLeft = totalSpots - usedSpots;
 
-  return spotsLeft > 0 ? `${spotsLeft} spot${spotsLeft === 1 ? "" : "s"} left` : "-";
+  return spotsLeft > 0
+    ? `${spotsLeft} spot${spotsLeft === 1 ? "" : "s"} left`
+    : "-";
 }
 
 function normalizeTasks(payload: any): TaskCard[] {
   const list = Array.isArray(payload)
     ? payload
     : Array.isArray(payload?.data)
-    ? payload.data
-    : Array.isArray(payload?.tasks)
-    ? payload.tasks
-    : Array.isArray(payload?.data?.tasks)
-    ? payload.data.tasks
-    : [];
+      ? payload.data
+      : Array.isArray(payload?.tasks)
+        ? payload.tasks
+        : Array.isArray(payload?.data?.tasks)
+          ? payload.data.tasks
+          : [];
 
   return list
     .map((task: any) => {
@@ -92,12 +98,26 @@ function normalizeTasks(payload: any): TaskCard[] {
       if (!id) return null;
 
       const companyName =
-        task?.sponsorName ?? task?.companyName ?? task?.brandName ?? task?.company?.name ?? "Company";
+        task?.sponsorName ??
+        task?.companyName ??
+        task?.brandName ??
+        task?.company?.name ??
+        "Company";
       const companyLogoUrl =
-        task?.sponsorLogo ?? task?.companyLogoUrl ?? task?.logoUrl ?? task?.logo ?? task?.company?.logoUrl ?? null;
-      const campaignType = task?.type ?? task?.campaignType ?? task?.campaign ?? "Campaign";
+        task?.sponsorLogo ??
+        task?.companyLogoUrl ??
+        task?.logoUrl ??
+        task?.logo ??
+        task?.company?.logoUrl ??
+        null;
+      const campaignType =
+        task?.type ?? task?.campaignType ?? task?.campaign ?? "Campaign";
       const creativeImageUrl =
-        task?.bannerImage ?? task?.creativeImageUrl ?? task?.campaignImageUrl ?? task?.imageUrl ?? null;
+        task?.bannerImage ??
+        task?.creativeImageUrl ??
+        task?.campaignImageUrl ??
+        task?.imageUrl ??
+        null;
       const timeLeftLabel = getDaysLeftLabel(task);
 
       return {
@@ -106,7 +126,9 @@ function normalizeTasks(payload: any): TaskCard[] {
         companyLogoUrl: companyLogoUrl ? String(companyLogoUrl) : null,
         campaignType: String(campaignType),
         title: String(task?.title ?? task?.campaignTitle ?? "Untitled Task"),
-        totalPool: parseAmount(task?.totalPool ?? task?.rewardPool ?? task?.pool ?? task?.amount),
+        totalPool: parseAmount(
+          task?.totalPool ?? task?.rewardPool ?? task?.pool ?? task?.amount,
+        ),
         creativeImageUrl: creativeImageUrl ? String(creativeImageUrl) : null,
         timeLeftLabel,
         timeLeftColor: /\bdays?\b/i.test(timeLeftLabel) ? "green" : "red",
@@ -185,10 +207,14 @@ export default function TaskCardsPage() {
   }
 
   return (
-    <SideNav>
+    <>
       <div className="page">
         <div className="headerRow">
-          <button className="backBtn" aria-label="Back" onClick={() => router.back()}>
+          <button
+            className="backBtn"
+            aria-label="Back"
+            onClick={() => router.back()}
+          >
             <FiArrowLeft />
           </button>
 
@@ -210,13 +236,19 @@ export default function TaskCardsPage() {
           </button>
         </div>
 
-        {error ? <div className="errorMsg">{error}</div> : <div className="spacer" />}
+        {error ? (
+          <div className="errorMsg">{error}</div>
+        ) : (
+          <div className="spacer" />
+        )}
 
         <div className="grid">
           {loading ? (
             <div className="state">Loading tasks...</div>
           ) : cards.length === 0 ? (
-            <div className="state">No tasks found. Use Create Task to start a new one.</div>
+            <div className="state">
+              No tasks found. Use Create Task to start a new one.
+            </div>
           ) : (
             cards.map((card) => (
               <div key={card.id} className="cardWrap">
@@ -226,10 +258,15 @@ export default function TaskCardsPage() {
                       <div className="brandLogo">
                         {card.companyLogoUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={card.companyLogoUrl} alt={`${card.companyName} logo`} className="imgFill" />
+                          <img
+                            src={card.companyLogoUrl}
+                            alt={`${card.companyName} logo`}
+                            className="imgFill"
+                          />
                         ) : (
                           <span className="brandInitial">
-                            {card.companyName.trim().charAt(0).toUpperCase() || "C"}
+                            {card.companyName.trim().charAt(0).toUpperCase() ||
+                              "C"}
                           </span>
                         )}
                       </div>
@@ -242,7 +279,9 @@ export default function TaskCardsPage() {
 
                     <div className="poolBlock">
                       <div className="poolLabel">Total pool</div>
-                      <div className="poolValue">{formatNaira(card.totalPool)}</div>
+                      <div className="poolValue">
+                        {formatNaira(card.totalPool)}
+                      </div>
                     </div>
                   </div>
 
@@ -250,15 +289,25 @@ export default function TaskCardsPage() {
                     <div className="leftInfo">
                       <div className="taskTitle">{card.title}</div>
                       <div className="metaRow">
-                        <span className={`time ${card.timeLeftColor}`}>{card.timeLeftLabel}</span>
+                        <span className={`time ${card.timeLeftColor}`}>
+                          {card.timeLeftLabel}
+                        </span>
                         <span className="spots">{card.spotsLeftLabel}</span>
                       </div>
 
                       <div className="buttonRow">
-                        <button className="viewBtn" type="button" onClick={() => onViewTask(card.id)}>
+                        <button
+                          className="viewBtn"
+                          type="button"
+                          onClick={() => onViewTask(card.id)}
+                        >
                           View Task
                         </button>
-                        <button className="submissionBtn" type="button" onClick={() => onOpenSubmissions(card.id)}>
+                        <button
+                          className="submissionBtn"
+                          type="button"
+                          onClick={() => onOpenSubmissions(card.id)}
+                        >
                           Submissions
                         </button>
                       </div>
@@ -267,7 +316,11 @@ export default function TaskCardsPage() {
                     <div className="creativeWrap">
                       {card.creativeImageUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={card.creativeImageUrl} alt="Task creative" className="imgFill" />
+                        <img
+                          src={card.creativeImageUrl}
+                          alt="Task creative"
+                          className="imgFill"
+                        />
                       ) : (
                         <div className="creativePlaceholder">Image</div>
                       )}
@@ -635,6 +688,6 @@ export default function TaskCardsPage() {
           }
         }
       `}</style>
-    </SideNav>
+    </>
   );
 }

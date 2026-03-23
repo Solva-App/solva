@@ -196,14 +196,17 @@ function parseOverview(raw: unknown): Partial<CreateTaskState> {
         ?.split("\n")
         .map((line) => line.replace(/^- /, "").trim())
         .filter(Boolean) || DEFAULT.mustInclude,
-    contentGuidelinesTitle: guidelinesSection?.title || DEFAULT.contentGuidelinesTitle,
+    contentGuidelinesTitle:
+      guidelinesSection?.title || DEFAULT.contentGuidelinesTitle,
     contentGuidelines:
       guidelinesSection?.body
         ?.split("\n")
         .map((line) => line.replace(/^- /, "").trim())
         .filter(Boolean) || DEFAULT.contentGuidelines,
-    selectionCriteriaTitle: selectionSection?.title || DEFAULT.selectionCriteriaTitle,
-    selectionCriteriaBody: selectionSection?.body || DEFAULT.selectionCriteriaBody,
+    selectionCriteriaTitle:
+      selectionSection?.title || DEFAULT.selectionCriteriaTitle,
+    selectionCriteriaBody:
+      selectionSection?.body || DEFAULT.selectionCriteriaBody,
     howToSubmitTitle: submitSection?.title || DEFAULT.howToSubmitTitle,
     howToSubmitBody: submitSection?.body || DEFAULT.howToSubmitBody,
   };
@@ -218,7 +221,8 @@ function resolveTaskIdentity(state: CreateTaskState) {
   const draft = readTaskDraft();
 
   return {
-    title: state.taskTitle.trim() || draft?.campaignTitle?.trim() || "Untitled Task",
+    title:
+      state.taskTitle.trim() || draft?.campaignTitle?.trim() || "Untitled Task",
     sponsorName: draft?.companyName?.trim() || "",
     type: draft?.campaign?.trim() || "",
   };
@@ -226,7 +230,10 @@ function resolveTaskIdentity(state: CreateTaskState) {
 
 function mapStateToTaskPayload(state: CreateTaskState, meta: TaskMeta) {
   const identity = resolveTaskIdentity(state);
-  const requirements = state.mustInclude.map((item) => item.trim()).filter(Boolean).join(", ");
+  const requirements = state.mustInclude
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .join(", ");
   const guidelines = state.contentGuidelines
     .map((item) => item.trim())
     .filter(Boolean)
@@ -245,8 +252,10 @@ function mapStateToTaskPayload(state: CreateTaskState, meta: TaskMeta) {
 
   if (meta.startDate) payload.startDate = meta.startDate;
   if (meta.endDate) payload.endDate = meta.endDate;
-  if (meta.totalPool !== null) payload.totalPool = String(Math.trunc(meta.totalPool));
-  if (meta.totalSpots !== null) payload.totalSpots = String(Math.trunc(meta.totalSpots));
+  if (meta.totalPool !== null)
+    payload.totalPool = String(Math.trunc(meta.totalPool));
+  if (meta.totalSpots !== null)
+    payload.totalSpots = String(Math.trunc(meta.totalSpots));
 
   return payload;
 }
@@ -261,13 +270,18 @@ function mapApiToState(apiPayload: any): CreateTaskState {
   return {
     taskTitle: api?.title ?? draft?.campaignTitle ?? DEFAULT.taskTitle,
     overviewTitle: api?.overviewTitle ?? DEFAULT.overviewTitle,
-    overviewBody: api?.overviewBody ?? parsedOverview.overviewBody ?? DEFAULT.overviewBody,
-    mustInclude: requirements ?? parsedOverview.mustInclude ?? DEFAULT.mustInclude,
+    overviewBody:
+      api?.overviewBody ?? parsedOverview.overviewBody ?? DEFAULT.overviewBody,
+    mustInclude:
+      requirements ?? parsedOverview.mustInclude ?? DEFAULT.mustInclude,
     contentGuidelinesTitle:
       api?.contentGuidelinesTitle ??
       parsedOverview.contentGuidelinesTitle ??
       DEFAULT.contentGuidelinesTitle,
-    contentGuidelines: guidelines ?? parsedOverview.contentGuidelines ?? DEFAULT.contentGuidelines,
+    contentGuidelines:
+      guidelines ??
+      parsedOverview.contentGuidelines ??
+      DEFAULT.contentGuidelines,
     selectionCriteriaTitle:
       api?.selectionCriteriaTitle ??
       parsedOverview.selectionCriteriaTitle ??
@@ -278,7 +292,9 @@ function mapApiToState(apiPayload: any): CreateTaskState {
       parsedOverview.selectionCriteriaBody ??
       DEFAULT.selectionCriteriaBody,
     howToSubmitTitle:
-      api?.howToSubmitTitle ?? parsedOverview.howToSubmitTitle ?? DEFAULT.howToSubmitTitle,
+      api?.howToSubmitTitle ??
+      parsedOverview.howToSubmitTitle ??
+      DEFAULT.howToSubmitTitle,
     howToSubmitBody:
       api?.howToSubmit ??
       api?.howToSubmitBody ??
@@ -304,7 +320,7 @@ async function apiJson(
   url: string,
   method: "GET" | "POST" | "PATCH",
   body?: Record<string, unknown>,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ) {
   const res = await axiosInstance.request({
     url,
@@ -316,7 +332,11 @@ async function apiJson(
   return res.data ?? null;
 }
 
-async function apiForm(url: string, form: FormData, method: "POST" | "PATCH" = "PATCH") {
+async function apiForm(
+  url: string,
+  form: FormData,
+  method: "POST" | "PATCH" = "PATCH",
+) {
   const res = await axiosInstance.request({
     url,
     method,
@@ -358,17 +378,19 @@ export default function TaskEditor({
 
   const [data, setData] = useState<CreateTaskState>(DEFAULT);
   const [editing, setEditing] = useState<EditKey | null>(null);
-  const [saving, setSaving] = useState<EditKey | "image" | "create" | "upload" | null>(
-    null
-  );
+  const [saving, setSaving] = useState<
+    EditKey | "image" | "create" | "upload" | null
+  >(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(Boolean(taskIdProp));
-  const [taskMeta, setTaskMeta] = useState<TaskMeta>(() => deriveTaskMetaFromDraft(readTaskDraft()));
+  const [taskMeta, setTaskMeta] = useState<TaskMeta>(() =>
+    deriveTaskMetaFromDraft(readTaskDraft()),
+  );
   const [createdId, setCreatedId] = useState<string | null>(
-    mode === "create" ? taskIdProp ?? null : null
+    mode === "create" ? (taskIdProp ?? null) : null,
   );
 
-  const taskId = mode === "update" ? taskIdProp ?? null : createdId;
+  const taskId = mode === "update" ? (taskIdProp ?? null) : createdId;
   const approveTaskPath = taskId
     ? `/submissions/tasks/${encodeURIComponent(taskId)}`
     : "";
@@ -378,7 +400,7 @@ export default function TaskEditor({
 
   const includeCards = useMemo(
     () => data.mustInclude.map((text, idx) => ({ text, idx })),
-    [data.mustInclude]
+    [data.mustInclude],
   );
 
   useEffect(() => {
@@ -400,7 +422,12 @@ export default function TaskEditor({
         setLoading(true);
         setMsg(null);
 
-        const json = await apiJson(API.byId(taskId), "GET", undefined, ac.signal);
+        const json = await apiJson(
+          API.byId(taskId),
+          "GET",
+          undefined,
+          ac.signal,
+        );
         const task = unwrapTask(json);
 
         setData(mapApiToState(task));
@@ -435,7 +462,18 @@ export default function TaskEditor({
       createMeta.totalPool === null ||
       createMeta.totalSpots === null
     ) {
-      throw new Error("Complete amount and number of persons on the first task step.");
+      throw new Error(
+        "Complete amount and number of persons on the first task step.",
+      );
+    }
+
+    const payload = mapStateToTaskPayload(data, createMeta);
+    if (
+      !payload.overview ||
+      typeof payload.overview !== "string" ||
+      !payload.overview.trim()
+    ) {
+      throw new Error("Overview is required before creating the task.");
     }
 
     const payload = mapStateToTaskPayload(data, createMeta);
@@ -538,10 +576,15 @@ export default function TaskEditor({
   }
 
   return (
-    <SideNav>
+    <>
+      {" "}
       <div className="page">
         <div className="headerRow">
-          <button className="backBtn" aria-label="Back" onClick={() => router.back()}>
+          <button
+            className="backBtn"
+            aria-label="Back"
+            onClick={() => router.back()}
+          >
             <FiArrowLeft />
           </button>
           <div className="headerTitles">
@@ -561,7 +604,11 @@ export default function TaskEditor({
           <span className="dot" />
         </div>
 
-        {msg ? <div className="status">{msg}</div> : <div className="status spacer" />}
+        {msg ? (
+          <div className="status">{msg}</div>
+        ) : (
+          <div className="status spacer" />
+        )}
 
         <div className="grid">
           <div className="colLeft">
@@ -571,7 +618,9 @@ export default function TaskEditor({
                   <input
                     className="titleInput"
                     value={data.overviewTitle}
-                    onChange={(e) => setData((p) => ({ ...p, overviewTitle: e.target.value }))}
+                    onChange={(e) =>
+                      setData((p) => ({ ...p, overviewTitle: e.target.value }))
+                    }
                     onBlur={() => saveSection("overview")}
                   />
                 ) : (
@@ -587,7 +636,9 @@ export default function TaskEditor({
                 <textarea
                   className="textArea"
                   value={data.overviewBody}
-                  onChange={(e) => setData((p) => ({ ...p, overviewBody: e.target.value }))}
+                  onChange={(e) =>
+                    setData((p) => ({ ...p, overviewBody: e.target.value }))
+                  }
                   onBlur={() => saveSection("overview")}
                 />
               ) : (
@@ -620,7 +671,10 @@ export default function TaskEditor({
                         <div className="includeText">{text}</div>
                       )}
 
-                      <button className="miniPencil" onClick={() => toggle(key)}>
+                      <button
+                        className="miniPencil"
+                        onClick={() => toggle(key)}
+                      >
                         {saving === key ? "..." : <FiEdit2 />}
                       </button>
                     </div>
@@ -635,7 +689,9 @@ export default function TaskEditor({
                 type="file"
                 accept="image/*"
                 style={{ display: "none" }}
-                onChange={(e) => onCreativeSelected(e.target.files?.[0] ?? null)}
+                onChange={(e) =>
+                  onCreativeSelected(e.target.files?.[0] ?? null)
+                }
               />
 
               <div className="creativeCard">
@@ -651,7 +707,11 @@ export default function TaskEditor({
                 )}
               </div>
 
-              <button className="miniPencil" onClick={pickCreative} aria-label="Upload creative">
+              <button
+                className="miniPencil"
+                onClick={pickCreative}
+                aria-label="Upload creative"
+              >
                 {saving === "image" ? "..." : <FiEdit2 />}
               </button>
             </div>
@@ -665,12 +725,17 @@ export default function TaskEditor({
                     className="titleInput"
                     value={data.contentGuidelinesTitle}
                     onChange={(e) =>
-                      setData((p) => ({ ...p, contentGuidelinesTitle: e.target.value }))
+                      setData((p) => ({
+                        ...p,
+                        contentGuidelinesTitle: e.target.value,
+                      }))
                     }
                     onBlur={() => saveSection("guidelines")}
                   />
                 ) : (
-                  <div className="cardTitle muted">{data.contentGuidelinesTitle}</div>
+                  <div className="cardTitle muted">
+                    {data.contentGuidelinesTitle}
+                  </div>
                 )}
 
                 <button className="pencil" onClick={() => toggle("guidelines")}>
@@ -695,7 +760,7 @@ export default function TaskEditor({
                     </li>
                   ) : (
                     <li key={i}>{b}</li>
-                  )
+                  ),
                 )}
               </ul>
             </div>
@@ -712,7 +777,12 @@ export default function TaskEditor({
                 <textarea
                   className="textArea smallArea"
                   value={data.selectionCriteriaBody}
-                  onChange={(e) => setData((p) => ({ ...p, selectionCriteriaBody: e.target.value }))}
+                  onChange={(e) =>
+                    setData((p) => ({
+                      ...p,
+                      selectionCriteriaBody: e.target.value,
+                    }))
+                  }
                   onBlur={() => saveSection("selection")}
                 />
               ) : null}
@@ -730,7 +800,9 @@ export default function TaskEditor({
                 <textarea
                   className="textArea smallArea"
                   value={data.howToSubmitBody}
-                  onChange={(e) => setData((p) => ({ ...p, howToSubmitBody: e.target.value }))}
+                  onChange={(e) =>
+                    setData((p) => ({ ...p, howToSubmitBody: e.target.value }))
+                  }
                   onBlur={() => saveSection("submit")}
                 />
               ) : null}
@@ -742,12 +814,15 @@ export default function TaskEditor({
               type="button"
               disabled={saving === "upload" || loading}
             >
-              {saving === "upload" ? "Uploading..." : loading ? "Loading..." : "Upload"}
+              {saving === "upload"
+                ? "Uploading..."
+                : loading
+                  ? "Loading..."
+                  : "Upload"}
             </button>
           </div>
         </div>
       </div>
-
       <style jsx>{`
         .page {
           padding: 22px 34px;
@@ -1041,16 +1116,6 @@ export default function TaskEditor({
           cursor: pointer;
         }
       `}</style>
-    </SideNav>
+    </>
   );
 }
-
-
-
-
-
-
-
-
-
-

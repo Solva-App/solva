@@ -5,7 +5,11 @@ import SideNav from "@/components/sideNav";
 import TaskNavButton from "@/components/TaskNav";
 import { useRouter } from "next/navigation";
 import { FiArrowLeft, FiEdit2 } from "react-icons/fi";
-import { getTaskDraftAssets, setTaskDraftAsset, type TaskDraftAssets } from "@/lib/taskDraft";
+import {
+  getTaskDraftAssets,
+  setTaskDraftAsset,
+  type TaskDraftAssets,
+} from "@/lib/taskDraft";
 
 type TaskForm = {
   companyName: string;
@@ -48,7 +52,9 @@ export default function TaskSetup() {
   const [form, setForm] = useState<TaskForm>(DEFAULT_FORM);
   const [editing, setEditing] = useState<EditableFieldKey | null>(null);
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
-  const [uploads, setUploads] = useState<TaskDraftAssets>(() => getTaskDraftAssets());
+  const [uploads, setUploads] = useState<TaskDraftAssets>(() =>
+    getTaskDraftAssets(),
+  );
 
   const logoInputRef = useRef<HTMLInputElement | null>(null);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
@@ -63,7 +69,7 @@ export default function TaskSetup() {
         { label: "Number of persons", key: "numberOfPersons" },
         { label: "Amount", key: "amount" },
       ] as const,
-    []
+    [],
   );
 
   useEffect(() => {
@@ -108,16 +114,25 @@ export default function TaskSetup() {
   }
 
   return (
-    <SideNav>
+    <>
       <div className="page">
         <div className="headerRow">
-          <button className="backBtn" aria-label="Back" onClick={() => router.back()}>
+          <button
+            className="backBtn"
+            aria-label="Back"
+            onClick={() => router.back()}
+          >
             <FiArrowLeft />
           </button>
 
           <div className="headerTitles">
             <TaskNavButton label="Manage Task" path="/tasks" align="left" />
-            <TaskNavButton label="Approve Task" path="" align="right" disabled />
+            <TaskNavButton
+              label="Approve Task"
+              path=""
+              align="right"
+              disabled
+            />
           </div>
         </div>
 
@@ -127,7 +142,11 @@ export default function TaskSetup() {
           <span className="dot" />
         </div>
 
-        {statusMsg ? <div className="status">{statusMsg}</div> : <div className="status spacer" />}
+        {statusMsg ? (
+          <div className="status">{statusMsg}</div>
+        ) : (
+          <div className="status spacer" />
+        )}
 
         <div className="layout">
           <div className="leftCol">
@@ -149,14 +168,20 @@ export default function TaskSetup() {
                           (e.currentTarget as HTMLInputElement).blur();
                         }
                       }}
-                      placeholder={isEditing ? `Enter ${field.label.toLowerCase()}` : ""}
+                      placeholder={
+                        isEditing ? `Enter ${field.label.toLowerCase()}` : ""
+                      }
                     />
 
                     <button
                       type="button"
                       className="iconBtn"
                       onClick={() => toggleEdit(field.key)}
-                      aria-label={isEditing ? `Stop editing ${field.label}` : `Edit ${field.label}`}
+                      aria-label={
+                        isEditing
+                          ? `Stop editing ${field.label}`
+                          : `Edit ${field.label}`
+                      }
                     >
                       <FiEdit2 />
                     </button>
@@ -172,7 +197,9 @@ export default function TaskSetup() {
               type="file"
               accept="image/*"
               className="hiddenInput"
-              onChange={(e) => handleFileChange("logo", e.target.files?.[0] ?? null)}
+              onChange={(e) =>
+                handleFileChange("logo", e.target.files?.[0] ?? null)
+              }
             />
 
             <input
@@ -180,7 +207,9 @@ export default function TaskSetup() {
               type="file"
               accept="image/*"
               className="hiddenInput"
-              onChange={(e) => handleFileChange("image", e.target.files?.[0] ?? null)}
+              onChange={(e) =>
+                handleFileChange("image", e.target.files?.[0] ?? null)
+              }
             />
 
             <div className="assetCard assetLogoCard">
@@ -189,7 +218,11 @@ export default function TaskSetup() {
                 <div className="logoCircle">
                   {uploads.logoPreview ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={uploads.logoPreview} alt="Logo preview" className="imgFill" />
+                    <img
+                      src={uploads.logoPreview}
+                      alt="Logo preview"
+                      className="imgFill"
+                    />
                   ) : (
                     <div className="logoPlaceholder">Logo</div>
                   )}
@@ -212,7 +245,11 @@ export default function TaskSetup() {
                 <div className="imageSquare">
                   {uploads.imagePreview ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={uploads.imagePreview} alt="Banner preview" className="imgFill" />
+                    <img
+                      src={uploads.imagePreview}
+                      alt="Banner preview"
+                      className="imgFill"
+                    />
                   ) : (
                     <div className="imagePlaceholder">Campaign image</div>
                   )}
@@ -229,7 +266,11 @@ export default function TaskSetup() {
               </div>
             </div>
 
-            <button className="viewTaskBtn" type="button" onClick={goToTaskDetails}>
+            <button
+              className="viewTaskBtn"
+              type="button"
+              onClick={goToTaskDetails}
+            >
               View Task
             </button>
           </div>
@@ -522,6 +563,6 @@ export default function TaskSetup() {
           }
         }
       `}</style>
-    </SideNav>
+    </>
   );
 }

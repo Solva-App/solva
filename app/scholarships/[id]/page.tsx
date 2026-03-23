@@ -53,27 +53,25 @@ const EditScholarship = () => {
   }
 
   return (
-    <div className="flex">
-      <SideNav />
-      <div className="w-full p-5 sm:p-10 overflow-y-auto h-screen">
-        {/* Header */}
-        <div className="flex gap-3 items-center mb-6">
-          <button
-            onClick={() => router.back()}
-            className="p-2 rounded-full hover:bg-gray-100 transition"
-          >
-            <FaChevronLeft className="text-lg" />
-          </button>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
-            Edit Scholarship
-          </h1>
-        </div>
+    <div className="w-full p-5 sm:p-10 overflow-y-auto h-screen">
+      {/* Header */}
+      <div className="flex gap-3 items-center mb-6">
+        <button
+          onClick={() => router.back()}
+          className="p-2 rounded-full hover:bg-gray-100 transition"
+        >
+          <FaChevronLeft className="text-lg" />
+        </button>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+          Edit Scholarship
+        </h1>
+      </div>
 
-        {/* Form Card */}
-        <div className="bg-white rounded-2xl shadow-md p-6 sm:p-8 max-w-2xl">
-          <div className="flex flex-col gap-6">
-            {/* Name Field */}
-            {/* <div className="flex flex-col gap-2">
+      {/* Form Card */}
+      <div className="bg-white rounded-2xl shadow-md p-6 sm:p-8 max-w-2xl mx-auto">
+        <div className="flex flex-col gap-6">
+          {/* Name Field */}
+          {/* <div className="flex flex-col gap-2">
               <label className="text-sm sm:text-base font-medium text-gray-700">
                 Name
               </label>
@@ -86,21 +84,21 @@ const EditScholarship = () => {
               />
             </div> */}
 
-            {/* Link Field */}
-            <div className="flex flex-col gap-2">
-              <label className="text-sm sm:text-base font-medium text-gray-700">
-                Link
-              </label>
-              <input
-                value={link}
-                onChange={(e) => setLink(e.target.value)}
-                placeholder="https://grant1link.com"
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition"
-              />
-            </div>
+          {/* Link Field */}
+          <div className="flex flex-col gap-2">
+            <label className="text-sm sm:text-base font-medium text-gray-700">
+              Link
+            </label>
+            <input
+              value={link}
+              onChange={(e) => setLink(e.target.value)}
+              placeholder="https://grant1link.com"
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition"
+            />
+          </div>
 
-            {/* Description Field */}
-            {/* <div className="flex flex-col gap-2">
+          {/* Description Field */}
+          {/* <div className="flex flex-col gap-2">
               <label className="text-sm sm:text-base font-medium text-gray-700">
                 Description
               </label>
@@ -112,15 +110,14 @@ const EditScholarship = () => {
               />
             </div> */}
 
-            {/* Submit Button */}
-            <div className="flex justify-end pt-4">
-              <div className="w-full md:w-1/2">
-                <Button
-                  BtnText={editLoad ? "Updating..." : "Update Scholarship"}
-                  disabled={ !link || editLoad}
-                  BtnFunction={updateScholar}
-                />
-              </div>
+          {/* Submit Button */}
+          <div className="flex justify-end pt-4">
+            <div className="w-full md:w-1/2">
+              <Button
+                BtnText={editLoad ? "Updating..." : "Update Scholarship"}
+                disabled={!link || editLoad}
+                BtnFunction={updateScholar}
+              />
             </div>
           </div>
         </div>
