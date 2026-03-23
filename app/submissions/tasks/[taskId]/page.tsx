@@ -29,7 +29,8 @@ function asRecord(value: unknown): Record<string, unknown> {
 
 function readText(value: unknown): string {
   if (typeof value === "string") return value.trim();
-  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  if (typeof value === "number" || typeof value === "boolean")
+    return String(value);
   return "";
 }
 
@@ -58,13 +59,22 @@ function extractList(payload: unknown): unknown[] {
 function normalizeSubmission(item: unknown): Submission | null {
   const record = asRecord(item);
   const nestedSubmission = asRecord(record.submission);
-  const source = Object.keys(nestedSubmission).length ? nestedSubmission : record;
+  const source = Object.keys(nestedSubmission).length
+    ? nestedSubmission
+    : record;
 
   const id = pickText(source, ["id", "_id", "submissionId"]);
   if (!id) return null;
 
   const link =
-    pickText(source, ["link", "url", "submissionLink", "proofUrl", "referenceUrl", "attachmentUrl"]) ||
+    pickText(source, [
+      "link",
+      "url",
+      "submissionLink",
+      "proofUrl",
+      "referenceUrl",
+      "attachmentUrl",
+    ]) ||
     pickText(asRecord(source.proof), ["url", "link"]) ||
     pickText(asRecord(source.attachment), ["url", "link"]);
 
@@ -72,7 +82,12 @@ function normalizeSubmission(item: unknown): Submission | null {
     id,
     link,
     createdAt:
-      pickText(source, ["submittedAt", "createdAt", "dateSubmitted", "updatedAt"]) || null,
+      pickText(source, [
+        "submittedAt",
+        "createdAt",
+        "dateSubmitted",
+        "updatedAt",
+      ]) || null,
   };
 }
 
@@ -103,23 +118,7 @@ export default function ApproveTaskPage() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-<<<<<<< HEAD
-  /**
-   * ✅ FIX: apiFetch now uses buildHeaders()
-   */
-  async function apiFetch(url: string, init: RequestInit = {}) {
-    return fetch(url, {
-      ...init,
-      headers: buildHeaders(init.headers),
-      // ✅ remove credentials to avoid CORS credential rules
-      // credentials: "include",
-    });
-  }
-  async function load() {
-    console.log("load() called. taskId =", taskId);
-=======
   const loadSubmissions = useCallback(async () => {
->>>>>>> 9ca3d16 (Submissions completed.)
     if (!taskId) {
       setRows([]);
       setLoading(false);
@@ -155,13 +154,20 @@ export default function ApproveTaskPage() {
 
     try {
       await axiosInstance.get(API.byId(submissionId));
-      await axiosInstance.patch(type === "approve" ? API.approve(submissionId) : API.reject(submissionId), {});
-      toast.success(type === "approve" ? "Submission approved" : "Submission rejected");
+      await axiosInstance.patch(
+        type === "approve"
+          ? API.approve(submissionId)
+          : API.reject(submissionId),
+        {},
+      );
+      toast.success(
+        type === "approve" ? "Submission approved" : "Submission rejected",
+      );
       await loadSubmissions();
     } catch (requestError: any) {
       const message = getErrorMessage(
         requestError,
-        type === "approve" ? "Approve failed" : "Reject failed"
+        type === "approve" ? "Approve failed" : "Reject failed",
       );
       setError(message);
       toast.error(message);
@@ -174,7 +180,11 @@ export default function ApproveTaskPage() {
     <>
       <div className="page">
         <div className="headerRow">
-          <button className="backBtn" aria-label="Back" onClick={() => router.back()}>
+          <button
+            className="backBtn"
+            aria-label="Back"
+            onClick={() => router.back()}
+          >
             <FiArrowLeft />
           </button>
           <div className="title">Approve Task</div>
@@ -186,7 +196,11 @@ export default function ApproveTaskPage() {
           <span className="dot" />
         </div>
 
-        {error ? <div className="error">{error}</div> : <div className="spacer" />}
+        {error ? (
+          <div className="error">{error}</div>
+        ) : (
+          <div className="spacer" />
+        )}
 
         <div className="table">
           {loading ? (
@@ -201,7 +215,12 @@ export default function ApproveTaskPage() {
                 <div className="row" key={submission.id}>
                   <div className="cell link">
                     {submission.link ? (
-                      <a className="linkText" href={submission.link} target="_blank" rel="noreferrer">
+                      <a
+                        className="linkText"
+                        href={submission.link}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
                         {submission.link}
                       </a>
                     ) : (
@@ -209,7 +228,9 @@ export default function ApproveTaskPage() {
                     )}
                   </div>
 
-                  <div className="cell date">{formatDate(submission.createdAt)}</div>
+                  <div className="cell date">
+                    {formatDate(submission.createdAt)}
+                  </div>
 
                   <div className="cell actions">
                     <button
@@ -238,55 +259,16 @@ export default function ApproveTaskPage() {
 
       <style jsx>{`
         .page {
-<<<<<<< HEAD
-          padding: 22px 34px;
-        }
-=======
           min-height: 100%;
           background: #ededed;
           padding: 22px 34px;
         }
 
->>>>>>> 9ca3d16 (Submissions completed.)
         .headerRow {
           display: flex;
           align-items: center;
           gap: 14px;
         }
-<<<<<<< HEAD
-        .backBtn {
-          border: none;
-          background: transparent;
-          font-size: 34px;
-          cursor: pointer;
-          line-height: 1;
-          padding: 0 4px;
-        }
-        .title {
-          font-size: 26px;
-          font-weight: 800;
-          color: #111;
-        }
-        .lineWrap {
-          margin-top: 10px;
-          margin-bottom: 16px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-        }
-        .line {
-          flex: 1;
-          height: 2px;
-          background: rgba(0, 0, 0, 0.35);
-          margin: 0 14px;
-        }
-        .dot {
-          width: 6px;
-          height: 6px;
-          background: rgba(0, 0, 0, 0.55);
-          border-radius: 999px;
-        }
-=======
 
         .backBtn {
           border: none;
@@ -329,75 +311,41 @@ export default function ApproveTaskPage() {
           background: rgba(0, 0, 0, 0.52);
         }
 
->>>>>>> 9ca3d16 (Submissions completed.)
         .error {
           color: #b00020;
           font-size: 13px;
           margin-bottom: 10px;
-<<<<<<< HEAD
-          white-space: pre-wrap;
-        }
-        .spacer {
-          height: 18px;
-        }
-=======
         }
 
         .spacer {
           height: 18px;
         }
 
->>>>>>> 9ca3d16 (Submissions completed.)
         .table {
           width: 100%;
           margin-top: 10px;
         }
-<<<<<<< HEAD
-=======
-
->>>>>>> 9ca3d16 (Submissions completed.)
         .row {
           display: grid;
           grid-template-columns: 1.2fr 0.5fr 0.6fr;
           align-items: center;
           padding: 18px 8px;
         }
-<<<<<<< HEAD
-=======
-
->>>>>>> 9ca3d16 (Submissions completed.)
         .cell {
           display: flex;
           align-items: center;
           justify-content: center;
         }
-<<<<<<< HEAD
-=======
-
->>>>>>> 9ca3d16 (Submissions completed.)
         .cell.link {
           justify-content: flex-start;
           padding-left: 12px;
         }
-<<<<<<< HEAD
-=======
-
->>>>>>> 9ca3d16 (Submissions completed.)
         .linkText {
           color: #111;
           font-size: 12px;
           max-width: 240px;
           text-decoration: none;
           word-break: break-word;
-<<<<<<< HEAD
-        }
-        .linkText.muted {
-          color: rgba(0, 0, 0, 0.4);
-        }
-        .linkText:hover {
-          text-decoration: underline;
-        }
-=======
           line-height: 1.15;
         }
 
@@ -405,24 +353,15 @@ export default function ApproveTaskPage() {
           color: rgba(0, 0, 0, 0.4);
         }
 
->>>>>>> 9ca3d16 (Submissions completed.)
         .date {
           font-size: 12px;
           color: #111;
         }
-<<<<<<< HEAD
-=======
-
->>>>>>> 9ca3d16 (Submissions completed.)
         .actions {
           justify-content: flex-end;
           gap: 28px;
           padding-right: 18px;
         }
-<<<<<<< HEAD
-=======
-
->>>>>>> 9ca3d16 (Submissions completed.)
         .reject,
         .approve {
           border: none;
@@ -431,14 +370,6 @@ export default function ApproveTaskPage() {
           font-weight: 500;
           font-size: 26px;
         }
-<<<<<<< HEAD
-        .reject {
-          color: #d39a4a;
-        }
-        .approve {
-          color: #0c8a2a;
-        }
-=======
 
         .reject {
           color: #d39a4a;
@@ -448,23 +379,16 @@ export default function ApproveTaskPage() {
           color: #0c8a2a;
         }
 
->>>>>>> 9ca3d16 (Submissions completed.)
         .reject:disabled,
         .approve:disabled {
           opacity: 0.5;
           cursor: not-allowed;
         }
-<<<<<<< HEAD
-=======
-
->>>>>>> 9ca3d16 (Submissions completed.)
         .loading,
         .empty {
           padding: 30px 12px;
           color: rgba(0, 0, 0, 0.55);
         }
-<<<<<<< HEAD
-=======
 
         @media (max-width: 780px) {
           .page {
@@ -499,7 +423,6 @@ export default function ApproveTaskPage() {
             font-size: 22px;
           }
         }
->>>>>>> 9ca3d16 (Submissions completed.)
       `}</style>
     </>
   );
