@@ -476,11 +476,6 @@ export default function TaskEditor({
       throw new Error("Overview is required before creating the task.");
     }
 
-    const payload = mapStateToTaskPayload(data, createMeta);
-    if (!payload.overview || typeof payload.overview !== "string" || !payload.overview.trim()) {
-      throw new Error("Overview is required before creating the task.");
-    }
-
     setSaving("create");
     setMsg(null);
 
