@@ -127,12 +127,7 @@ export default function TaskSetup() {
 
           <div className="headerTitles">
             <TaskNavButton label="Manage Task" path="/tasks" align="left" />
-            <TaskNavButton
-              label="Approve Task"
-              path=""
-              align="right"
-              disabled
-            />
+            <TaskNavButton label="" path="" align="right" disabled />
           </div>
         </div>
 

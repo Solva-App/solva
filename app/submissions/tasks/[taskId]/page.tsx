@@ -149,8 +149,11 @@ export default function ApproveTaskPage() {
   }, [loadSubmissions]);
 
   async function onAction(type: "approve" | "reject", submissionId: string) {
-    setBusyId(submissionId);
+    // setBusyId(submissionId);
     setError(null);
+
+    console.log(submissionId);
+    // return;
 
     try {
       await axiosInstance.get(API.byId(submissionId));
@@ -196,7 +199,11 @@ export default function ApproveTaskPage() {
           <span className="dot" />
         </div>
 
-        {error ? <div className="error">{error}</div> : <div className="spacer" />}
+        {error ? (
+          <div className="error">{error}</div>
+        ) : (
+          <div className="spacer" />
+        )}
 
         <div className="table">
           {loading ? (
