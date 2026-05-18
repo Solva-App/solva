@@ -1,1116 +1,717 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import SideNav from "@/components/sideNav";
-import TaskNavButton from "@/components/TaskNav";
-import { usePathname, useRouter } from "next/navigation";
-import { FiArrowLeft, FiEdit2 } from "react-icons/fi";
+import { useEffect, useState } from "react";
+
+import {
+  Formik,
+  Form,
+  Field,
+  FieldArray,
+  ErrorMessage,
+  FieldArrayRenderProps,
+} from "formik";
+
+import * as Yup from "yup";
+
+import { format } from "date-fns";
+
+import { CalendarIcon, Upload, Plus, Trash2, AlertCircle } from "lucide-react";
+
+import { cn } from "@/lib/utils";
+
+import { Button } from "@/components/ui/button";
+
+import { Card, CardContent } from "@/components/ui/card";
+
+import { Input } from "@/components/ui/input";
+
+import { Textarea } from "@/components/ui/textarea";
+
+import { Calendar } from "@/components/ui/calendar";
+
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+
 import { createAxiosInstance } from "@/lib/axios";
+
 import { apis } from "@/lib/endpoints";
-import { clearTaskDraftAssets, getTaskDraftAssets } from "@/lib/taskDraft";
 
-type CreateTaskState = {
-  taskTitle: string;
-  overviewTitle: string;
-  overviewBody: string;
-  mustInclude: string[];
-  contentGuidelinesTitle: string;
-  contentGuidelines: string[];
-  selectionCriteriaTitle: string;
-  selectionCriteriaBody: string;
-  howToSubmitTitle: string;
-  howToSubmitBody: string;
-  creativeImageUrl?: string | null;
-};
+import { toast } from "react-toastify";
 
-type EditKey =
-  | "overview"
-  | "include_0"
-  | "include_1"
-  | "include_2"
-  | "guidelines"
-  | "selection"
-  | "submit";
+import { useRouter } from "next/navigation";
 
-type TaskCreateDraft = {
-  companyName?: string;
-  campaign?: string;
-  campaignTitle?: string;
-  numberOfDays?: string;
-  numberOfPersons?: string;
-  amount?: string;
-};
+const validationSchema = Yup.object({
+  title: Yup.string()
+    .min(5, "Title must be at least 5 characters")
+    .max(120, "Title is too long")
+    .required("Campaign title is required"),
 
-type TaskMeta = {
-  startDate: string | null;
-  endDate: string | null;
-  totalPool: number | null;
-  totalSpots: number | null;
-};
+  overview: Yup.string()
+    .min(30, "Overview should be more descriptive")
+    .max(2000, "Overview is too long")
+    .required("Campaign overview is required"),
 
-const DEFAULT: CreateTaskState = {
-  taskTitle: "",
-  overviewTitle: "Task Overview",
-  overviewBody:
-    "Create engaging and original content that promotes Product Name, clearly explaining what it does, its benefits, and encouraging people to take action.",
-  mustInclude: [
-    "Clear mention of the product name",
-    "What the product does",
-    "At least 3 key benefits",
-  ],
-  contentGuidelinesTitle: "Content Guidelines",
-  contentGuidelines: [
-    "Content Type: Video / Image / Text (as specified)",
-    "Length: 30-60 seconds (video) OR 150-300 words (text)",
-    "Language: English (Pidgin allowed if specified)",
-    "Original Content Only (No reposts or plagiarism)",
-    "Content must be clear, creative, and well-presented",
-  ],
-  selectionCriteriaTitle: "Selection Criteria",
-  selectionCriteriaBody: "",
-  howToSubmitTitle: "How to submit",
-  howToSubmitBody: "",
-  creativeImageUrl: null,
-};
+  type: Yup.string().required("Campaign type is required"),
 
-const API = {
-  create: `${apis.task}/create`,
-  byId: (id: string) => `${apis.task}/${id}`,
-};
+  sponsorName: Yup.string()
+    .min(2, "Sponsor name is too short")
+    .required("Sponsor name is required"),
+
+  sponsorLogo: Yup.mixed().required("Sponsor logo is required"),
+
+  bannerImage: Yup.mixed().required("Banner image is required"),
+
+  totalPool: Yup.number()
+    .typeError("Reward pool must be a number")
+    .positive("Reward pool must be greater than 0")
+    .required("Reward pool is required"),
+
+  totalSpots: Yup.number()
+    .typeError("Total spots must be a number")
+    .integer("Total spots must be a whole number")
+    .positive("Total spots must be greater than 0")
+    .required("Total spots is required"),
+
+  startDate: Yup.date().nullable().required("Start date is required"),
+
+  endDate: Yup.date()
+    .nullable()
+    .min(Yup.ref("startDate"), "End date must be after start date")
+    .required("End date is required"),
+
+  requirements: Yup.array()
+    .of(
+      Yup.string()
+        .trim()
+        .min(3, "Requirement is too short")
+        .required("Requirement cannot be empty"),
+    )
+    .min(1, "Add at least one requirement"),
+
+  guidelines: Yup.array()
+    .of(
+      Yup.string()
+        .trim()
+        .min(3, "Guideline is too short")
+        .required("Guideline cannot be empty"),
+    )
+    .min(1, "Add at least one guideline"),
+
+  selectionCriteria: Yup.array()
+    .of(
+      Yup.string()
+        .trim()
+        .min(3, "Criteria is too short")
+        .required("Selection criteria cannot be empty"),
+    )
+    .min(1, "Add at least one selection criteria"),
+
+  howToSubmit: Yup.array()
+    .of(
+      Yup.string()
+        .trim()
+        .min(3, "Submission step is too short")
+        .required("Submission step cannot be empty"),
+    )
+    .min(1, "Add at least one submission step"),
+});
 
 const axiosInstance = createAxiosInstance();
-const MUST_INCLUDE_HEADING = "What Your Content Must Include";
-const TASK_CREATE_DRAFT_KEY = "task-create-draft";
 
-function parseIntegerValue(value: unknown): number | null {
-  if (typeof value === "number" && Number.isFinite(value)) {
-    return Math.trunc(value);
-  }
-
-  if (typeof value !== "string") return null;
-
-  const cleaned = value.replace(/[^\d-]/g, "").trim();
-  if (!cleaned) return null;
-
-  const parsed = Number.parseInt(cleaned, 10);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-function toStringArray(value: unknown): string[] | null {
-  if (Array.isArray(value)) {
-    return value.map((item) => String(item).trim()).filter(Boolean);
-  }
-
-  if (typeof value !== "string") return null;
-
-  return value
-    .split(/[\n,]+/)
-    .map((item) => item.replace(/^[-*]\s*/, "").trim())
-    .filter(Boolean);
-}
-
-function toIsoDate(date: Date) {
-  return date.toISOString();
-}
-
-function deriveTaskMetaFromDraft(draft: TaskCreateDraft | null): TaskMeta {
-  const now = new Date();
-  const numberOfDays = parseIntegerValue(draft?.numberOfDays) ?? 0;
-  const endDate = new Date(now);
-  endDate.setDate(endDate.getDate() + Math.max(numberOfDays, 0));
-
-  return {
-    startDate: toIsoDate(now),
-    endDate: toIsoDate(endDate),
-    totalPool: parseIntegerValue(draft?.amount),
-    totalSpots: parseIntegerValue(draft?.numberOfPersons),
-  };
-}
-
-function mergeTaskMeta(base: TaskMeta, incoming: TaskMeta): TaskMeta {
-  return {
-    startDate: base.startDate ?? incoming.startDate,
-    endDate: base.endDate ?? incoming.endDate,
-    totalPool: base.totalPool ?? incoming.totalPool,
-    totalSpots: base.totalSpots ?? incoming.totalSpots,
-  };
-}
-
-function readTaskDraft(): TaskCreateDraft | null {
-  if (typeof window === "undefined") return null;
-
-  const raw = window.sessionStorage.getItem(TASK_CREATE_DRAFT_KEY);
-  if (!raw) return null;
-
-  try {
-    return JSON.parse(raw) as TaskCreateDraft;
-  } catch {
-    return null;
-  }
-}
-
-function mapApiToTaskMeta(api: any): TaskMeta {
-  return {
-    startDate: typeof api?.startDate === "string" ? api.startDate : null,
-    endDate: typeof api?.endDate === "string" ? api.endDate : null,
-    totalPool:
-      parseIntegerValue(api?.totalPool) ??
-      parseIntegerValue(api?.amount) ??
-      parseIntegerValue(api?.rewardPool),
-    totalSpots:
-      parseIntegerValue(api?.totalSpots) ??
-      parseIntegerValue(api?.numberOfPersons) ??
-      parseIntegerValue(api?.spots),
-  };
-}
-
-function resolveCreateTaskMeta(meta: TaskMeta): TaskMeta {
-  return mergeTaskMeta(meta, deriveTaskMetaFromDraft(readTaskDraft()));
-}
-
-function serializeOverview(state: CreateTaskState) {
-  return state.overviewBody.trim();
-}
-
-function parseOverview(raw: unknown): Partial<CreateTaskState> {
-  if (typeof raw !== "string" || !raw.trim()) return {};
-
-  const normalized = raw.replace(/\r\n/g, "\n");
-  const [overviewBody, ...rest] = normalized.split(/\n\n(?=## )/);
-  const sections = rest.map((block) => {
-    const lines = block.split("\n");
-    const title = lines[0]?.replace(/^##\s*/, "").trim() ?? "";
-    const body = lines.slice(1).join("\n").trim();
-    return { title, body };
-  });
-
-  const mustIncludeSection = sections[0];
-  const guidelinesSection = sections[1];
-  const selectionSection = sections[2];
-  const submitSection = sections[3];
-
-  return {
-    overviewBody: overviewBody?.trim() || DEFAULT.overviewBody,
-    mustInclude:
-      mustIncludeSection?.body
-        ?.split("\n")
-        .map((line) => line.replace(/^- /, "").trim())
-        .filter(Boolean) || DEFAULT.mustInclude,
-    contentGuidelinesTitle:
-      guidelinesSection?.title || DEFAULT.contentGuidelinesTitle,
-    contentGuidelines:
-      guidelinesSection?.body
-        ?.split("\n")
-        .map((line) => line.replace(/^- /, "").trim())
-        .filter(Boolean) || DEFAULT.contentGuidelines,
-    selectionCriteriaTitle:
-      selectionSection?.title || DEFAULT.selectionCriteriaTitle,
-    selectionCriteriaBody:
-      selectionSection?.body || DEFAULT.selectionCriteriaBody,
-    howToSubmitTitle: submitSection?.title || DEFAULT.howToSubmitTitle,
-    howToSubmitBody: submitSection?.body || DEFAULT.howToSubmitBody,
-  };
-}
-
-function unwrapTask(payload: any) {
-  if (payload?.data && !Array.isArray(payload.data)) return payload.data;
-  return payload;
-}
-
-function resolveTaskIdentity(state: CreateTaskState) {
-  const draft = readTaskDraft();
-
-  return {
-    title:
-      state.taskTitle.trim() || draft?.campaignTitle?.trim() || "Untitled Task",
-    sponsorName: draft?.companyName?.trim() || "",
-    type: draft?.campaign?.trim() || "",
-  };
-}
-
-function mapStateToTaskPayload(state: CreateTaskState, meta: TaskMeta) {
-  const identity = resolveTaskIdentity(state);
-  const requirements = state.mustInclude
-    .map((item) => item.trim())
-    .filter(Boolean)
-    .join(", ");
-  const guidelines = state.contentGuidelines
-    .map((item) => item.trim())
-    .filter(Boolean)
-    .join(", ");
-  const overview = serializeOverview(state);
-  const payload: Record<string, unknown> = {
-    title: identity.title,
-    sponsorName: identity.sponsorName || undefined,
-    type: identity.type || undefined,
-    overview,
-    requirements,
-    guidelines,
-    selectionCriteria: state.selectionCriteriaBody.trim(),
-    howToSubmit: state.howToSubmitBody.trim(),
-  };
-
-  if (meta.startDate) payload.startDate = meta.startDate;
-  if (meta.endDate) payload.endDate = meta.endDate;
-  if (meta.totalPool !== null)
-    payload.totalPool = String(Math.trunc(meta.totalPool));
-  if (meta.totalSpots !== null)
-    payload.totalSpots = String(Math.trunc(meta.totalSpots));
-
-  return payload;
-}
-
-function mapApiToState(apiPayload: any): CreateTaskState {
-  const api = unwrapTask(apiPayload);
-  const parsedOverview = parseOverview(api?.overview);
-  const requirements = toStringArray(api?.requirements);
-  const guidelines = toStringArray(api?.guidelines);
-  const draft = readTaskDraft();
-
-  return {
-    taskTitle: api?.title ?? draft?.campaignTitle ?? DEFAULT.taskTitle,
-    overviewTitle: api?.overviewTitle ?? DEFAULT.overviewTitle,
-    overviewBody:
-      api?.overviewBody ?? parsedOverview.overviewBody ?? DEFAULT.overviewBody,
-    mustInclude:
-      requirements ?? parsedOverview.mustInclude ?? DEFAULT.mustInclude,
-    contentGuidelinesTitle:
-      api?.contentGuidelinesTitle ??
-      parsedOverview.contentGuidelinesTitle ??
-      DEFAULT.contentGuidelinesTitle,
-    contentGuidelines:
-      guidelines ??
-      parsedOverview.contentGuidelines ??
-      DEFAULT.contentGuidelines,
-    selectionCriteriaTitle:
-      api?.selectionCriteriaTitle ??
-      parsedOverview.selectionCriteriaTitle ??
-      DEFAULT.selectionCriteriaTitle,
-    selectionCriteriaBody:
-      api?.selectionCriteria ??
-      api?.selectionCriteriaBody ??
-      parsedOverview.selectionCriteriaBody ??
-      DEFAULT.selectionCriteriaBody,
-    howToSubmitTitle:
-      api?.howToSubmitTitle ??
-      parsedOverview.howToSubmitTitle ??
-      DEFAULT.howToSubmitTitle,
-    howToSubmitBody:
-      api?.howToSubmit ??
-      api?.howToSubmitBody ??
-      parsedOverview.howToSubmitBody ??
-      DEFAULT.howToSubmitBody,
-    creativeImageUrl: api?.bannerImage ?? api?.creativeImageUrl ?? null,
-  };
-}
-
-function extractId(created: any): string | null {
-  return (
-    created?.id ??
-    created?.taskId ??
-    created?._id ??
-    created?.data?.id ??
-    created?.data?.taskId ??
-    created?.data?._id ??
-    null
-  );
-}
-
-async function apiJson(
-  url: string,
-  method: "GET" | "POST" | "PATCH",
-  body?: Record<string, unknown>,
-  signal?: AbortSignal,
-) {
-  const res = await axiosInstance.request({
-    url,
-    method,
-    data: body,
-    signal,
-  });
-
-  return res.data ?? null;
-}
-
-async function apiForm(
-  url: string,
-  form: FormData,
-  method: "POST" | "PATCH" = "PATCH",
-) {
-  const res = await axiosInstance.request({
-    url,
-    method,
-    data: form,
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
-
-  return res.data ?? null;
-}
-
-async function syncCreateAssets(taskId: string) {
-  const assets = getTaskDraftAssets();
-  if (!assets.logoFile && !assets.imageFile) return;
-
-  const fd = new FormData();
-
-  if (assets.logoFile) {
-    fd.append("sponsorLogo", assets.logoFile);
-  }
-
-  if (assets.imageFile) {
-    fd.append("bannerImage", assets.imageFile);
-  }
-
-  await apiForm(API.byId(taskId), fd, "PATCH");
-}
-
-export default function TaskEditor({
-  mode,
-  taskId: taskIdProp,
-}: {
-  mode: "create" | "update";
-  taskId?: string;
-}) {
+export default function EditTaskPage({ taskId }: { taskId: string }) {
   const router = useRouter();
-  const pathname = usePathname();
 
-  const [data, setData] = useState<CreateTaskState>(DEFAULT);
-  const [editing, setEditing] = useState<EditKey | null>(null);
-  const [saving, setSaving] = useState<
-    EditKey | "image" | "create" | "upload" | null
-  >(null);
-  const [msg, setMsg] = useState<string | null>(null);
-  const [loading, setLoading] = useState(Boolean(taskIdProp));
-  const [taskMeta, setTaskMeta] = useState<TaskMeta>(() =>
-    deriveTaskMetaFromDraft(readTaskDraft()),
-  );
-  const [createdId, setCreatedId] = useState<string | null>(
-    mode === "create" ? (taskIdProp ?? null) : null,
-  );
+  const [loading, setLoading] = useState(true);
 
-  const taskId = mode === "update" ? (taskIdProp ?? null) : createdId;
-  const approveTaskPath = taskId
-    ? `/submissions/tasks/${encodeURIComponent(taskId)}`
-    : "";
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
-  const [creativePreview, setCreativePreview] = useState<string | null>(null);
-  const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const [bannerPreview, setBannerPreview] = useState<string | null>(null);
 
-  const includeCards = useMemo(
-    () => data.mustInclude.map((text, idx) => ({ text, idx })),
-    [data.mustInclude],
-  );
+  const [initialValues, setInitialValues] = useState<any>({
+    title: "",
+    overview: "",
+    type: "",
+    sponsorName: "",
+    sponsorLogo: null,
+    bannerImage: null,
+    requirements: [""],
+    guidelines: [""],
+    selectionCriteria: [""],
+    howToSubmit: [""],
+    startDate: null,
+    endDate: null,
+    totalPool: "",
+    totalSpots: "",
+  });
 
   useEffect(() => {
-    if (taskId) return;
-    setTaskMeta(deriveTaskMetaFromDraft(readTaskDraft()));
-    setData((prev) => ({
-      ...prev,
-      taskTitle: prev.taskTitle || readTaskDraft()?.campaignTitle || "",
-    }));
-  }, [taskId]);
-
-  useEffect(() => {
-    if (!taskId) return;
-
-    const ac = new AbortController();
-
-    (async () => {
+    const fetchTask = async () => {
       try {
-        setLoading(true);
-        setMsg(null);
+        const response = await axiosInstance.get(`${apis.task}/${taskId}`);
 
-        const json = await apiJson(
-          API.byId(taskId),
-          "GET",
-          undefined,
-          ac.signal,
-        );
-        const task = unwrapTask(json);
+        const task = response?.data?.data || response?.data;
+        console.log(task);
 
-        setData(mapApiToState(task));
-        setTaskMeta((prev) => ({ ...prev, ...mapApiToTaskMeta(task) }));
-      } catch (e: any) {
-        if (e?.name === "AbortError") return;
-        setMsg(e?.message ?? "Failed to load task");
+        setInitialValues({
+          title: task?.title || "",
+          overview: task?.overview || "",
+          type: task?.type || "",
+          sponsorName: task?.sponsorName || "",
+          sponsorLogo: null,
+          bannerImage: null,
+
+          requirements: Array.isArray(task?.requirements)
+            ? task.requirements
+            : task?.requirements
+                ?.split(",")
+                ?.map((item: string) => item.trim()) || [""],
+
+          guidelines: Array.isArray(task?.guidelines)
+            ? task.guidelines
+            : task?.guidelines
+                ?.split(",")
+                ?.map((item: string) => item.trim()) || [""],
+
+          selectionCriteria: Array.isArray(task?.selectionCriteria)
+            ? task.selectionCriteria
+            : [task?.selectionCriteria || ""],
+
+          howToSubmit: Array.isArray(task?.howToSubmit)
+            ? task.howToSubmit
+            : [task?.howToSubmit || ""],
+
+          startDate: task?.startDate ? new Date(task.startDate) : null,
+
+          endDate: task?.endDate ? new Date(task.endDate) : null,
+
+          totalPool: task?.totalPool || "",
+
+          totalSpots: task?.totalSpots || "",
+        });
+
+        setLogoPreview(task?.sponsorLogo || null);
+
+        setBannerPreview(task?.bannerImage || null);
+      } catch (error: any) {
+        toast.error(error?.response?.data?.message || "Failed to fetch task");
       } finally {
         setLoading(false);
       }
-    })();
+    };
 
-    return () => ac.abort();
+    fetchTask();
   }, [taskId]);
 
-  function toggle(key: EditKey) {
-    setMsg(null);
-    setEditing((prev) => (prev === key ? null : key));
-  }
+  const renderArrayField = (
+    label: string,
+    name: string,
+    values: any,
+    errors: any,
+    touched: any,
+  ) => {
+    return (
+      <FieldArray name={name}>
+        {({ push, remove }: FieldArrayRenderProps) => (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-[15px] font-semibold text-[#111111]">
+                  {label}
+                </h3>
 
-  function payloadFor(state: CreateTaskState) {
-    return mapStateToTaskPayload(state, resolveCreateTaskMeta(taskMeta));
-  }
+                <p className="text-sm text-[#666666]">
+                  Add all necessary {label.toLowerCase()}
+                </p>
+              </div>
 
-  async function ensureTaskId(): Promise<string> {
-    if (taskId) return taskId;
+              <Button
+                type="button"
+                onClick={() => push("")}
+                className="h-10 rounded-xl bg-[#5427D7] hover:bg-[#5427D7]/90 text-white"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Add
+              </Button>
+            </div>
 
-    const createMeta = resolveCreateTaskMeta(taskMeta);
-    if (
-      !createMeta.startDate ||
-      !createMeta.endDate ||
-      createMeta.totalPool === null ||
-      createMeta.totalSpots === null
-    ) {
-      throw new Error(
-        "Complete amount and number of persons on the first task step.",
-      );
-    }
+            <div className="space-y-3">
+              {values[name].map((_: string, index: number) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex items-center gap-3 rounded-2xl border border-[#ECECEC] bg-[#FAFAFA] p-3">
+                    <Field
+                      as={Input}
+                      name={`${name}.${index}`}
+                      placeholder={`Enter ${label.toLowerCase()}`}
+                      className="h-11 border-[#E5E5E5] bg-white"
+                    />
 
-    const payload = mapStateToTaskPayload(data, createMeta);
-    if (
-      !payload.overview ||
-      typeof payload.overview !== "string" ||
-      !payload.overview.trim()
-    ) {
-      throw new Error("Overview is required before creating the task.");
-    }
+                    {values[name].length > 1 && (
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="destructive"
+                        onClick={() => remove(index)}
+                        className="h-11 w-11 rounded-xl"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
 
-    setSaving("create");
-    setMsg(null);
+                  <ErrorMessage
+                    name={`${name}.${index}`}
+                    component="p"
+                    className="pl-2 text-sm text-red-500"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </FieldArray>
+    );
+  };
 
-    try {
-      const created = await apiJson(API.create, "POST", payload);
-      const id = extractId(created);
-
-      if (!id) throw new Error("Task created but no id returned from backend");
-
-      await syncCreateAssets(id);
-      setCreatedId(id);
-      return id;
-    } finally {
-      setSaving(null);
-    }
-  }
-
-  async function patchTask(id: string, payload: Record<string, unknown>) {
-    await apiJson(API.byId(id), "PATCH", payload);
-  }
-
-  async function saveSection(key: EditKey) {
-    setMsg(null);
-    setSaving(key);
-
-    try {
-      const id = await ensureTaskId();
-      await patchTask(id, payloadFor(data));
-      setMsg("Saved");
-    } catch (e: any) {
-      setMsg(e?.message ?? "Save failed");
-    } finally {
-      setSaving(null);
-    }
-  }
-
-  function pickCreative() {
-    imageInputRef.current?.click();
-  }
-
-  async function onCreativeSelected(file: File | null) {
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      setMsg("Please select an image file.");
-      return;
-    }
-
-    const preview = URL.createObjectURL(file);
-    if (creativePreview) URL.revokeObjectURL(creativePreview);
-    setCreativePreview(preview);
-
-    setSaving("image");
-    setMsg(null);
-
-    try {
-      const id = await ensureTaskId();
-      const fd = new FormData();
-      fd.append("bannerImage", file);
-
-      await apiForm(API.byId(id), fd, "PATCH");
-      setMsg("Uploaded");
-    } catch (e: any) {
-      setMsg(e?.message ?? "Upload failed");
-    } finally {
-      setSaving(null);
-    }
-  }
-
-  async function onUpload() {
-    setMsg(null);
-    setSaving("upload");
-
-    try {
-      const id = await ensureTaskId();
-      await patchTask(id, payloadFor(data));
-
-      if (mode === "create") {
-        if (typeof window !== "undefined") {
-          window.sessionStorage.removeItem(TASK_CREATE_DRAFT_KEY);
-        }
-        clearTaskDraftAssets();
-        router.push("/tasks");
-      } else if (pathname !== `/tasks/update/${id}`) {
-        router.push(`/tasks/update/${encodeURIComponent(id)}`);
-      } else {
-        setMsg("Task updated successfully");
-      }
-    } catch (e: any) {
-      setMsg(e?.message ?? "Upload failed");
-    } finally {
-      setSaving(null);
-    }
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        Loading...
+      </div>
+    );
   }
 
   return (
-    <>
-      {" "}
-      <div className="page">
-        <div className="headerRow">
-          <button
-            className="backBtn"
-            aria-label="Back"
-            onClick={() => router.back()}
-          >
-            <FiArrowLeft />
-          </button>
-          <div className="headerTitles">
-            <TaskNavButton label="Manage Task" path="/tasks" align="left" />
-            <TaskNavButton
-              label="Approve Task"
-              path={approveTaskPath}
-              align="right"
-              disabled={!taskId}
-            />
+    <div className="min-h-screen bg-[#F8F8FA] px-4 py-10 text-black md:px-8">
+      <div className="mx-auto max-w-full">
+        {/* HEADER */}
+        <div className="mb-10">
+          <div className="mb-4 flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-[#5427D7]" />
+
+            <p className="text-xs uppercase tracking-[0.3em] text-[#5427D7]">
+              Edit Campaign
+            </p>
           </div>
+
+          <h1 className="max-w-3xl text-3xl font-bold leading-tight text-black md:text-5xl">
+            Update your
+            <span className="text-[#5427D7]"> sponsored campaign</span>
+          </h1>
         </div>
 
-        <div className="lineWrap">
-          <span className="dot" />
-          <div className="line" />
-          <span className="dot" />
-        </div>
+        <Formik
+          enableReinitialize
+          initialValues={initialValues}
+          validationSchema={validationSchema}
+          onSubmit={async (values, { setSubmitting }) => {
+            try {
+              const formData = new FormData();
 
-        {msg ? (
-          <div className="status">{msg}</div>
-        ) : (
-          <div className="status spacer" />
-        )}
+              formData.append("title", values.title);
 
-        <div className="grid">
-          <div className="colLeft">
-            <div className="card big">
-              <div className="cardHead">
-                {editing === "overview" ? (
-                  <input
-                    className="titleInput"
-                    value={data.overviewTitle}
-                    onChange={(e) =>
-                      setData((p) => ({ ...p, overviewTitle: e.target.value }))
-                    }
-                    onBlur={() => saveSection("overview")}
-                  />
-                ) : (
-                  <div className="cardTitle">{data.overviewTitle}</div>
-                )}
+              formData.append("overview", values.overview);
 
-                <button className="pencil" onClick={() => toggle("overview")}>
-                  {saving === "overview" ? "..." : <FiEdit2 />}
-                </button>
-              </div>
+              formData.append("type", values.type);
 
-              {editing === "overview" ? (
-                <textarea
-                  className="textArea"
-                  value={data.overviewBody}
-                  onChange={(e) =>
-                    setData((p) => ({ ...p, overviewBody: e.target.value }))
-                  }
-                  onBlur={() => saveSection("overview")}
-                />
-              ) : (
-                <div className="cardText">{data.overviewBody}</div>
-              )}
-            </div>
+              formData.append("sponsorName", values.sponsorName);
 
-            <div className="card block">
-              <div className="blockTitle">What Your Content Must Include</div>
+              formData.append("totalPool", String(values.totalPool));
 
-              <div className="includeList">
-                {includeCards.map(({ text, idx }) => {
-                  const key = `include_${idx}` as EditKey;
-                  const isEdit = editing === key;
+              formData.append("totalSpots", String(values.totalSpots));
 
-                  return (
-                    <div className="includeItem" key={idx}>
-                      {isEdit ? (
-                        <input
-                          className="includeInput"
-                          value={data.mustInclude[idx]}
-                          onChange={(e) => {
-                            const next = [...data.mustInclude];
-                            next[idx] = e.target.value;
-                            setData((p) => ({ ...p, mustInclude: next }));
-                          }}
-                          onBlur={() => saveSection(key)}
+              formData.append(
+                "startDate",
+                values.startDate
+                  ? new Date(values.startDate).toISOString()
+                  : "",
+              );
+
+              formData.append(
+                "endDate",
+                values.endDate ? new Date(values.endDate).toISOString() : "",
+              );
+
+              values.requirements.forEach((item: string) => {
+                formData.append("requirements[]", item);
+              });
+
+              values.guidelines.forEach((item: string) => {
+                formData.append("guidelines[]", item);
+              });
+
+              values.selectionCriteria.forEach((item: string) => {
+                formData.append("selectionCriteria[]", item);
+              });
+
+              values.howToSubmit.forEach((item: string) => {
+                formData.append("howToSubmit[]", item);
+              });
+
+              if (values.sponsorLogo instanceof File) {
+                formData.append("sponsorLogo", values.sponsorLogo);
+              }
+
+              if (values.bannerImage instanceof File) {
+                formData.append("bannerImage", values.bannerImage);
+              }
+
+              const response = await axiosInstance.patch(
+                `${apis.task}/${taskId}`,
+                formData,
+                {
+                  headers: {
+                    "Content-Type": "multipart/form-data",
+                  },
+                },
+              );
+
+              toast.success(
+                response?.data?.message || "Campaign updated successfully",
+              );
+
+              router.push("/tasks/task");
+            } catch (error: any) {
+              toast.error(error?.response?.data?.message || "Update failed");
+            } finally {
+              setSubmitting(false);
+            }
+          }}
+        >
+          {({ values, errors, touched, setFieldValue, isSubmitting }) => (
+            <Form className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+              {/* LEFT */}
+              <div className="space-y-6">
+                <Card className="rounded-3xl border border-[#ECECEC] bg-white shadow-sm">
+                  <CardContent className="space-y-8 p-7">
+                    <div className="grid gap-5 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">
+                          Campaign Title
+                        </label>
+
+                        <Field
+                          as={Input}
+                          name="title"
+                          className="h-12 rounded-xl"
                         />
-                      ) : (
-                        <div className="includeText">{text}</div>
-                      )}
 
-                      <button
-                        className="miniPencil"
-                        onClick={() => toggle(key)}
-                      >
-                        {saving === key ? "..." : <FiEdit2 />}
-                      </button>
+                        <ErrorMessage
+                          name="title"
+                          component="p"
+                          className="text-sm text-red-500"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">
+                          Campaign Type
+                        </label>
+
+                        <Field
+                          as={Input}
+                          name="type"
+                          className="h-12 rounded-xl"
+                        />
+
+                        <ErrorMessage
+                          name="type"
+                          component="p"
+                          className="text-sm text-red-500"
+                        />
+                      </div>
                     </div>
-                  );
-                })}
-              </div>
-            </div>
 
-            <div className="creativeRow">
-              <input
-                ref={imageInputRef}
-                type="file"
-                accept="image/*"
-                style={{ display: "none" }}
-                onChange={(e) =>
-                  onCreativeSelected(e.target.files?.[0] ?? null)
-                }
-              />
+                    {/* OVERVIEW */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">
+                        Campaign Overview
+                      </label>
 
-              <div className="creativeCard">
-                {creativePreview || data.creativeImageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={(creativePreview ?? data.creativeImageUrl) as string}
-                    alt="Creative preview"
-                    className="creativeImg"
-                  />
-                ) : (
-                  <div className="creativePlaceholder" />
-                )}
-              </div>
-
-              <button
-                className="miniPencil"
-                onClick={pickCreative}
-                aria-label="Upload creative"
-              >
-                {saving === "image" ? "..." : <FiEdit2 />}
-              </button>
-            </div>
-          </div>
-
-          <div className="colRight">
-            <div className="card big">
-              <div className="cardHead">
-                {editing === "guidelines" ? (
-                  <input
-                    className="titleInput"
-                    value={data.contentGuidelinesTitle}
-                    onChange={(e) =>
-                      setData((p) => ({
-                        ...p,
-                        contentGuidelinesTitle: e.target.value,
-                      }))
-                    }
-                    onBlur={() => saveSection("guidelines")}
-                  />
-                ) : (
-                  <div className="cardTitle muted">
-                    {data.contentGuidelinesTitle}
-                  </div>
-                )}
-
-                <button className="pencil" onClick={() => toggle("guidelines")}>
-                  {saving === "guidelines" ? "..." : <FiEdit2 />}
-                </button>
-              </div>
-
-              <ul className="bullets">
-                {data.contentGuidelines.map((b, i) =>
-                  editing === "guidelines" ? (
-                    <li key={i}>
-                      <input
-                        className="bulletInput"
-                        value={b}
-                        onChange={(e) => {
-                          const next = [...data.contentGuidelines];
-                          next[i] = e.target.value;
-                          setData((p) => ({ ...p, contentGuidelines: next }));
-                        }}
-                        onBlur={() => saveSection("guidelines")}
+                      <Field
+                        as={Textarea}
+                        name="overview"
+                        className="min-h-[160px] rounded-2xl"
                       />
-                    </li>
-                  ) : (
-                    <li key={i}>{b}</li>
-                  ),
-                )}
-              </ul>
-            </div>
 
-            <div className="card small">
-              <div className="cardHead">
-                <div className="cardTitle">{data.selectionCriteriaTitle}</div>
-                <button className="pencil" onClick={() => toggle("selection")}>
-                  {saving === "selection" ? "..." : <FiEdit2 />}
-                </button>
+                      <ErrorMessage
+                        name="overview"
+                        component="p"
+                        className="text-sm text-red-500"
+                      />
+                    </div>
+
+                    {/* SPONSOR */}
+                    <div className="grid gap-5 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">
+                          Sponsor Name
+                        </label>
+
+                        <Field
+                          as={Input}
+                          name="sponsorName"
+                          className="h-12 rounded-xl"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">
+                          Reward Pool
+                        </label>
+
+                        <Field
+                          as={Input}
+                          name="totalPool"
+                          className="h-12 rounded-xl"
+                        />
+                      </div>
+                    </div>
+
+                    {/* SPOTS */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Total Spots</label>
+
+                      <Field
+                        as={Input}
+                        name="totalSpots"
+                        className="h-12 rounded-xl"
+                      />
+                    </div>
+
+                    {/* DATES */}
+                    <div className="grid gap-5 md:grid-cols-2">
+                      {/* START DATE */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">
+                          Start Date
+                        </label>
+
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <div
+                              className={cn(
+                                "flex h-12 w-full cursor-pointer items-center rounded-2xl border px-4",
+                                values.startDate
+                                  ? "text-black"
+                                  : "text-[#9A9A9A]",
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4 text-[#5427D7]" />
+
+                              {values.startDate
+                                ? format(values.startDate, "PPP")
+                                : "Select date"}
+                            </div>
+                          </PopoverTrigger>
+
+                          <PopoverContent>
+                            <Calendar
+                              mode="single"
+                              selected={values.startDate}
+                              onSelect={(date) =>
+                                setFieldValue("startDate", date)
+                              }
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+
+                      {/* END DATE */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">End Date</label>
+
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <div
+                              className={cn(
+                                "flex h-12 w-full cursor-pointer items-center rounded-2xl border px-4",
+                                values.endDate
+                                  ? "text-black"
+                                  : "text-[#9A9A9A]",
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4 text-[#5427D7]" />
+
+                              {values.endDate
+                                ? format(values.endDate, "PPP")
+                                : "Select date"}
+                            </div>
+                          </PopoverTrigger>
+
+                          <PopoverContent>
+                            <Calendar
+                              mode="single"
+                              selected={values.endDate}
+                              onSelect={(date) =>
+                                setFieldValue("endDate", date)
+                              }
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* ARRAYS */}
+                <Card className="rounded-3xl border border-[#ECECEC] bg-white shadow-sm">
+                  <CardContent className="space-y-10 p-7">
+                    {renderArrayField(
+                      "Requirements",
+                      "requirements",
+                      values,
+                      errors,
+                      touched,
+                    )}
+
+                    {renderArrayField(
+                      "Guidelines",
+                      "guidelines",
+                      values,
+                      errors,
+                      touched,
+                    )}
+
+                    {renderArrayField(
+                      "Selection Criteria",
+                      "selectionCriteria",
+                      values,
+                      errors,
+                      touched,
+                    )}
+
+                    {renderArrayField(
+                      "How To Submit",
+                      "howToSubmit",
+                      values,
+                      errors,
+                      touched,
+                    )}
+                  </CardContent>
+                </Card>
               </div>
 
-              {editing === "selection" ? (
-                <textarea
-                  className="textArea smallArea"
-                  value={data.selectionCriteriaBody}
-                  onChange={(e) =>
-                    setData((p) => ({
-                      ...p,
-                      selectionCriteriaBody: e.target.value,
-                    }))
-                  }
-                  onBlur={() => saveSection("selection")}
-                />
-              ) : null}
-            </div>
+              {/* RIGHT */}
+              <div className="space-y-6">
+                <Card className="sticky top-6 rounded-3xl border border-[#ECECEC] bg-white shadow-sm">
+                  <CardContent className="space-y-7 p-7">
+                    <div>
+                      <h2 className="text-xl font-semibold">Upload Assets</h2>
+                    </div>
 
-            <div className="card small">
-              <div className="cardHead">
-                <div className="cardTitle">{data.howToSubmitTitle}</div>
-                <button className="pencil" onClick={() => toggle("submit")}>
-                  {saving === "submit" ? "..." : <FiEdit2 />}
-                </button>
+                    {/* LOGO */}
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium">
+                        Sponsor Logo
+                      </label>
+
+                      <label className="flex h-[190px] cursor-pointer flex-col items-center justify-center overflow-hidden rounded-3xl border border-dashed bg-[#FAFAFA]">
+                        {logoPreview ? (
+                          <img
+                            src={logoPreview}
+                            alt="logo"
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <>
+                            <Upload className="mb-3 h-6 w-6 text-[#5427D7]" />
+
+                            <p>Upload Sponsor Logo</p>
+                          </>
+                        )}
+
+                        <input
+                          type="file"
+                          hidden
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+
+                            if (file) {
+                              setFieldValue("sponsorLogo", file);
+
+                              setLogoPreview(URL.createObjectURL(file));
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
+
+                    {/* BANNER */}
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium">
+                        Banner Image
+                      </label>
+
+                      <label className="flex h-[260px] cursor-pointer flex-col items-center justify-center overflow-hidden rounded-3xl border border-dashed bg-[#FAFAFA]">
+                        {bannerPreview ? (
+                          <img
+                            src={bannerPreview}
+                            alt="banner"
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <>
+                            <Upload className="mb-3 h-6 w-6 text-[#5427D7]" />
+
+                            <p>Upload Banner</p>
+                          </>
+                        )}
+
+                        <input
+                          type="file"
+                          hidden
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+
+                            if (file) {
+                              setFieldValue("bannerImage", file);
+
+                              setBannerPreview(URL.createObjectURL(file));
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
+
+                    {/* BUTTON */}
+                    <Button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="h-14 w-full rounded-2xl bg-[#5427D7] text-base font-semibold text-white"
+                    >
+                      {isSubmitting ? "Updating..." : "Update Campaign"}
+                    </Button>
+
+                    {/* ERROR SUMMARY */}
+                    {Object.keys(errors).length > 0 && (
+                      <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
+                        <div className="flex items-start gap-3">
+                          <AlertCircle className="mt-0.5 h-5 w-5 text-red-500" />
+
+                          <div>
+                            <p className="font-medium text-red-700">
+                              Please fix the form errors
+                            </p>
+
+                            <p className="mt-1 text-sm text-red-500">
+                              Some required fields are missing.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
-
-              {editing === "submit" ? (
-                <textarea
-                  className="textArea smallArea"
-                  value={data.howToSubmitBody}
-                  onChange={(e) =>
-                    setData((p) => ({ ...p, howToSubmitBody: e.target.value }))
-                  }
-                  onBlur={() => saveSection("submit")}
-                />
-              ) : null}
-            </div>
-
-            <button
-              className="uploadBtn"
-              onClick={onUpload}
-              type="button"
-              disabled={saving === "upload" || loading}
-            >
-              {saving === "upload"
-                ? "Uploading..."
-                : loading
-                  ? "Loading..."
-                  : "Upload"}
-            </button>
-          </div>
-        </div>
+            </Form>
+          )}
+        </Formik>
       </div>
-      <style jsx>{`
-        .page {
-          padding: 22px 34px;
-        }
-
-        .headerRow {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-        }
-
-        .backBtn {
-          border: none;
-          background: transparent;
-          font-size: 34px;
-          cursor: pointer;
-          line-height: 1;
-          padding: 0 4px;
-        }
-
-        .headerTitles {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          width: 100%;
-          align-items: center;
-        }
-
-        .hTitle {
-          font-size: 26px;
-          font-weight: 800;
-          color: #111;
-        }
-
-        .headerTitles :global(.hTitle) {
-          font-size: 26px;
-          font-weight: 800;
-          color: #111;
-        }
-
-        .hTitle.left {
-          text-align: left;
-        }
-
-        .hTitle.right {
-          text-align: center;
-        }
-
-        .headerTitles :global(.hTitle.left) {
-          text-align: left;
-        }
-
-        .headerTitles :global(.hTitle.right) {
-          text-align: center;
-        }
-
-        .lineWrap {
-          margin-top: 10px;
-          margin-bottom: 14px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-        }
-
-        .line {
-          flex: 1;
-          height: 2px;
-          background: rgba(0, 0, 0, 0.35);
-          margin: 0 14px;
-        }
-
-        .dot {
-          width: 6px;
-          height: 6px;
-          background: rgba(0, 0, 0, 0.55);
-          border-radius: 999px;
-        }
-
-        .status {
-          height: 18px;
-          font-size: 18px;
-          color: rgba(0, 0, 0, 0.55);
-          margin-bottom: 8px;
-        }
-        .status.spacer {
-          visibility: hidden;
-        }
-
-        .grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 26px;
-          align-items: start;
-        }
-
-        .colLeft,
-        .colRight {
-          display: flex;
-          flex-direction: column;
-          gap: 18px;
-        }
-
-        .card {
-          background: #fff;
-          border-radius: 16px;
-          box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
-          padding: 16px 18px;
-        }
-
-        .card.big {
-          min-height: 140px;
-        }
-
-        .card.small {
-          padding: 14px 18px;
-          border-radius: 14px;
-        }
-
-        .cardHead {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-        }
-
-        .cardTitle {
-          font-weight: 700;
-          font-size: 15px;
-          color: #111;
-        }
-
-        .cardTitle.muted {
-          color: rgba(0, 0, 0, 0.5);
-          font-weight: 600;
-        }
-
-        .pencil {
-          border: none;
-          background: transparent;
-          cursor: pointer;
-          font-size: 18px;
-          width: 38px;
-          height: 38px;
-          border-radius: 999px;
-          display: grid;
-          place-items: center;
-        }
-
-        .cardText {
-          margin-top: 10px;
-          color: rgba(0, 0, 0, 0.55);
-          font-size: 14px;
-          line-height: 1.35;
-        }
-
-        .titleInput {
-          border: none;
-          outline: none;
-          font-weight: 700;
-          font-size: 15px;
-          width: 100%;
-          background: transparent;
-        }
-
-        .textArea {
-          margin-top: 10px;
-          width: 100%;
-          min-height: 80px;
-          border: none;
-          outline: none;
-          resize: vertical;
-          background: transparent;
-          color: rgba(0, 0, 0, 0.65);
-          font-size: 14px;
-          line-height: 1.35;
-        }
-
-        .textArea.smallArea {
-          min-height: 70px;
-        }
-
-        .blockTitle {
-          font-weight: 700;
-          color: rgba(0, 0, 0, 0.45);
-          margin-bottom: 10px;
-        }
-
-        .includeList {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-
-        .includeItem {
-          background: rgba(0, 0, 0, 0.03);
-          border-radius: 10px;
-          padding: 12px 14px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-        }
-
-        .includeText {
-          color: rgba(0, 0, 0, 0.55);
-          font-weight: 600;
-          font-size: 13px;
-        }
-
-        .includeInput {
-          width: 100%;
-          border: none;
-          outline: none;
-          background: transparent;
-          color: rgba(0, 0, 0, 0.65);
-          font-weight: 600;
-          font-size: 13px;
-        }
-
-        .miniPencil {
-          border: none;
-          background: transparent;
-          cursor: pointer;
-          font-size: 18px;
-          width: 34px;
-          height: 34px;
-          border-radius: 999px;
-          display: grid;
-          place-items: center;
-        }
-
-        .bullets {
-          margin-top: 10px;
-          padding-left: 18px;
-          color: rgba(0, 0, 0, 0.55);
-          font-size: 13px;
-          line-height: 1.35;
-        }
-
-        .bulletInput {
-          width: 100%;
-          border: none;
-          outline: none;
-          background: transparent;
-          color: rgba(0, 0, 0, 0.65);
-          font-size: 13px;
-          padding: 2px 0;
-        }
-
-        .creativeRow {
-          display: flex;
-          align-items: flex-end;
-          justify-content: center;
-          gap: 12px;
-          margin-top: 2px;
-        }
-
-        .creativeCard {
-          width: 220px;
-          height: 110px;
-          border-radius: 14px;
-          overflow: hidden;
-          background: #e9e9e9;
-          box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
-          display: grid;
-          place-items: center;
-        }
-
-        .creativePlaceholder {
-          width: 100%;
-          height: 100%;
-          background: #e9e9e9;
-        }
-
-        .creativeImg {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
-        }
-
-        .uploadBtn {
-          margin-top: 6px;
-          width: 180px;
-          align-self: flex-end;
-          padding: 14px 22px;
-          border: none;
-          border-radius: 12px;
-          background: #5a189a;
-          color: #fff;
-          font-weight: 700;
-          cursor: pointer;
-        }
-      `}</style>
-    </>
+    </div>
   );
 }

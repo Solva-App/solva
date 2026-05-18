@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { FiArrowLeft, FiTrash2 } from "react-icons/fi";
 import { createAxiosInstance } from "@/lib/axios";
 import { apis } from "@/lib/endpoints";
+import { Button } from "@/components/ui/button";
 
 type TaskCard = {
   id: string;
@@ -207,487 +208,190 @@ export default function TaskCardsPage() {
   }
 
   return (
-    <>
-      <div className="page">
-        <div className="headerRow">
-          <button
-            className="backBtn"
-            aria-label="Back"
-            onClick={() => router.back()}
-          >
-            <FiArrowLeft />
-          </button>
+    <div className="min-h-screen bg-white px-4 py-8 md:px-8">
+      <div className="mx-auto max-w-full">
+        {/* HEADER */}
+        <div className="mb-10">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-[#5427D7]" />
 
-          <div className="headerTitles">
-            <TaskNavButton label="Manage Task" path="/tasks" align="left" />
-            <div className="headerSpacer" aria-hidden />
+              <p className="text-xs uppercase tracking-[0.3em] text-[#5427D7]">
+                Manage Campaigns
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
+            <div>
+              <h1 className="max-w-3xl text-3xl font-bold leading-tight text-black md:text-5xl">
+                Manage your
+                <span className="text-[#5427D7]"> sponsored campaigns</span>
+              </h1>
+
+              <p className="mt-5 max-w-2xl text-[15px] leading-7 text-[#666666]">
+                View campaigns, monitor submissions, manage rewards, and update
+                sponsor details from one clean dashboard.
+              </p>
+            </div>
+
+            <Button
+              onClick={onCreateTask}
+              className="h-14 rounded-2xl bg-[#5427D7] px-8 text-base font-semibold text-white hover:bg-[#5427D7]/90"
+            >
+              Create Campaign
+            </Button>
           </div>
         </div>
 
-        <div className="lineWrap" aria-hidden>
-          <span className="dot" />
-          <div className="line" />
-          <span className="dot" />
-        </div>
-
-        <div className="actionsRow">
-          <button className="createBtn" type="button" onClick={onCreateTask}>
-            Create Task
-          </button>
-        </div>
-
-        {error ? (
-          <div className="errorMsg">{error}</div>
-        ) : (
-          <div className="spacer" />
+        {/* ERROR */}
+        {error && (
+          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+            {error}
+          </div>
         )}
 
-        <div className="grid">
-          {loading ? (
-            <div className="state">Loading tasks...</div>
-          ) : cards.length === 0 ? (
-            <div className="state">
-              No tasks found. Use Create Task to start a new one.
-            </div>
-          ) : (
-            cards.map((card) => (
-              <div key={card.id} className="cardWrap">
-                <div className="card">
-                  <div className="topRow">
-                    <div className="brandRow">
-                      <div className="brandLogo">
-                        {card.companyLogoUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={card.companyLogoUrl}
-                            alt={`${card.companyName} logo`}
-                            className="imgFill"
-                          />
-                        ) : (
-                          <span className="brandInitial">
-                            {card.companyName.trim().charAt(0).toUpperCase() ||
-                              "C"}
-                          </span>
-                        )}
-                      </div>
+        {/* STATES */}
+        {loading ? (
+          <div className="flex h-[300px] items-center justify-center rounded-3xl border border-[#ECECEC] bg-white text-lg font-medium text-[#666666] shadow-sm">
+            Loading campaigns...
+          </div>
+        ) : cards.length === 0 ? (
+          <div className="flex h-[300px] flex-col items-center justify-center rounded-3xl border border-dashed border-[#DADADA] bg-[#FAFAFA] text-center">
+            <h3 className="text-2xl font-bold text-black">No campaigns yet</h3>
 
-                      <div className="brandMeta">
-                        <div className="brandName">{card.companyName}</div>
-                        <div className="campaignPill">{card.campaignType}</div>
-                      </div>
-                    </div>
+            <p className="mt-3 max-w-md text-[#666666]">
+              Create your first sponsored campaign to start receiving
+              submissions.
+            </p>
 
-                    <div className="poolBlock">
-                      <div className="poolLabel">Total pool</div>
-                      <div className="poolValue">
-                        {formatNaira(card.totalPool)}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="contentRow">
-                    <div className="leftInfo">
-                      <div className="taskTitle">{card.title}</div>
-                      <div className="metaRow">
-                        <span className={`time ${card.timeLeftColor}`}>
-                          {card.timeLeftLabel}
-                        </span>
-                        <span className="spots">{card.spotsLeftLabel}</span>
-                      </div>
-
-                      <div className="buttonRow">
-                        <button
-                          className="viewBtn"
-                          type="button"
-                          onClick={() => onViewTask(card.id)}
-                        >
-                          View Task
-                        </button>
-                        <button
-                          className="submissionBtn"
-                          type="button"
-                          onClick={() => onOpenSubmissions(card.id)}
-                        >
-                          Submissions
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="creativeWrap">
-                      {card.creativeImageUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
+            <Button
+              onClick={onCreateTask}
+              className="mt-6 h-12 rounded-2xl bg-[#5427D7] px-6 text-white hover:bg-[#5427D7]/90"
+            >
+              Create Campaign
+            </Button>
+          </div>
+        ) : (
+          <div className="grid gap-6 lg:grid-cols-3">
+            {cards.map((card) => (
+              <div
+                key={card.id}
+                className="group relative overflow-hidden rounded-3xl border border-[#ECECEC] bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
+              >
+                {/* TOP */}
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl bg-[#5427D7]/10">
+                      {card.companyLogoUrl ? (
                         <img
-                          src={card.creativeImageUrl}
-                          alt="Task creative"
-                          className="imgFill"
+                          src={card.companyLogoUrl}
+                          alt={card.companyName}
+                          className="h-full w-full object-cover"
                         />
                       ) : (
-                        <div className="creativePlaceholder">Image</div>
+                        <span className="text-lg font-bold text-[#5427D7]">
+                          {card.companyName.charAt(0)}
+                        </span>
                       )}
                     </div>
+
+                    <div>
+                      <h3 className="text-lg font-bold text-black">
+                        {card.companyName}
+                      </h3>
+
+                      <div className="mt-1 inline-flex rounded-full border border-[#5427D7]/20 bg-[#5427D7]/5 px-3 py-1 text-xs font-semibold text-[#5427D7]">
+                        {card.campaignType}
+                      </div>
+                    </div>
                   </div>
+
+                  <button
+                    onClick={() => onDelete(card.id)}
+                    disabled={deletingId === card.id}
+                    className="flex h-11 w-11 items-center justify-center rounded-2xl border border-red-100 bg-red-50 text-red-500 transition hover:bg-red-100"
+                  >
+                    {deletingId === card.id ? (
+                      "..."
+                    ) : (
+                      <FiTrash2 className="text-lg" />
+                    )}
+                  </button>
                 </div>
 
-                <button
-                  className="trashBtn"
-                  type="button"
-                  aria-label="Delete task"
-                  onClick={() => onDelete(card.id)}
-                  disabled={deletingId === card.id}
-                >
-                  {deletingId === card.id ? "..." : <FiTrash2 />}
-                </button>
+                {/* IMAGE */}
+                <div className="mt-6 overflow-hidden rounded-3xl border border-[#ECECEC] bg-[#FAFAFA]">
+                  {card.creativeImageUrl ? (
+                    <img
+                      src={card.creativeImageUrl}
+                      alt={card.title}
+                      className="h-[220px] w-full object-cover transition duration-500 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="flex h-[220px] items-center justify-center text-[#999999]">
+                      No Banner Image
+                    </div>
+                  )}
+                </div>
+
+                {/* CONTENT */}
+                <div className="mt-6">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-sm text-[#777777]">
+                        Total Reward Pool
+                      </p>
+
+                      <h2 className="mt-1 text-2xl font-bold text-[#5427D7]">
+                        {formatNaira(card.totalPool)}
+                      </h2>
+                    </div>
+
+                    <div className="text-right">
+                      <p
+                        className={`text-sm font-semibold ${
+                          card.timeLeftColor === "green"
+                            ? "text-green-600"
+                            : "text-red-500"
+                        }`}
+                      >
+                        {card.timeLeftLabel}
+                      </p>
+
+                      <p className="mt-1 text-sm text-[#666666]">
+                        {card.spotsLeftLabel}
+                      </p>
+                    </div>
+                  </div>
+
+                  <h3 className="mt-5 text-xl font-bold leading-snug text-black">
+                    {card.title}
+                  </h3>
+
+                  {/* ACTIONS */}
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    <Button
+                      onClick={() => onViewTask(card.id)}
+                      className="h-12 flex-1 rounded-2xl bg-[#5427D7] text-white hover:bg-[#5427D7]/90"
+                    >
+                      View Campaign
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      onClick={() => onOpenSubmissions(card.id)}
+                      className="h-12 flex-1 rounded-2xl border-[#DADADA] bg-white hover:bg-[#F8F8F8]"
+                    >
+                      Submissions
+                    </Button>
+                  </div>
+                </div>
               </div>
-            ))
-          )}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
-
-      <style jsx>{`
-        .page {
-          min-height: 100%;
-          background: #ededed;
-          padding: 22px 28px 30px;
-        }
-
-        .headerRow {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-        }
-
-        .backBtn {
-          border: none;
-          background: transparent;
-          color: #1c1c1c;
-          width: 52px;
-          height: 52px;
-          display: grid;
-          place-items: center;
-          font-size: 2rem;
-          cursor: pointer;
-          padding: 0;
-        }
-
-        .headerTitles {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          width: 100%;
-          align-items: center;
-        }
-
-        .headerTitles :global(.hTitle) {
-          font-size: 2rem;
-          font-weight: 900;
-          color: #111;
-          line-height: 1.1;
-        }
-
-        .headerTitles :global(.hTitle.left) {
-          text-align: left;
-        }
-
-        .headerSpacer {
-          width: 100%;
-        }
-
-        .lineWrap {
-          margin: 8px 2px 14px;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-
-        .line {
-          flex: 1;
-          height: 2px;
-          background: rgba(0, 0, 0, 0.34);
-        }
-
-        .dot {
-          width: 5px;
-          height: 5px;
-          border-radius: 999px;
-          background: rgba(0, 0, 0, 0.52);
-        }
-
-        .actionsRow {
-          display: flex;
-          justify-content: flex-end;
-          margin-bottom: 10px;
-        }
-
-        .createBtn {
-          border: none;
-          background: #6911b0;
-          color: #fff;
-          font-weight: 800;
-          font-size: 14px;
-          border-radius: 10px;
-          min-width: 148px;
-          height: 42px;
-          padding: 0 18px;
-          cursor: pointer;
-        }
-
-        .errorMsg {
-          color: #b00020;
-          font-size: 13px;
-          margin-bottom: 8px;
-        }
-
-        .spacer {
-          height: 18px;
-          margin-bottom: 4px;
-        }
-
-        .grid {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 18px 14px;
-          align-items: start;
-        }
-
-        .state {
-          grid-column: 1 / -1;
-          background: #fff;
-          border-radius: 14px;
-          box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
-          padding: 20px;
-          color: rgba(0, 0, 0, 0.6);
-          font-weight: 600;
-        }
-
-        .cardWrap {
-          position: relative;
-          padding-bottom: 20px;
-        }
-
-        .card {
-          background: #efefef;
-          border-radius: 20px;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.18);
-          padding: 20px 18px 16px;
-          min-height: 252px;
-        }
-
-        .topRow {
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          gap: 14px;
-        }
-
-        .brandRow {
-          display: flex;
-          align-items: flex-start;
-          gap: 12px;
-          min-width: 0;
-        }
-
-        .brandLogo {
-          width: 38px;
-          height: 38px;
-          border-radius: 999px;
-          overflow: hidden;
-          background: #7e19c9;
-          display: grid;
-          place-items: center;
-          flex: none;
-        }
-
-        .brandInitial {
-          color: #fff;
-          font-weight: 800;
-          font-size: 14px;
-        }
-
-        .brandMeta {
-          min-width: 0;
-        }
-
-        .brandName {
-          font-size: 1.05rem;
-          font-weight: 900;
-          color: #111;
-          line-height: 1.1;
-          margin-bottom: 6px;
-          word-break: break-word;
-        }
-
-        .campaignPill {
-          width: fit-content;
-          max-width: 170px;
-          border: 1px solid rgba(0, 0, 0, 0.35);
-          color: #7bb783;
-          border-radius: 5px;
-          padding: 1px 14px 2px;
-          font-size: 12px;
-          line-height: 1.1;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          background: rgba(255, 255, 255, 0.35);
-        }
-
-        .poolBlock {
-          text-align: right;
-          flex: none;
-        }
-
-        .poolLabel {
-          color: rgba(0, 0, 0, 0.7);
-          font-size: 14px;
-          margin-bottom: 2px;
-        }
-
-        .poolValue {
-          color: #5d12a8;
-          font-weight: 900;
-          font-size: 1.05rem;
-          line-height: 1.05;
-        }
-
-        .contentRow {
-          margin-top: 10px;
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 14px;
-        }
-
-        .leftInfo {
-          display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-          min-width: 0;
-          flex: 1;
-        }
-
-        .taskTitle {
-          color: #111;
-          font-size: 15px;
-          font-weight: 800;
-          line-height: 1.25;
-          margin-bottom: 18px;
-          word-break: break-word;
-        }
-
-        .metaRow {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          font-weight: 600;
-          margin-bottom: 16px;
-          flex-wrap: wrap;
-        }
-
-        .time {
-          font-size: 14px;
-        }
-
-        .time.green {
-          color: #2ca04c;
-        }
-
-        .time.red {
-          color: #ff221a;
-        }
-
-        .spots {
-          color: #111;
-          font-size: 14px;
-        }
-
-        .buttonRow {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          flex-wrap: wrap;
-        }
-
-        .viewBtn,
-        .submissionBtn {
-          border-radius: 10px;
-          min-width: 154px;
-          height: 44px;
-          padding: 0 18px;
-          font-weight: 800;
-          font-size: 15px;
-          cursor: pointer;
-        }
-
-        .viewBtn {
-          border: none;
-          background: #6911b0;
-          color: #fff;
-        }
-
-        .submissionBtn {
-          border: 1px solid rgba(0, 0, 0, 0.16);
-          background: #fff;
-          color: #111;
-        }
-
-        .creativeWrap {
-          width: 80px;
-          height: 100px;
-          border-radius: 10px;
-          overflow: hidden;
-          background: #ddd;
-          flex: none;
-          align-self: center;
-        }
-
-        .creativePlaceholder {
-          width: 100%;
-          height: 100%;
-          display: grid;
-          place-items: center;
-          color: rgba(0, 0, 0, 0.4);
-          font-weight: 700;
-          font-size: 12px;
-          background: #e0e0e0;
-        }
-
-        .trashBtn {
-          position: absolute;
-          left: 50%;
-          bottom: -2px;
-          transform: translateX(-50%);
-          border: none;
-          background: transparent;
-          color: #ff1200;
-          width: 30px;
-          height: 22px;
-          display: grid;
-          place-items: center;
-          cursor: pointer;
-          font-size: 18px;
-        }
-
-        .trashBtn:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-        }
-
-        .imgFill {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
-        }
-
-        @media (max-width: 1100px) {
-          .grid {
-            grid-template-columns: 1fr;
-          }
-
-          .actionsRow {
-            justify-content: flex-start;
-          }
-        }
-      `}</style>
-    </>
+    </div>
   );
 }

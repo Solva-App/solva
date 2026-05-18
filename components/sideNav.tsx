@@ -233,7 +233,7 @@ const SideNav = () => {
     },
     {
       title: "Tasks",
-      link: "tasks//task",
+      link: "tasks/task",
       svg: (isActive) => (
         <svg
           xmlns="http://www.w3.org/2000/svg"
