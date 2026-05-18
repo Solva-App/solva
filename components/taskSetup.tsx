@@ -114,7 +114,24 @@ const validationSchema = Yup.object({
     .min(1, "Add at least one submission step"),
 });
 
-const initialValues = {
+type FormValues = {
+  title: string;
+  overview: string;
+  type: string;
+  sponsorName: string;
+  sponsorLogo: File | null;
+  bannerImage: File | null;
+  requirements: string[];
+  guidelines: string[];
+  selectionCriteria: string[];
+  howToSubmit: string[];
+  startDate: Date | null;
+  endDate: Date | null;
+  totalPool: string;
+  totalSpots: string;
+};
+
+const initialValues: FormValues = {
   title: "",
   overview: "",
   type: "",
@@ -303,7 +320,9 @@ export default function CreateTaskPage() {
                 },
               );
 
-              toast.success(response?.message);
+              toast.success(
+                response?.data?.message || "Campaign created successfully",
+              );
 
               router.push("/tasks/task");
 
@@ -547,36 +566,42 @@ export default function CreateTaskPage() {
                           >
                             <Calendar
                               mode="single"
-                              selected={values.startDate}
+                              selected={values.startDate || undefined}
                               onSelect={(date) =>
                                 setFieldValue("startDate", date)
                               }
                               disabled={(date) =>
                                 date < new Date(new Date().setHours(0, 0, 0, 0))
                               }
-                              initialFocus
                               className="rounded-2xl"
                               classNames={{
                                 months: "flex flex-col gap-4",
                                 month: "space-y-4",
-                                caption:
+
+                                month_caption:
                                   "flex justify-center pt-1 relative items-center text-black font-semibold",
-                                nav: "space-x-1 flex items-center",
-                                nav_button:
+
+                                button_previous:
                                   "h-8 w-8 bg-transparent p-0 opacity-70 hover:opacity-100 hover:bg-[#F5F3FF] rounded-xl",
-                                table: "w-full border-collapse",
-                                head_row: "flex",
-                                head_cell:
+
+                                button_next:
+                                  "h-8 w-8 bg-transparent p-0 opacity-70 hover:opacity-100 hover:bg-[#F5F3FF] rounded-xl",
+
+                                weekdays: "flex",
+
+                                weekday:
                                   "text-[#777] rounded-md w-9 font-medium text-[0.8rem]",
-                                row: "flex w-full mt-2",
-                                cell: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20",
+
+                                week: "flex w-full mt-2",
+
                                 day: "h-9 w-9 p-0 font-normal rounded-xl transition hover:bg-[#F5F3FF] hover:text-[#5427D7]",
-                                day_selected:
-                                  "bg-[#5427D7] text-white hover:bg-[#5427D7] hover:text-white",
-                                day_today:
+
+                                today:
                                   "bg-[#F3F0FF] text-[#5427D7] font-semibold",
-                                day_outside: "text-[#CFCFCF]",
-                                day_disabled: "text-[#D1D1D1] opacity-50",
+
+                                outside: "text-[#CFCFCF]",
+
+                                disabled: "text-[#D1D1D1] opacity-50",
                               }}
                             />
                           </PopoverContent>
@@ -623,7 +648,7 @@ export default function CreateTaskPage() {
                           >
                             <Calendar
                               mode="single"
-                              selected={values.endDate}
+                              selected={values.endDate || undefined}
                               onSelect={(date) =>
                                 setFieldValue("endDate", date)
                               }
@@ -633,29 +658,36 @@ export default function CreateTaskPage() {
                                   : date <
                                     new Date(new Date().setHours(0, 0, 0, 0))
                               }
-                              initialFocus
+                              // initialFocus
                               className="rounded-2xl"
                               classNames={{
                                 months: "flex flex-col gap-4",
                                 month: "space-y-4",
-                                caption:
+
+                                month_caption:
                                   "flex justify-center pt-1 relative items-center text-black font-semibold",
-                                nav: "space-x-1 flex items-center",
-                                nav_button:
+
+                                button_previous:
                                   "h-8 w-8 bg-transparent p-0 opacity-70 hover:opacity-100 hover:bg-[#F5F3FF] rounded-xl",
-                                table: "w-full border-collapse",
-                                head_row: "flex",
-                                head_cell:
+
+                                button_next:
+                                  "h-8 w-8 bg-transparent p-0 opacity-70 hover:opacity-100 hover:bg-[#F5F3FF] rounded-xl",
+
+                                weekdays: "flex",
+
+                                weekday:
                                   "text-[#777] rounded-md w-9 font-medium text-[0.8rem]",
-                                row: "flex w-full mt-2",
-                                cell: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20",
+
+                                week: "flex w-full mt-2",
+
                                 day: "h-9 w-9 p-0 font-normal rounded-xl transition hover:bg-[#F5F3FF] hover:text-[#5427D7]",
-                                day_selected:
-                                  "bg-[#5427D7] text-white hover:bg-[#5427D7] hover:text-white",
-                                day_today:
+
+                                today:
                                   "bg-[#F3F0FF] text-[#5427D7] font-semibold",
-                                day_outside: "text-[#CFCFCF]",
-                                day_disabled: "text-[#D1D1D1] opacity-50",
+
+                                outside: "text-[#CFCFCF]",
+
+                                disabled: "text-[#D1D1D1] opacity-50",
                               }}
                             />
                           </PopoverContent>

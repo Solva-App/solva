@@ -6,9 +6,11 @@ type TaskDetailsPageProps = {
   };
 };
 
-export default function TasksUploadPage({ searchParams }: TaskDetailsPageProps) {
+export default function TasksUploadPage({
+  searchParams,
+}: TaskDetailsPageProps) {
   const taskIdParam = searchParams?.taskId;
   const taskId = Array.isArray(taskIdParam) ? taskIdParam[0] : taskIdParam;
 
-  return <TaskEditor mode="create" taskId={taskId} />;
+  return <TaskEditor taskId={taskId || ""} />;
 }
